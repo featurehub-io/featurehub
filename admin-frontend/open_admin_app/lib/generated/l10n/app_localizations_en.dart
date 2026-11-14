@@ -1630,6 +1630,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get connectToSlack => 'Connect to Slack';
 
   @override
+  String get disconnectSlack => 'Disconnect Slack';
+
+  @override
   String get slackBotTokenLabel => 'Slack Bot User OAuth Token';
 
   @override

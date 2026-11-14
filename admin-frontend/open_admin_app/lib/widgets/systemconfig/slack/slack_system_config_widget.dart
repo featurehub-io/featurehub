@@ -130,12 +130,49 @@ class SlackSystemConfigState extends State<SlackSystemConfigWidget>
                           ],
                         ),
                       ),
+                    // a token obtained through the "Connect to Slack" flow has no text field, so this is the only
+                    // way to remove it and connect again
+                    if (knownSiteUrl != null &&
+                        bearer.value != null &&
+                        bearer.value?.toString().isNotEmpty == true)
+                      Padding(
+                        padding: const EdgeInsets.only(top: 8.0, bottom: 8.0),
+                        child: Row(
+                          children: [
+                            OutlinedButton.icon(
+                              icon: const Icon(Icons.link_off),
+                              onPressed: () async {
+                                setState(() {
+                                  bearer.value = null;
+                                  enabled.value = false;
+                                });
+                                await save();
+                              },
+                              label: Text(l10n.disconnectSlack),
+                            ),
+                          ],
+                        ),
+                      ),
                     const SizedBox(
                       height: 16.0,
                     ),
                     if (knownSiteUrl == null)
                       SystemConfigEncryptableTextField(
                         field: bearer,
+                        // Slack can't stay enabled without a token, so clearing it disables Slack. The user can
+                        // tick "enable" again once they have entered a new token.
+                        onCleared: () => setState(() {
+                          enabled.value = false;
+                        }),
+                        onDecrypt: (configBloc.mrClient.identityProviders
+                                    .capabilityWebhookEncryption &&
+                                configBloc.mrClient.identityProviders
+                                    .capabilityWebhookDecryption)
+                            ? () async => (await configBloc
+                                    .systemConfigServiceApi
+                                    .decryptSystemConfig(bearer.key))
+                                .result
+                            : null,
                         decoration: InputDecoration(
                           border: const OutlineInputBorder(),
                           hintText:
