@@ -1,5 +1,6 @@
 package io.featurehub.dacha2
 
+import io.featurehub.dacha2.client.MRUnavailable
 import com.google.common.cache.Cache
 import com.google.common.cache.CacheBuilder
 import com.google.common.cache.CacheLoader
@@ -86,7 +87,8 @@ open class Dacha2CacheImpl @Inject constructor(private val mrDacha2Api: Dacha2Se
             environmentMissCache.put(id, true)
             throw nfe
           } catch (e: Exception) {
-            log.error("failed", e)
+            // quiet (DEBUG, counted, one WARN a minute) when MR is unavailable - an expected part of an outage
+            MRUnavailable.loadFailed("environment", id, e, log)
             throw e
           }
         }
@@ -118,6 +120,9 @@ open class Dacha2CacheImpl @Inject constructor(private val mrDacha2Api: Dacha2Se
             log.trace("service account {} does not exist", key)
             serviceAccountMissCache.put(key, true)
             throw nfe
+          } catch (e: Exception) {
+            MRUnavailable.loadFailed("service-account", key, e, log)
+            throw e
           }
         }
       })
@@ -233,6 +238,26 @@ open class Dacha2CacheImpl @Inject constructor(private val mrDacha2Api: Dacha2Se
     }
   }
 
+  override fun invalidateEntries(environmentIds: Set<UUID>, apiKeys: Set<String>) {
+    environmentIds.forEach { removeEnvironment(it) }
+
+    apiKeys.forEach { key ->
+      serviceAccountApiKeyCache.getIfPresent(key)?.let { serviceAccountCache.invalidate(it.id) }
+    }
+    serviceAccountApiKeyCache.invalidateAll(apiKeys) // the removal listener clears the related permissions
+  }
+
+  /**
+   * Removes the environment and takes its features off the gauge. The map's remove is atomic, so when a recovery
+   * eviction and a cloud event DELETE race, only the one that actually removed the entry gets it back and decrements
+   * (a getIfPresent then invalidate would let both decrement). The removal listener clears the related permissions.
+   */
+  private fun removeEnvironment(envId: UUID) {
+    environmentCache.asMap().remove(envId)?.let { removed ->
+      gaugeFeaturesInCache.dec(removed.featureCount.toDouble())
+    }
+  }
+
   override fun findEnvironment(eId: UUID): FeatureValues {
     environmentMissCache.getIfPresent(eId)?.let {
       throw RuntimeException()
@@ -258,11 +283,7 @@ open class Dacha2CacheImpl @Inject constructor(private val mrDacha2Api: Dacha2Se
     val envId = env.environment.id
 
     if (env.action == PublishAction.DELETE) {
-      val found = environmentCache.getIfPresent(envId)
-      if (found != null) {
-        environmentCache.invalidate(envId)
-        gaugeFeaturesInCache.dec(found.featureCount.toDouble())
-      }
+      removeEnvironment(envId)
 
       environmentMissCache.put(envId, true)
       return

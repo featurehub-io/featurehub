@@ -15,15 +15,26 @@ class MessagingPublishingFeature : Feature {
       override fun configure() {
         // we have split this into two so db-sql doesn't have to depend on this
         // artifact to build, it separates cloud eventing from publishing
-        bind(FeatureMessagingCloudEventPublisherImpl::class.java)
-          .to(FeatureMessagingPublisher::class.java)
-          .to(FeatureMessagingPublisherConfiguration::class.java)
-          .`in`(Singleton::class.java)
+        val binding = bind(FeatureMessagingCloudEventPublisherImpl::class.java)
+        boundInterfaces.forEach { binding.to(it) }
+        binding.`in`(Singleton::class.java)
       }
 
     })
 
 
     return true
+  }
+
+  companion object {
+    /**
+     * Every interface this feature binds. Used by applications with more than one Jersey context to re-bind the
+     * existing instances from the main context rather than creating a second set.
+     */
+    @JvmField
+    val boundInterfaces: List<Class<*>> = listOf(
+      FeatureMessagingPublisher::class.java,
+      FeatureMessagingPublisherConfiguration::class.java,
+    )
   }
 }

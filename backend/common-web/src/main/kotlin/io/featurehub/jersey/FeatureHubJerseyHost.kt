@@ -53,6 +53,15 @@ class FeatureHubJerseyHost(private val config: ResourceConfig) {
     LifecycleListeners.shutdown(DrainExecutorPool::class.java, config)
   }
 
+  /**
+   * Route extra url patterns (e.g. the maintenance endpoints) to Jersey on this host, in addition to the configured
+   * jersey prefixes. Used by the internal monitoring port for endpoints that must never be on the main port.
+   */
+  fun additionalJerseyPrefixes(vararg prefixes: String): FeatureHubJerseyHost {
+    jerseyPrefixes = (jerseyPrefixes + prefixes).distinct()
+    return this
+  }
+
   fun disallowWebHosting(): FeatureHubJerseyHost {
     allowedWebHosting = false
     return this

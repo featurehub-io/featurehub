@@ -38,6 +38,12 @@ interface Dacha2Cache {
   fun enableCache(cacheEnable: Boolean)
   // used by delegator to ensure timer and anything else is reset
   fun closeCache()
+
+  /**
+   * Drop these entries so they are re-fetched on next use. Used when MR becomes available again after an
+   * outage, to replace entries that were served from the Redis fallback.
+   */
+  fun invalidateEntries(environmentIds: Set<UUID>, apiKeys: Set<String>) {}
 }
 
 abstract class Dacha2BaseCache : Dacha2Cache, FeatureEnrichmentCache

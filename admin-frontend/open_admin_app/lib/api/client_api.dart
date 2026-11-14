@@ -285,12 +285,11 @@ class ManagementRepositoryClientBloc implements Bloc {
               ? (await decodeBodyBytes((response.data as ResponseBody).stream))
               : null;
           final headers = response.headers;
-          // dio parses this as an array because of the comma, so we have to reconstruct
           final retryAfter = headers['retry-after'];
 
           if (response.statusCode == 503 && retryAfter != null && retryAfter.isNotEmpty) {
-            _activeMaintenanceSource.add(MaintenanceInfo(
-                message: message, end: HttpDate.parse("${retryAfter[0]},${retryAfter[1]}")));
+            _enterMaintenanceMode(MaintenanceInfo(
+                message: message, end: _parseRetryAfter(retryAfter)));
             handled = true;
             handler.resolve(response);
             return;
@@ -471,6 +470,10 @@ class ManagementRepositoryClientBloc implements Bloc {
       }
     }).catchError((e) {
       _log.fine("failed to request own details $e");
+      if (inMaintenanceMode) {
+        // keep the token so we can resume the session once maintenance is over
+        return;
+      }
       setBearerToken(null);
       routeSlot(RouteSlot.login);
     });
@@ -578,13 +581,128 @@ class ManagementRepositoryClientBloc implements Bloc {
         exception: null, showDetails: false, errorMessage: messageBody));
   }
 
+  bool get inMaintenanceMode =>
+    _activeMaintenanceSource.valueOrNull != null;
+
+  /// The server has told us (503 + retry-after) that it is down for maintenance. We route
+  /// to the maintenance page here rather than relying on every caller's error handler to
+  /// pass the resulting exception through [dialogError].
+  void _enterMaintenanceMode(MaintenanceInfo info) {
+    final alreadyInMaintenance = inMaintenanceMode;
+    _activeMaintenanceSource.add(info);
+    if (!alreadyInMaintenance) {
+      routeSlot(RouteSlot.maintenance);
+    }
+    _startMaintenanceRecoveryTimer();
+  }
+
+  static const maintenanceRecoveryInterval = Duration(minutes: 5);
+  Timer? _maintenanceRecoveryTimer;
+  final _maintenanceProbeInFlightSource = BehaviorSubject<bool>.seeded(false);
+
+  /// true while a maintenance recovery check is running, so the UI can disable "check now"
+  Stream<bool> get maintenanceProbeInFlightStream =>
+      _maintenanceProbeInFlightSource.stream;
+
+  /// Nothing else takes us off the maintenance page, so while we are in maintenance we
+  /// poll the server every [maintenanceRecoveryInterval] to see if it is back.
+  void _startMaintenanceRecoveryTimer() {
+    if (_maintenanceRecoveryTimer?.isActive == true) return;
+    _maintenanceRecoveryTimer = Timer.periodic(
+        maintenanceRecoveryInterval, (_) => checkMaintenanceRecovery());
+  }
+
+  void _stopMaintenanceRecoveryTimer() {
+    _maintenanceRecoveryTimer?.cancel();
+    _maintenanceRecoveryTimer = null;
+  }
+
+  /// Uses the self identity call as the probe. A 503 means we are still in maintenance (the
+  /// interceptor refreshes the [MaintenanceInfo]), and a connection error means the server is
+  /// still unreachable. In both cases we keep waiting. Any other answer means the server is
+  /// back. We deliberately don't call [requestOwnDetails] here, because it clears the bearer
+  /// token on any failure.
+  Future<void> checkMaintenanceRecovery() async {
+    if (!inMaintenanceMode) {
+      _stopMaintenanceRecoveryTimer();
+      return;
+    }
+    if (_maintenanceProbeInFlightSource.value) return;
+    _maintenanceProbeInFlightSource.add(true);
+
+    try {
+      if (getBearerCookie() == null) {
+        // not logged in, so there is no identity to check. Check the setup endpoint instead.
+        await setupApi.isInstalled();
+        _exitMaintenanceMode();
+        await isInitialized();
+        return;
+      }
+
+      final p = await personServiceApi.getPerson('self',
+          includeAcls: true, includeGroups: true);
+      _exitMaintenanceMode();
+      setPerson(p);
+      routeSlot(RouteSlot.portfolio);
+    } on ApiException catch (e) {
+      // openapi_dart_common reports connection failures as a 500, and proxies in front of
+      // a down server answer with 502/504
+      if (e.code == 500 || e.code == 502 || e.code == 503 || e.code == 504) {
+        _log.fine('server still in maintenance or unreachable (${e.code})');
+        return;
+      }
+
+      // the server is back, but it rejected us (for example, the token expired while it was down)
+      _exitMaintenanceMode();
+      if (e.code == 401 || e.code == 403) {
+        setBearerToken(null);
+        routeSlot(RouteSlot.login);
+      } else {
+        await isInitialized();
+      }
+    } catch (e) {
+      // DioException connection error etc - server still not reachable
+      _log.fine('maintenance recovery probe failed: $e');
+    } finally {
+      _maintenanceProbeInFlightSource.add(false);
+    }
+  }
+
+  void _exitMaintenanceMode() {
+    _stopMaintenanceRecoveryTimer();
+    if (_activeMaintenanceSource.valueOrNull != null) {
+      _activeMaintenanceSource.add(null);
+    }
+  }
+
+  /// Retry-After is either an RFC 1123 HTTP date or a number of seconds. Some Dio adapters split
+  /// header values on commas (which breaks the date up) and some don't, so rejoin whatever
+  /// we got. Returns null if it can't be parsed - we are still in maintenance, we just don't
+  /// know when it ends.
+  static DateTime? _parseRetryAfter(List<String> retryAfter) {
+    final value = retryAfter.map((s) => s.trim()).join(', ').trim();
+    if (value.isEmpty) return null;
+
+    final seconds = int.tryParse(value);
+    if (seconds != null) {
+      return DateTime.now().add(Duration(seconds: seconds));
+    }
+
+    try {
+      return HttpDate.parse(value);
+    } catch (e) {
+      _log.warning('unable to parse retry-after header "$value"', e);
+      return null;
+    }
+  }
+
   Future<void> dialogError(Object? e, StackTrace? s,
       {String? messageTitle,
       bool showDetails = true,
       String messageBody = ''}) async {
     if (e is ApiException &&
         e.code == 500 &&
-        _activeMaintenanceSource.value != null) {
+        inMaintenanceMode) {
       routeSlot(RouteSlot.maintenance);
       return;
     }
@@ -654,6 +772,8 @@ class ManagementRepositoryClientBloc implements Bloc {
 
   @override
   void dispose() {
+    _stopMaintenanceRecoveryTimer();
+    _maintenanceProbeInFlightSource.close();
     _personPermissionInPortfolioChanged.cancel();
     streamValley.currentPortfolioAdminOrSuperAdminSubscription.cancel();
     personStreamListener?.cancel();

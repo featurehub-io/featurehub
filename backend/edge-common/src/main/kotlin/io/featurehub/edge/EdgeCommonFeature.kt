@@ -20,6 +20,7 @@ class EdgeCommonFeature : Feature {
       override fun configure() {
         bind(FeatureGetProcessor::class.java).to(FeatureGet::class.java).`in`(Singleton::class.java)
         bind(FeatureUpdateProcessor::class.java).to(FeatureUpdate::class.java).`in`(Singleton::class.java)
+        bind(FileFeatureUpdateBlock::class.java).to(FeatureUpdateBlock::class.java).`in`(Singleton::class.java)
         bind(FeatureTransformerUtils::class.java)
           .to(FeatureTransformer::class.java)
           .`in`(Singleton::class.java)

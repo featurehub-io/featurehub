@@ -1,0 +1,336 @@
+package io.featurehub.dacha2.client
+
+import cd.connect.openapi.support.ApiResponse
+import io.featurehub.dacha.model.CacheServiceAccount
+import io.featurehub.dacha.model.PublishEnvironment
+import io.featurehub.dacha2.api.Dacha2ServiceClient
+import io.featurehub.jersey.config.CacheJsonMapper
+import io.featurehub.metrics.MetricsCollector
+import io.featurehub.mr.model.Dacha2Environment
+import io.featurehub.mr.model.Dacha2ServiceAccount
+import io.featurehub.redis.FeatureHubRedis
+import io.featurehub.redis.RedisConfig
+import io.featurehub.redis.RedisSource
+import io.featurehub.redis.StaticRedisSource
+import io.featurehub.utils.FallbackPropertyConfig
+import jakarta.ws.rs.ProcessingException
+import jakarta.ws.rs.ServerErrorException
+import jakarta.ws.rs.ServiceUnavailableException
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
+import java.util.UUID
+import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.CopyOnWriteArrayList
+import java.util.concurrent.Executors
+import java.util.concurrent.ScheduledExecutorService
+import java.util.concurrent.TimeUnit
+import java.util.concurrent.atomic.AtomicBoolean
+
+/**
+ * Called when MR becomes available again, with the environment ids and api keys that were served from Redis
+ * while it was not.
+ */
+fun interface Dacha2RecoveryListener {
+  fun recovered(environmentIds: Set<UUID>, apiKeys: Set<String>)
+}
+
+/**
+ * Wraps the normal MR client. If MR is unavailable (connection failure or any 5xx, including the maintenance
+ * responder's 503) the "circuit" opens and requests are served from Redis until MR responds again.
+ *
+ * - Any single connection failure or 5xx opens the circuit for every environment and api key, not just the one that
+ *   failed: a 500 from a healthy MR for one bad environment sends all cache misses to Redis for the next retry
+ *   interval. This only ever happens while Redis is configured (the fallback is only configured around a maintenance
+ *   window), and the circuit closes again on the next answer from MR.
+ * - MR 4xx responses (e.g. 404 Not Found) are authoritative and are never served from Redis.
+ * - A Redis miss is a [ServiceUnavailableException], never a NotFoundException, so the caches do not put the id into
+ *   their (non-expiring) miss caches.
+ * - Dacha2 only ever reads from Redis.
+ * - The Redis connection comes from a [RedisSource] and can appear, change or disappear at runtime. While there is
+ *   none, this behaves exactly like the plain MR client (failures are passed straight through, the circuit never
+ *   opens).
+ * - While the circuit is open, MR is probed in the background every retry interval, so recovery is noticed even if
+ *   the caches are warm and no miss ever reaches this client.
+ * - Recovery listeners run on this client's own thread, never on the caller's: calls arrive from inside the caches'
+ *   loaders, and a listener invalidates entries in those same caches.
+ */
+class Dacha2FallbackServiceClient @JvmOverloads constructor(
+  private val primary: Dacha2ServiceClient,
+  private val redisSource: RedisSource,
+  retryIntervalMs: Long = RedisConfig.longSetting("dacha2.redis.mr-retry-interval-ms", 10000),
+  private val clock: () -> Long = System::currentTimeMillis,
+  backgroundProbe: Boolean = true,
+  // a Redis read that completes after recovery is evicted after this delay, by which time its loader has cached it
+  private val lateEvictionDelayMs: Long = 2000
+) : Dacha2ServiceClient {
+  constructor(
+    primary: Dacha2ServiceClient,
+    redis: FeatureHubRedis,
+    retryIntervalMs: Long,
+    clock: () -> Long
+  ) : this(primary, StaticRedisSource(redis), retryIntervalMs, clock, false, 100)
+
+  private val probeKey: String? = FallbackPropertyConfig.getConfig("dacha2.cache.api-key")
+
+  private val retryIntervalMs: Long = if (retryIntervalMs < MINIMUM_RETRY_INTERVAL_MS) {
+    log.error("dacha2: dacha2.redis.mr-retry-interval-ms of {}ms is below the minimum, using {}ms",
+      retryIntervalMs, MINIMUM_RETRY_INTERVAL_MS)
+    MINIMUM_RETRY_INTERVAL_MS
+  } else {
+    retryIntervalMs
+  }
+
+  private val scheduler: ScheduledExecutorService = Executors.newSingleThreadScheduledExecutor { r ->
+    Thread(r, "dacha2-redis-fallback").apply { isDaemon = true }
+  }
+
+  @Volatile private var open = false
+  @Volatile private var nextProbeAt = 0L
+  private val probing = AtomicBoolean(false)
+
+  private val environmentsFromRedis = ConcurrentHashMap.newKeySet<UUID>()
+  private val apiKeysFromRedis = ConcurrentHashMap.newKeySet<String>()
+  private val recoveryListeners = CopyOnWriteArrayList<Dacha2RecoveryListener>()
+
+  // after every property above is initialised, as the probe uses them
+  init {
+    if (backgroundProbe) {
+      scheduler.scheduleWithFixedDelay({ probeIfOpen() }, this.retryIntervalMs, this.retryIntervalMs, TimeUnit.MILLISECONDS)
+    }
+  }
+
+  val isOpen: Boolean
+    get() = open
+
+  fun addRecoveryListener(listener: Dacha2RecoveryListener) {
+    recoveryListeners.add(listener)
+  }
+
+  override fun getEnvironment(id: UUID, key: String?): Dacha2Environment {
+    return call("env", { primary.getEnvironment(id, key) }) { redis, mrFailure ->
+      // parsed inside readRedis, so a corrupt value is counted and reported like any other Redis failure
+      val env = readRedis("env", mrFailure) {
+        redis.get(redis.keys.environment(id))?.let { CacheJsonMapper.mapper.readValue(it, PublishEnvironment::class.java) }
+      } ?: throw miss("env", "environment $id is not in redis")
+
+      servedFromRedis(setOf(id), setOf())
+      Dacha2Environment().env(env)
+    }
+  }
+
+  override fun getServiceAccount(id: String, key: String?): Dacha2ServiceAccount {
+    return call("sa", { primary.getServiceAccount(id, key) }) { redis, mrFailure ->
+      val sa = readRedis("sa", mrFailure) {
+        redis.get(redis.keys.serviceAccountKey(id))?.let { saId ->
+          redis.get(redis.keys.serviceAccount(UUID.fromString(saId)))
+        }?.let { CacheJsonMapper.mapper.readValue(it, CacheServiceAccount::class.java) }
+      }
+        // never trust a stale index - the key must still belong to the service account
+        ?.takeIf { it.apiKeyClientSide == id || it.apiKeyServerSide == id }
+        ?: throw miss("sa", "service account key is not in redis")
+
+      servedFromRedis(setOf(), setOfNotNull(sa.apiKeyClientSide, sa.apiKeyServerSide))
+      Dacha2ServiceAccount().serviceAccount(sa)
+    }
+  }
+
+  private fun <T> call(type: String, fromMr: () -> T, fromRedis: (FeatureHubRedis, Exception?) -> T): T {
+    // fetch once - the connection can change at runtime, so use the same one for the whole request
+    val redis = redisSource.current()
+
+    if (redis == null) {
+      // no redis configured (or it has just been removed): behave like the plain MR client
+      val result = fromMr()
+      if (open) closeCircuit()
+      return result
+    }
+
+    var amProbing = false
+
+    if (open) {
+      if (clock() < nextProbeAt || !probing.compareAndSet(false, true)) {
+        return fromRedis(redis, null)
+      }
+      amProbing = true
+    }
+
+    try {
+      val result = fromMr()
+      if (open) closeCircuit()
+      return result
+    } catch (e: Exception) {
+      if (!isFallbackTrigger(e)) {
+        // MR answered (e.g. 404/403) - it is up and authoritative
+        if (open) closeCircuit()
+        throw e
+      }
+
+      openCircuit(e)
+      return fromRedis(redis, e)
+    } finally {
+      if (amProbing) probing.set(false)
+    }
+  }
+
+  /**
+   * Remember what was served from Redis so it can be evicted when MR recovers. If the circuit has already closed (a
+   * Redis read that was in flight when MR came back) evict it straight away instead - after a short delay, so the
+   * cache loader that asked for it has stored it by then.
+   */
+  private fun servedFromRedis(envIds: Set<UUID>, apiKeys: Set<String>) {
+    environmentsFromRedis.addAll(envIds)
+    apiKeysFromRedis.addAll(apiKeys)
+
+    if (!open) {
+      environmentsFromRedis.removeAll(envIds)
+      apiKeysFromRedis.removeAll(apiKeys)
+      log.debug("dacha2: redis read completed after recovery, evicting {} / {}", envIds, apiKeys)
+      notifyRecovered(envIds, apiKeys, lateEvictionDelayMs)
+    }
+  }
+
+  /**
+   * Background probe while the circuit is open: an environment that does not exist, so a healthy MR answers 404.
+   * Any answer from MR (2xx or 4xx) means it is back.
+   */
+  fun probeIfOpen() {
+    if (!open || !probing.compareAndSet(false, true)) return
+
+    try {
+      primary.getEnvironment(PROBE_ENVIRONMENT_ID, probeKey)
+      closeCircuit()
+    } catch (e: Exception) {
+      if (isFallbackTrigger(e)) {
+        nextProbeAt = clock() + retryIntervalMs
+        log.trace("dacha2: background probe, management repository still unavailable ({})", e.message)
+      } else {
+        closeCircuit()
+      }
+    } finally {
+      probing.set(false)
+    }
+  }
+
+  private fun notifyRecovered(envIds: Set<UUID>, apiKeys: Set<String>, delayMs: Long) {
+    if (envIds.isEmpty() && apiKeys.isEmpty()) return
+
+    val task = Runnable {
+      recoveryListeners.forEach {
+        try {
+          it.recovered(envIds, apiKeys)
+        } catch (e: Exception) {
+          log.error("dacha2: recovery listener failed", e)
+        }
+      }
+    }
+
+    try {
+      scheduler.schedule(task, delayMs, TimeUnit.MILLISECONDS)
+    } catch (e: Exception) {
+      log.warn("dacha2: unable to schedule eviction of entries served from redis", e)
+    }
+  }
+
+  /**
+   * Stops the background probe and closes the [RedisSource] (which this client owns), releasing its reload thread
+   * and Redis connections. Safe to call more than once.
+   */
+  fun close() {
+    scheduler.shutdownNow()
+    try {
+      redisSource.close()
+    } catch (e: Exception) {
+      log.warn("dacha2: failed to close the redis source", e)
+    }
+  }
+
+  /**
+   * See [MRUnavailable.isMRUnavailable] - the single definition, including why a 500 does not open the circuit
+   * (DECIDED - do not re-raise in review).
+   */
+  private fun isFallbackTrigger(e: Exception): Boolean = MRUnavailable.isMRUnavailable(e)
+
+  private fun <T> readRedis(type: String, mrFailure: Exception?, read: () -> T?): T? {
+    try {
+      val value = read()
+      if (value != null) counterHits.labels(type).inc()
+      return value
+    } catch (e: Exception) {
+      counterErrors.inc()
+      log.error("dacha2: MR unavailable and unable to read from redis", e)
+      // Redis is down as well, surface the original problem
+      throw mrFailure ?: MRUnavailableException("MR and Redis unavailable", e)
+    }
+  }
+
+  private fun miss(type: String, message: String): MRUnavailableException {
+    counterMisses.labels(type).inc()
+    log.debug("dacha2: redis fallback miss: {}", message)
+    return MRUnavailableException(message)
+  }
+
+  @Synchronized
+  private fun openCircuit(e: Exception) {
+    nextProbeAt = clock() + retryIntervalMs
+
+    if (!open) {
+      open = true
+      gaugeState.set(1.0)
+
+      val retryAfter = (e as? ServerErrorException)?.response?.getHeaderString("retry-after")
+      if (retryAfter != null) {
+        log.info("dacha2: management repository is unavailable (maintenance until {}), serving cache misses from redis", retryAfter)
+      } else {
+        log.info("dacha2: management repository is unavailable ({}), serving cache misses from redis", e.message)
+      }
+    }
+  }
+
+  @Synchronized
+  private fun closeCircuit() {
+    if (!open) return
+
+    open = false
+    gaugeState.set(0.0)
+
+    val envs = environmentsFromRedis.toSet()
+    val apiKeys = apiKeysFromRedis.toSet()
+    environmentsFromRedis.clear()
+    apiKeysFromRedis.clear()
+
+    log.info("dacha2: management repository is available again ({} environments and {} api keys were served from redis)",
+      envs.size, apiKeys.size)
+
+    // never inline: we are often inside a cache loader, and the listeners invalidate entries in those caches.
+    // Delayed (not 0) because a value served from redis just before this point may not have been stored by its
+    // loader yet - evicting it now would let that store land afterwards, leaving it cached and untracked.
+    notifyRecovered(envs, apiKeys, lateEvictionDelayMs)
+  }
+
+  override fun getEnvironment(id: UUID, key: String?, extraHeaders: MutableMap<String, String>?): Dacha2Environment =
+    primary.getEnvironment(id, key, extraHeaders)
+
+  override fun getEnvironmentWithHttpInfo(id: UUID, key: String?): ApiResponse<Dacha2Environment> =
+    primary.getEnvironmentWithHttpInfo(id, key)
+
+  override fun getServiceAccount(id: String, key: String?, extraHeaders: MutableMap<String, String>?): Dacha2ServiceAccount =
+    primary.getServiceAccount(id, key, extraHeaders)
+
+  override fun getServiceAccountWithHttpInfo(id: String, key: String?): ApiResponse<Dacha2ServiceAccount> =
+    primary.getServiceAccountWithHttpInfo(id, key)
+
+  companion object {
+    private val log: Logger = LoggerFactory.getLogger(Dacha2FallbackServiceClient::class.java)
+    // below this the background probe would hammer an MR that is down
+    const val MINIMUM_RETRY_INTERVAL_MS = 1000L
+    // an environment that never exists - a healthy MR answers 404
+    private val PROBE_ENVIRONMENT_ID: UUID = UUID.fromString("00000000-0000-0000-0000-00000000fa11")
+
+    private val gaugeState = MetricsCollector.gauge("dacha2_mr_fallback_state", "1 if MR is unavailable and cache misses are served from redis")
+    private val counterHits = io.prometheus.client.Counter.build("dacha2_redis_hits_total", "Cache misses served from redis")
+      .labelNames("type").register()
+    private val counterMisses = io.prometheus.client.Counter.build("dacha2_redis_misses_total", "Cache misses not found in redis")
+      .labelNames("type").register()
+    private val counterErrors = MetricsCollector.counter("dacha2_redis_errors", "Failures reading from redis")
+  }
+}

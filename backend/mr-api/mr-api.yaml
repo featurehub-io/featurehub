@@ -14,7 +14,7 @@ paths:
         - bearerAuth: [ ]
       tags:
         - CacheService
-      description: "Allows superusers to refresh the global Dacha1 cache (if it exists)."
+      description: "Allows superusers (organisation administrators) to republish environments and service accounts to the caches (Dacha1, Dacha2 and, if configured, Redis). `allTheThings` republishes everything and also performs a full Redis sync, removing anything from Redis that is no longer in the database."
       operationId: cacheRefresh
       requestBody:
         required: true
@@ -36,7 +36,7 @@ paths:
         403:
           description: "forbidden"
         404:
-          description: "Dacha1 is not being used and API does not exist"
+          description: "Cache publishing is not enabled and the API does not exist"
   /mr-api/portfolio:
     parameters:
       - name: includeGroups
@@ -3387,7 +3387,7 @@ components:
       properties:
         allTheThings:
           nullable: true
-          description: "refresh the whole cache"
+          description: "if true, refresh the whole cache (and perform a full Redis sync if Redis is configured)"
           type: boolean
         applicationId:
           nullable: true
