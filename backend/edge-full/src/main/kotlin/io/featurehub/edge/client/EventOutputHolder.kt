@@ -28,13 +28,8 @@ class InternalEventOutput(private val output: EventOutput) : EventOutputHolder {
     }
     eventBuilder.data(data)
     val event = eventBuilder.build()
-    if (!output.isClosed) {
-      try {
-        output.write(event)
-      } catch (_: IOException) {
-        // ignore iex
-      }
-    }
+    // callers (TimedBucketClientConnection) rely on the IOException to detect dead connections
+    output.write(event)
   }
 
   override fun isClosed(): Boolean {

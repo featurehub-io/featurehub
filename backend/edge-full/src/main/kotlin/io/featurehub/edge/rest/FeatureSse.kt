@@ -51,7 +51,7 @@ class FeatureSseProcessor @Inject constructor(
         etag, extraContext,
       )
       if (bucket.discovery()) {
-        log.info("etag was {}", etag)
+        log.trace("etag was {}", etag)
         serverConfig.requestFeatures(bucket)
         bucketService.putInBucket(bucket)
       } else {
