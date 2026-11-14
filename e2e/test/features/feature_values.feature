@@ -81,7 +81,6 @@ Feature: Create feature values
     And I cannot set the boolean feature value as "false" for environment "dev" for feature "FEATURE_CAN_CHANGE"
     And all feature flags for environment "dev" should be "true"
 
-
   Scenario Outline: I can set feature values per environment where the user doesn't have access to some of them
     Given the first superuser is used for authentication
     Given I ensure an application with the name "<appName>" with description "<appDesc>" in the portfolio "<portfolio>" exists
@@ -110,26 +109,11 @@ Feature: Create feature values
     When I can login as user "John@mailinator.com" with password "password123"
 
     Examples:
-      | appName      | appDesc           | portfolio          | adminGroup                        | group   | featureKey     | alias         | featureName    | link                           | envName | envDesc    | envName2 | envDesc2 | envName3 | envDesc3 | valueType |
-      | FeatureTest1 | FeatureTest1 Desc | - | <admin> | testers | FEATURE_SAMPLE | sssshhhh      | Sample feature | http://featurehub.dev          | prod    | production | test     | test env | dev      | dev env  | boolean   |
-      | FeatureTest1 | FeatureTest1 Desc | - | <admin> | testers | NEW_BUTTON     | little_secret | New button     | http://featurehub.dev/new      | prod    | production | test     | test env | dev      | dev env  | boolean   |
-      | FeatureTest1 | FeatureTest1 Desc | - | <admin> | testers | NEW_CAR        | not_secret    | New car        | http://featurehub.dev/new/boat | prod    | production | test     | test env | dev      | dev env  | string   |
-      | FeatureTest1 | FeatureTest1 Desc | - | <admin> | testers | NEW_HOUSE      | not_secret    | New house      | http://featurehub.dev/new/boat | prod    | production | test     | test env | dev      | dev env  | string   |
-
-    # this scenario breaks the rules and depends on the data from above
-    Scenario: I get the feature values from an application and set them and check they are correct
-      Given the first superuser is used for authentication
-      And I choose the application "FeatureTest1" in portfolio "Feature restricted"
-      When I get the details for feature "NEW_HOUSE" and set them as follows:
-        | envName | value |
-        | test    | false |
-      And I get the details for feature "NEW_BUTTON" and set them as follows:
-        | envName | value |
-        | prod    | false |
-      And I get the details for feature "NEW_HOUSE" and set them as follows:
-        | envName | value |
-        | prod    | true |
-
+      | appName      | appDesc           | portfolio | adminGroup | group   | featureKey     | alias         | featureName    | link                           | envName | envDesc    | envName2 | envDesc2 | envName3 | envDesc3 | valueType |
+      | FeatureTest1 | FeatureTest1 Desc | -         | <admin>    | testers | FEATURE_SAMPLE | sssshhhh      | Sample feature | http://featurehub.dev          | prod    | production | test     | test env | dev      | dev env  | boolean   |
+      | FeatureTest1 | FeatureTest1 Desc | -         | <admin>    | testers | NEW_BUTTON     | little_secret | New button     | http://featurehub.dev/new      | prod    | production | test     | test env | dev      | dev env  | boolean   |
+      | FeatureTest1 | FeatureTest1 Desc | -         | <admin>    | testers | NEW_CAR        | not_secret    | New car        | http://featurehub.dev/new/boat | prod    | production | test     | test env | dev      | dev env  | string    |
+      | FeatureTest1 | FeatureTest1 Desc | -         | <admin>    | testers | NEW_HOUSE      | not_secret    | New house      | http://featurehub.dev/new/boat | prod    | production | test     | test env | dev      | dev env  | string    |
 
       @userwithlockperm
     Scenario Outline: A user with lock permission cannot unlock a feature

@@ -4,6 +4,7 @@ import 'package:ogurets/ogurets.dart';
 void main() async {
   var def = new OguretsOpts()
     ..feature('test/features')
+    ..tags("@paired")
     ..steps('test/steps');
 
   await def.run();

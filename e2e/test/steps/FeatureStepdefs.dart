@@ -79,7 +79,7 @@ class FeatureStepdefs {
   }
 
   @When(r'I get the details for feature {string} and set them as follows:')
-  void iGetTheDetailsForFeatureAndSetThemAsFollows(
+  Future<void> iGetTheDetailsForFeatureAndSetThemAsFollows(
       String featureName, GherkinTable table) async {
     final data = await userCommon.featureService
         .getAllFeatureValuesByApplicationForKey(

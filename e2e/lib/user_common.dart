@@ -106,7 +106,8 @@ class UserCommon {
   // operates in user space
   Future<Portfolio?> findExactPortfolio(String? portfolioName,
       {PortfolioServiceApi? portfolioServiceApi}) async {
-    if (portfolioName == "-" && shared?.portfolio != null) {
+    if (portfolioName == "-") {
+      assert(shared != null, 'Shared must be set on userCommon otherwise we cannot use - as portfolio');
       return shared!.portfolio;
     }
 

@@ -143,7 +143,7 @@ class ApplicationStepdefs {
 
   @When(
       r'I create the feature with a key {string} and alias {string} and name {string} and link {string} and type {string}')
-  void iCreateTheFeatureWithAKeyAndAliasAndName(String key, String alias,
+  Future<void> iCreateTheFeatureWithAKeyAndAliasAndName(String key, String alias,
       String name, String link, String valueType) async {
     FeatureValueType fvt = mapFeatureValueType(valueType);
 

@@ -198,6 +198,6 @@ class AdminPortfolioStepdefs {
 
     shared.portfolio = p;
     shared.portfolioAdminGroup = p.groups[0];
-
   }
 }
+
