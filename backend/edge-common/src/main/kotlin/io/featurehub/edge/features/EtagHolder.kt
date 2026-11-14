@@ -1,16 +1,22 @@
 package io.featurehub.edge.features
 
 import io.featurehub.edge.KeyParts
+import io.featurehub.utils.FallbackPropertyConfig
 
 class EtagStructureHolder(val environmentTags: Map<KeyParts, String>, val contextTag: String, val validEtag: Boolean)
 
 class ETagSplitter {
   companion object {
+    val etagsEnabledForSse = FallbackPropertyConfig.getConfig("edge.etags-for-sse-enabled", "true") == "true"
+
     fun makeEtagHolderForSSE(etag: String?, keys: List<KeyParts>, etagFromClientContext: String): EtagStructureHolder {
-      if (etag == null || keys.size != 1) {
+      // if we aren't presented with an etag or the number of keys we are looking at is > 1 (which seems impossible now because SSE doesn't support it)
+      // then we assume no etag
+      if (!etagsEnabledForSse || etag == null || keys.size != 1) {
         return EtagStructureHolder(emptyMap(), etagFromClientContext, false)
       }
 
+      // otherwise we assume a holder with the API Key => the etag
       return EtagStructureHolder(mapOf(Pair(keys[0], etag)), etagFromClientContext, true)
     }
 
