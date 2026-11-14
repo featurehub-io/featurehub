@@ -2,6 +2,7 @@ import 'package:collection/collection.dart' show IterableExtension;
 import 'package:e2e_tests/shared.dart';
 import 'package:e2e_tests/superuser_common.dart';
 import 'package:e2e_tests/user_common.dart';
+import 'package:e2e_tests/util.dart';
 import 'package:mrapi/api.dart';
 import 'package:ogurets/ogurets.dart';
 import 'package:openapi_dart_common/openapi.dart';
@@ -11,7 +12,10 @@ class AdminPortfolioStepdefs {
   final Shared shared;
   final UserCommon userCommon;
 
-  AdminPortfolioStepdefs(this.common, this.shared, this.userCommon);
+  AdminPortfolioStepdefs(this.common, this.shared, this.userCommon) {
+    this.common.shared = this.shared;
+    this.userCommon.shared = this.shared;
+  }
 
   // only superusers can do this, but it can run in user space if the user is a superuser
   @Given(
@@ -130,13 +134,19 @@ class AdminPortfolioStepdefs {
 
     assert(person != null, 'could not find email/person $email');
 
-    await common.groupService.addPersonToGroup(
-        matchedGroup!.id, person!.id!.id,
-        includeMembers: true);
+    final existingMembers = await common.groupService.getGroup(matchedGroup!.id, includeMembersV2: true);
+
+    if (existingMembers.simpleMembers.firstWhereOrNull((m) => m.id == person!.id!.id) == null) {
+      await common.groupService.addPersonToGroup(
+          matchedGroup.id, person!.id!.id,
+          includeMembers: true);
+    } else {
+      print("the following users are already in the group ${matchedGroup}: ${existingMembers.simpleMembers}");
+    }
 
     shared.portfolio = portfolio;
     shared.group = matchedGroup;
-    shared.person = person;
+    shared.person = person!;
   }
 
   @Then(r'Searching for user should include the group')
@@ -174,5 +184,20 @@ class AdminPortfolioStepdefs {
         includeGroups: true);
 
     shared.portfolioAdminGroup = shared.portfolio.groups[0];
+  }
+
+  @Given(r'I have a new portfolio')
+  void iHaveANewPortfolio() async {
+    final name = makeId(10);
+
+    Portfolio p = await common.portfolioService.createPortfolio(
+        CreatePortfolio(description: name, name: name),
+        includeGroups: true);
+
+    assert(p.groups.length == 1);
+
+    shared.portfolio = p;
+    shared.portfolioAdminGroup = p.groups[0];
+
   }
 }

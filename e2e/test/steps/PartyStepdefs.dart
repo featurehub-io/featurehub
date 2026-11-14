@@ -44,7 +44,7 @@ class PartyStepdefs {
     await Future.delayed(Duration(seconds: sec));
   }
 
-  ///       | feature       | valueBoolean |
+  ///       | feature       | value |
   //      | FEATURE_PARTY | false        |
   @And(r'the feature repository reports the following:')
   void theFeatureRepositoryReportsTheFollowing(GherkinTable table) async {
@@ -55,9 +55,9 @@ class PartyStepdefs {
     //   FeatureStateHolder fsh = eventsCommon.repository!.getFeatureState(key);
     //
     //   assert(fsh.key == key, 'Keys do not match! $key vs ${fsh.key}');
-    //   if (line['valueBoolean'] != null &&
-    //       line['valueBoolean'].toString().trim().isNotEmpty) {
-    //     bool expected = line['valueBoolean'].toString().trim() == 'true';
+    //   if (line['value'] != null &&
+    //       line['value'].toString().trim().isNotEmpty) {
+    //     bool expected = line['value'].toString().trim() == 'true';
     //     assert(fsh.booleanValue == expected,
     //         'Value was not as expected - ${fsh.booleanValue} and not ${expected}');
     //   }

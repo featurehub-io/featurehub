@@ -11,7 +11,10 @@ class GroupStepdefs {
   final UserCommon userCommon;
   final Shared shared;
 
-  GroupStepdefs(this.userCommon, this.shared, this.common);
+  GroupStepdefs(this.userCommon, this.shared, this.common)  {
+    this.common.shared = this.shared;
+    this.userCommon.shared = this.shared;
+  }
 
   Future<Group> findCurrentPortfolioGroup() async {
     final p = await userCommon.portfolioService

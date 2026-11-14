@@ -8,12 +8,15 @@ class EnvironmentStepdefs {
   final UserCommon common;
   final Shared shared;
 
-  EnvironmentStepdefs(this.common, this.shared);
+  EnvironmentStepdefs(this.common, this.shared)  {
+    this.common.shared = this.shared;
+  }
 
   Future<Application> _findApplication(
       String portfolioName, String appName) async {
     Portfolio? p = await common.findExactPortfolio(portfolioName);
     assert(p != null, 'Cannot find portfolio $portfolioName');
+    shared.portfolio = p!;
 
     Application? a = await common.findExactApplication(appName, p!.id);
     assert(a != null,
@@ -180,7 +183,7 @@ class EnvironmentStepdefs {
     });
 
     group.environmentRoles.add(egr);
-    await common.groupService.updateGroupOnPortfolioV2(group.id,
+    await common.groupService.updateGroupOnPortfolioV2(shared.portfolio.id,
         UpdateGroup(id: group.id, version: group.version, environmentRoles: group.environmentRoles),
         includeGroupRoles: true, updateEnvironmentGroupRoles: true);
   }
