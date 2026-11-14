@@ -182,11 +182,6 @@ class DbCacheSourcePublishableSpec extends Specification {
       }
   }
 
-  def "publishable api keys only pair publishable environments with publishable service accounts that have permissions"() {
-    expect:
-      cacheSource.publishableApiKeys() == ["${live.env.id}/${live.sa.apiKeyClientEval}".toString()]
-  }
-
   static void waitFor(Closure<Boolean> condition) {
     def deadline = System.currentTimeMillis() + 5000
     while (!condition() && System.currentTimeMillis() < deadline) {

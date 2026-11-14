@@ -1,5 +1,6 @@
 package io.featurehub.mr.events.redis
 
+import io.featurehub.redis.test.InMemoryRedis
 import io.featurehub.dacha.model.CacheEnvironment
 import io.featurehub.dacha.model.CacheServiceAccount
 import io.featurehub.dacha.model.PublishAction
@@ -345,6 +346,62 @@ class RedisCacheSpec extends Specification {
       redis.get(redis.keys.environment(good)) != null
       redis.get(redis.keys.metaSync).contains('"complete":false')
       redis.get(redis.keys.syncLock) == null
+  }
+
+  def "a write that fails once (e.g. a socket timeout) is retried at the end of the pass and the sync is complete"() {
+    given:
+      def flaky = UUID.randomUUID()
+      def good = UUID.randomUUID()
+      def calls = 0
+      walker.publishableEnvironmentIds() >> [flaky, good]
+      walker.publishableServiceAccountIds() >> []
+      walker.publishableEnvironment(good) >> env(good)
+      walker.publishableEnvironment(flaky) >> { if (calls++ == 0) throw new RuntimeException("read timed out"); env(flaky) }
+    when:
+      def result = sync.syncAll("test")
+    then:
+      calls == 2
+      result.complete
+      redis.get(redis.keys.environment(flaky)) != null
+      redis.get(redis.keys.metaSync).contains('"complete":true')
+  }
+
+  def "a run of failed writes means redis is unavailable, so the sync stops before the sweep and releases the lock"() {
+    given:
+      System.setProperty("redis.full-sync-max-consecutive-failures", "3")
+      def provider = { -> walker } as Provider<CacheWalker>
+      def stoppingSync = new RedisFullSync(redis, writer, provider)
+      def orphan = UUID.randomUUID()
+      redis.set(redis.keys.environment(orphan), "{}")
+      def ids = (1..5).collect { UUID.randomUUID() }
+      walker.publishableEnvironmentIds() >> ids
+      walker.publishableServiceAccountIds() >> []
+      walker.publishableEnvironment(_) >> { throw new RuntimeException("redis unavailable") }
+    when:
+      stoppingSync.syncAll("test")
+    then:
+      def e = thrown(IllegalStateException)
+      e.message.contains("3 environment writes in a row failed")
+      redis.get(redis.keys.environment(orphan)) == "{}" // never swept
+      redis.get(redis.keys.syncLock) == null
+    cleanup:
+      stoppingSync.stop()
+      System.clearProperty("redis.full-sync-max-consecutive-failures")
+  }
+
+  def "a schedule rejected because the writer shut down in the meantime does not strand the id or inflate the queue"() {
+    given: "the workers have shut down, but this caller got past the draining check just before"
+      def envId = UUID.randomUUID()
+      writer.drain()
+      writer.@draining = false
+    when:
+      writer.scheduleEnvironment(envId)
+      writer.scheduleServiceAccount(envId)
+    then:
+      noExceptionThrown()
+      writer.@pendingEnvironments.isEmpty()
+      writer.@pendingServiceAccounts.isEmpty()
+      writer.@queued.get() == 0
   }
 
   def "a complete sync says so"() {

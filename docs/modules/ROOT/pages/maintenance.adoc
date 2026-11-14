@@ -291,6 +291,9 @@ rewrite.
 - `redis.pool-size` - the number of Redis writer threads, default `2`.
 - `redis.shutdown-drain-seconds` - how long MR waits for pending Redis writes when shutting down, default `10`.
 - `redis.full-sync-lock-ms` - how long the full sync lock lasts if it is not renewed, default `120000` (two minutes).
+- `redis.full-sync-max-consecutive-failures` - default `10`. A full sync retries a write that failed (e.g. a write that
+took longer than the socket timeout) once at the end, and only counts it as failed if it fails again. This many
+failed writes in a row means Redis is unavailable, so the sync stops (without removing anything from Redis).
 
 MR only writes to Redis when it publishes cache updates (cloud events publishing is enabled).
 

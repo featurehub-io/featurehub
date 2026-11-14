@@ -74,6 +74,8 @@ open class RedisFullSync @Inject constructor(
   private val intervalHours = RedisConfig.longSetting("redis.full-sync-interval-hours", 24)
   private val syncOnStartup = FallbackPropertyConfig.getConfig("redis.full-sync-on-startup", "true") == "true"
   private val batchSize = 1000
+  // this many failed writes in a row means Redis is unavailable, so the sync stops (see waitInBatches)
+  private val maxConsecutiveFailures = RedisConfig.intSetting("redis.full-sync-max-consecutive-failures", 10).coerceAtLeast(1)
 
   private val executor: ScheduledExecutorService = Executors.newSingleThreadScheduledExecutor { r ->
     Thread(r, "redis-full-sync").apply { isDaemon = true }
@@ -214,8 +216,8 @@ open class RedisFullSync @Inject constructor(
       val envIds = walker.publishableEnvironmentIds().toSet()
       val saIds = walker.publishableServiceAccountIds().toSet()
 
-      var failedEnvs = waitInBatches(envIds) { writer.refreshEnvironmentOnWorker(it) }
-      var failedSas = waitInBatches(saIds) { writer.refreshServiceAccountOnWorker(it) }
+      var failedEnvs = waitInBatches(envIds, "environment") { writer.refreshEnvironmentOnWorker(it) }
+      var failedSas = waitInBatches(saIds, "service account") { writer.refreshServiceAccountOnWorker(it) }
 
       if (lockLost.get()) {
         throw IllegalStateException("redis: full sync ($reason) lost its lock, stopping before the sweep")
@@ -226,13 +228,13 @@ open class RedisFullSync @Inject constructor(
       redis.scanKeys(keys.environmentPattern) { batch ->
         batch.mapNotNull { keys.environmentIdFromKey(it) }.filter { !envIds.contains(it) }.forEach { orphanEnvs.add(it) }
       }
-      failedEnvs += waitInBatches(orphanEnvs) { writer.refreshEnvironmentOnWorker(it) }
+      failedEnvs += waitInBatches(orphanEnvs, "environment") { writer.refreshEnvironmentOnWorker(it) }
 
       val orphanSas = mutableSetOf<UUID>()
       redis.scanKeys(keys.serviceAccountPattern) { batch ->
         batch.mapNotNull { keys.serviceAccountIdFromKey(it) }.filter { !saIds.contains(it) }.forEach { orphanSas.add(it) }
       }
-      failedSas += waitInBatches(orphanSas) { writer.refreshServiceAccountOnWorker(it) }
+      failedSas += waitInBatches(orphanSas, "service account") { writer.refreshServiceAccountOnWorker(it) }
 
       val removedApiKeys = sweepApiKeyIndexes()
 
@@ -360,13 +362,37 @@ open class RedisFullSync @Inject constructor(
 
   /**
    * Returns how many of the refreshes failed.
+   *
+   * A single write can fail for a transient reason (a GC pause or a slow Redis moment exceeding the socket timeout),
+   * which should not make the whole sync incomplete. So failed ids are held onto and retried once at the end of the
+   * pass - only those that fail again count as failed. If [maxConsecutiveFailures] fail in a row, though, Redis (or
+   * the database) is really unavailable: the sync stops (before the sweep) rather than grinding through every object.
    */
-  private fun waitInBatches(ids: Collection<UUID>, submit: (UUID) -> Future<Boolean>): Int {
-    var failed = 0
+  private fun waitInBatches(ids: Collection<UUID>, type: String, submit: (UUID) -> Future<Boolean>): Int {
+    val failed = mutableListOf<UUID>()
+    var inARow = 0
+
     ids.chunked(batchSize).forEach { chunk ->
-      chunk.map(submit).forEach { if (!it.get()) failed++ }
+      chunk.map { it to submit(it) }.forEach { (id, refresh) ->
+        if (refresh.get()) {
+          inARow = 0
+        } else {
+          failed.add(id)
+          if (++inARow >= maxConsecutiveFailures) {
+            throw IllegalStateException("redis: full sync stopped, $inARow $type writes in a row failed")
+          }
+        }
+      }
     }
-    return failed
+
+    if (failed.isEmpty()) return 0
+
+    log.warn("redis: full sync: {} {} writes failed, retrying them", failed.size, type)
+    val stillFailed = failed.chunked(batchSize).sumOf { chunk -> chunk.map(submit).count { !it.get() } }
+    if (stillFailed < failed.size) {
+      log.info("redis: full sync: {} of the failed {} writes succeeded on retry", failed.size - stillFailed, type)
+    }
+    return stillFailed
   }
 
   companion object {

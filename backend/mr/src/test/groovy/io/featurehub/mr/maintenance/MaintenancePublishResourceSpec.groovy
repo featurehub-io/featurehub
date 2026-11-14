@@ -21,7 +21,7 @@ class MaintenancePublishResourceSpec extends Specification {
     when:
       def response = resource.publishAll()
     then:
-      1 * publisher.publishAllInBackground()
+      1 * publisher.publishAllInBackground("maintenance-publish-all")
       response.status == 202
       response.entity.redisConfigured == true
       response.entity.message.contains("maintenance-publish-all: finished")
@@ -34,7 +34,7 @@ class MaintenancePublishResourceSpec extends Specification {
     when:
       def response = resource.publishAll()
     then:
-      1 * publisher.publishAllInBackground()
+      1 * publisher.publishAllInBackground("maintenance-publish-all")
       response.status == 202
       response.entity.redisConfigured == false
   }
@@ -45,7 +45,7 @@ class MaintenancePublishResourceSpec extends Specification {
     when:
       def response = resource.publishAll()
     then:
-      0 * publisher.publishAllInBackground()
+      0 * publisher.publishAllInBackground(_)
       response.status == 503
   }
 
@@ -62,7 +62,7 @@ class MaintenancePublishResourceSpec extends Specification {
       def cacheSource = Mock(CacheSource)
       def p = new MaintenancePublisher(cacheSource, null)
     when:
-      p.publishAllInBackground()
+      p.publishAllInBackground("maintenance-publish-all")
     then:
       1 * cacheSource.publishToStreamingCaches()
       0 * cacheSource.publishObjectsAssociatedWithCache()
@@ -85,7 +85,7 @@ class MaintenancePublishResourceSpec extends Specification {
       def p = new MaintenancePublisher(cacheSource, fullSync)
       Function0 afterwards = null
     when:
-      p.publishAllInBackground()
+      p.publishAllInBackground("maintenance-publish-all")
     then: "nothing runs on the request thread"
       1 * fullSync.syncInBackgroundThen("maintenance-publish-all", _) >> { args -> afterwards = args[1] as Function0 }
       0 * fullSync.syncAll(_)

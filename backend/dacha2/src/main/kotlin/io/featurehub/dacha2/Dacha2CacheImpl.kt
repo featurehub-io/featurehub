@@ -239,17 +239,23 @@ open class Dacha2CacheImpl @Inject constructor(private val mrDacha2Api: Dacha2Se
   }
 
   override fun invalidateEntries(environmentIds: Set<UUID>, apiKeys: Set<String>) {
-    environmentIds.forEach { envId ->
-      environmentCache.getIfPresent(envId)?.let { found ->
-        environmentCache.invalidate(envId) // the removal listener clears the related permissions
-        gaugeFeaturesInCache.dec(found.featureCount.toDouble())
-      }
-    }
+    environmentIds.forEach { removeEnvironment(it) }
 
     apiKeys.forEach { key ->
       serviceAccountApiKeyCache.getIfPresent(key)?.let { serviceAccountCache.invalidate(it.id) }
     }
     serviceAccountApiKeyCache.invalidateAll(apiKeys) // the removal listener clears the related permissions
+  }
+
+  /**
+   * Removes the environment and takes its features off the gauge. The map's remove is atomic, so when a recovery
+   * eviction and a cloud event DELETE race, only the one that actually removed the entry gets it back and decrements
+   * (a getIfPresent then invalidate would let both decrement). The removal listener clears the related permissions.
+   */
+  private fun removeEnvironment(envId: UUID) {
+    environmentCache.asMap().remove(envId)?.let { removed ->
+      gaugeFeaturesInCache.dec(removed.featureCount.toDouble())
+    }
   }
 
   override fun findEnvironment(eId: UUID): FeatureValues {
@@ -277,11 +283,7 @@ open class Dacha2CacheImpl @Inject constructor(private val mrDacha2Api: Dacha2Se
     val envId = env.environment.id
 
     if (env.action == PublishAction.DELETE) {
-      val found = environmentCache.getIfPresent(envId)
-      if (found != null) {
-        environmentCache.invalidate(envId)
-        gaugeFeaturesInCache.dec(found.featureCount.toDouble())
-      }
+      removeEnvironment(envId)
 
       environmentMissCache.put(envId, true)
       return

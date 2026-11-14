@@ -138,6 +138,12 @@ open class DbCacheSource @Inject constructor(
    * or a feature group republishing all of its values). Every publish re-reads the database on another thread, so it
    * must not start until that transaction has committed, otherwise it can read (and publish to Dacha2 and Redis) the
    * pre-commit state. If the transaction rolls back nothing is published, as nothing changed.
+   *
+   * Known limitation (deliberately not guarded against): the publish is bound to whatever transaction is current on
+   * this thread when the publishX call is made, which is assumed to be the one that carried the change. If a caller
+   * commits a change in one transaction and then calls publishX while a *different* transaction is open on the same
+   * thread, the publish rides on that other transaction - if it rolls back, the committed change is not published
+   * until the next full sync (Redis) or cache refresh. No caller does this today; keep it that way.
    */
   private fun afterCommit(task: () -> Unit) {
     // declared nullable: ebean marks it non-null, but it returns null when there is no current transaction
@@ -242,23 +248,6 @@ open class DbCacheSource @Inject constructor(
         cacheBroadcast.publishServiceAccount(saci)
       }
     }
-  }
-
-  override fun publishableApiKeys(): List<String> {
-    // the same rules as publishableEnvironments() and allServiceAccounts(), applied to both ends of the link
-    return QDbServiceAccountEnvironment()
-      .select(QDbServiceAccountEnvironment.Alias.permissions)
-      .environment.whenArchived.isNull
-      .environment.whenUnpublished.isNull
-      .environment.parentApplication.portfolio.organization.whenArchived.isNull
-      .environment.fetch(QDbEnvironment.Alias.id)
-      .serviceAccount.whenArchived.isNull
-      .serviceAccount.whenUnpublished.isNull
-      .serviceAccount.portfolio.organization.whenArchived.isNull
-      .serviceAccount.fetch(QDbServiceAccount.Alias.apiKeyClientEval)
-      .findList()
-      .filter { sae -> convertUtils.splitServiceAccountPermissions(sae.permissions)?.isNotEmpty() == true }
-      .map { sae -> "${sae.environment.id}/${sae.serviceAccount.apiKeyClientEval}" }
   }
 
   /**

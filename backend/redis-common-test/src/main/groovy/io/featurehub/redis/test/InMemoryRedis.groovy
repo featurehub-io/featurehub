@@ -1,4 +1,4 @@
-package io.featurehub.mr.events.redis
+package io.featurehub.redis.test
 
 import io.featurehub.redis.FeatureHubRedis
 import io.featurehub.redis.RedisKeys
@@ -9,7 +9,9 @@ import org.jetbrains.annotations.NotNull
 import java.util.concurrent.ConcurrentHashMap
 
 /**
- * A very small in-memory stand in for Redis, good enough for the key/value semantics we use.
+ * A very small in-memory stand in for Redis, good enough for the key/value semantics we use. Shared by the
+ * tests of every module that uses FeatureHubRedis (MR, Dacha2, and the SaaS MR) so there is one copy to keep up
+ * to date as FeatureHubRedis grows.
  */
 class InMemoryRedis implements FeatureHubRedis {
   final Map<String, String> data = new ConcurrentHashMap<>()

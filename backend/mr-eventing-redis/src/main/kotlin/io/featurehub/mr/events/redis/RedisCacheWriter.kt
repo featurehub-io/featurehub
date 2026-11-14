@@ -14,6 +14,7 @@ import org.slf4j.LoggerFactory
 import java.util.UUID
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.Future
+import java.util.concurrent.RejectedExecutionException
 import java.util.concurrent.ScheduledExecutorService
 import java.util.concurrent.ScheduledThreadPoolExecutor
 import java.util.concurrent.TimeUnit
@@ -68,11 +69,11 @@ open class RedisCacheWriter @Inject constructor(
 
     if (pendingEnvironments.add(envId)) {
       gaugeQueue.set(queued.incrementAndGet().toDouble())
-      worker(envId).schedule({
+      scheduleOrRollBack(envId, pendingEnvironments, "environment") {
         pendingEnvironments.remove(envId) // remove BEFORE reading, so changes that arrive during the read reschedule
         gaugeQueue.set(queued.decrementAndGet().toDouble())
         refreshEnvironmentNow(envId)
-      }, debounceMs, TimeUnit.MILLISECONDS)
+      }
     }
   }
 
@@ -84,11 +85,26 @@ open class RedisCacheWriter @Inject constructor(
 
     if (pendingServiceAccounts.add(serviceAccountId)) {
       gaugeQueue.set(queued.incrementAndGet().toDouble())
-      worker(serviceAccountId).schedule({
+      scheduleOrRollBack(serviceAccountId, pendingServiceAccounts, "service account") {
         pendingServiceAccounts.remove(serviceAccountId)
         gaugeQueue.set(queued.decrementAndGet().toDouble())
         refreshServiceAccountNow(serviceAccountId)
-      }, debounceMs, TimeUnit.MILLISECONDS)
+      }
+    }
+  }
+
+  /**
+   * The worker refuses new work once drain() has shut it down, and that can happen between the `draining` check and
+   * here. Undo the pending membership and the queue count so the id is not stranded (a stranded id would make every
+   * later schedule of it a no-op) and the gauge is not inflated.
+   */
+  private fun scheduleOrRollBack(id: UUID, pending: MutableSet<UUID>, type: String, task: () -> Unit) {
+    try {
+      worker(id).schedule(task, debounceMs, TimeUnit.MILLISECONDS)
+    } catch (e: RejectedExecutionException) {
+      pending.remove(id)
+      gaugeQueue.set(queued.decrementAndGet().toDouble())
+      log.warn("redis: shutting down, unable to schedule {} {} - the next full sync will repair it", type, id)
     }
   }
 

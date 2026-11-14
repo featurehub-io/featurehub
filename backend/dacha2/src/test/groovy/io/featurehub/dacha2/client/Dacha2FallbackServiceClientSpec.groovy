@@ -1,5 +1,6 @@
 package io.featurehub.dacha2.client
 
+import io.featurehub.redis.test.InMemoryRedis
 import io.featurehub.dacha.model.CacheEnvironment
 import io.featurehub.dacha.model.CacheServiceAccount
 import io.featurehub.dacha.model.CacheServiceAccountPermission
