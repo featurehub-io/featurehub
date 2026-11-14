@@ -1,3 +1,4 @@
+import 'package:e2e_tests/shared.dart' show Shared;
 import 'package:e2e_tests/util.dart';
 import 'package:mrapi/api.dart';
 import 'package:openapi_dart_common/openapi.dart';
@@ -16,8 +17,12 @@ class SuperuserCommon {
 
   bool _initialized = false;
 
+  Shared? shared;
+
   SuperuserCommon() {
     _apiClient = ApiClient(basePath: baseUrl());
+
+    checkLoggingForApiClient(_apiClient);
 
     _personService = PersonServiceApi(_apiClient);
     _setupService = SetupServiceApi(_apiClient);

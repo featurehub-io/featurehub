@@ -8,7 +8,9 @@ class FeatureStepdefs {
   final UserCommon userCommon;
   final Shared shared;
 
-  FeatureStepdefs(this.userCommon, this.shared);
+  FeatureStepdefs(this.userCommon, this.shared)  {
+    this.userCommon.shared = this.shared;
+  }
 
   @And(
       r'I ensure the boolean feature value is {string} for environment {string} for feature {string}')
@@ -22,7 +24,7 @@ class FeatureStepdefs {
     final val = await userCommon.environmentFeatureServiceApi
         .getFeatureForEnvironment(environment!.id, key);
 
-    assert(val.valueBoolean.toString() == value);
+    assert(val.value.toString() == value);
   }
 
   @And(
@@ -39,7 +41,7 @@ class FeatureStepdefs {
         .getFeatureForEnvironment(environment!.id, featureKey);
 
     await userCommon.environmentFeatureServiceApi.updateFeatureForEnvironment(
-        environment.id, featureKey, featureValue..valueBoolean = b);
+        environment.id, featureKey, featureValue..value = b);
   }
 
   @And(
@@ -57,7 +59,7 @@ class FeatureStepdefs {
 
     try {
       await userCommon.environmentFeatureServiceApi.updateFeatureForEnvironment(
-          environment.id, featureKey, featureValue..valueBoolean = b);
+          environment.id, featureKey, featureValue..value = b);
 
       throw Exception("Was able to set feature value and should not be able to");
     } catch (e) {
@@ -99,7 +101,7 @@ class FeatureStepdefs {
           environmentId: e.id,
         );
       }
-      existing.featureValue!.valueBoolean =
+      existing.featureValue!.value =
           (env['value'] == 'null' ? null : ('true' == env['value']));
       values.add(existing.featureValue!);
     });
@@ -119,8 +121,8 @@ class FeatureStepdefs {
       } else {
         final shouldBe =
             (env['value'] == 'null' ? null : ('true' == env['value']));
-        assert(existing.featureValue!.valueBoolean == shouldBe,
-            'Expecting $shouldBe but found ${existing.featureValue!.valueBoolean}');
+        assert(existing.featureValue!.value == shouldBe,
+            'Expecting $shouldBe but found ${existing.featureValue!.value}');
       }
     });
   }
@@ -161,8 +163,8 @@ class FeatureStepdefs {
         .getFeaturesForEnvironment(env.id);
 
     for (var val in efv.featureValues) {
-      assert(val.valueBoolean == flagValue,
-          'Environment ${env.name} key ${val.key} is ${val.valueBoolean} and not ${flagValue}');
+      assert(val.value == flagValue,
+          'Environment ${env.name} key ${val.key} is ${val.value} and not ${flagValue}');
     }
   }
 
@@ -212,7 +214,7 @@ class FeatureStepdefs {
                 environment.id,
                 featureKey,
                 featureValue
-                  ..valueBoolean = !(featureValue.valueBoolean == true));
+                  ..value = !(featureValue.value == true));
         assert(allowed == "can",
             "we were able to change the feature value but should not have been able to.");
       }
@@ -288,7 +290,7 @@ class FeatureStepdefs {
 
     switch (actualType) {
       case FeatureValueType.BOOLEAN:
-        fv.valueBoolean = "true" == defaultValue;
+        fv.value = "true" == defaultValue;
         break;
       case FeatureValueType.STRING:
         fv.valueString = defaultValue;
