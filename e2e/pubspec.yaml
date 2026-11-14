@@ -9,7 +9,7 @@ environment:
 dependencies:
   dio: '^5.0.1'
   rxdart: ^0.28.0
-  ogurets: ^ 5.0.0
+  ogurets: ^5.0.0
   logging: ^1.0.1
   mrapi:
     path: app_mr_layer
