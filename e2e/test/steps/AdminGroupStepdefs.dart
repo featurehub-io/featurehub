@@ -11,7 +11,10 @@ class AdminGroupStepdefs {
   final UserCommon userCommon;
   final Shared shared;
 
-  AdminGroupStepdefs(this.common, this.shared, this.userCommon);
+  AdminGroupStepdefs(this.common, this.shared, this.userCommon)  {
+    this.common.shared = this.shared;
+    this.userCommon.shared = this.shared;
+  }
 
   @Then(r'there is a admin group called {string} in portfolio {string}')
   void thereIsAAdminGroupCalled(String groupName, String portfolioName) async {

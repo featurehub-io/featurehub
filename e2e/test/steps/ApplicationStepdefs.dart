@@ -10,7 +10,9 @@ class ApplicationStepdefs {
   final UserCommon userCommon;
   final Shared shared;
 
-  ApplicationStepdefs(this.userCommon, this.shared);
+  ApplicationStepdefs(this.userCommon, this.shared)  {
+    this.userCommon.shared = this.shared;
+  }
 
   @When(
       r'I ensure an application with the name {string} with description {string} in the portfolio {string} exists')

@@ -9,7 +9,9 @@ class UserStateStepdefs {
   final UserCommon userCommon;
   final Shared shared;
 
-  UserStateStepdefs(this.userCommon, this.shared);
+  UserStateStepdefs(this.userCommon, this.shared)  {
+    this.userCommon.shared = this.shared;
+  }
 
   List<String>? storedEnvironments;
 

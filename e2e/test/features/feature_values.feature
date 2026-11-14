@@ -1,7 +1,12 @@
+@createfeaturevalues
 Feature: Create feature values
 
+  Background:
+    Given the first superuser is used for authentication
+    And I have a new portfolio
+
+
   Scenario Outline: I can set feature values per environment if I am given permissions
-    Given I ensure a portfolio named "<portfolio>" with description "business application" exists
     And I have a fully registered person "Sebastian" with email "seb@mailinator.com" and password "password123"
     And the first superuser is used for authentication
     Given I ensure an application with the name "<appName>" with description "<appDesc>" in the portfolio "<portfolio>" exists
@@ -30,12 +35,11 @@ Feature: Create feature values
 
     Examples:
       | appName      | appDesc           | portfolio      | adminGroup                    | featureKey     | alias         | featureName    | link                           | envName | envDesc    | envName2 | envDesc2 | envName3 | envDesc3 | valueType |
-      | FeatureTest1 | FeatureTest1 Desc | Feature Values | Feature Values Administrators | FEATURE_SAMPLE | sssshhhh      | Sample feature | http://featurehub.dev          | prod    | production | test     | test env | dev      | dev env  | boolean   |
-      | FeatureTest1 | FeatureTest1 Desc | Feature Values | Feature Values Administrators | NEW_BUTTON     | little_secret | New button     | http://featurehub.dev/new      | prod    | production | test     | test env | dev      | dev env  | boolean   |
-      | FeatureTest1 | FeatureTest1 Desc | Feature Values | Feature Values Administrators | NEW_BOAT       | not_secret    | New boat       | http://featurehub.dev/new/boat | prod    | production | test     | test env | dev      | dev env  | boolean   |
+      | FeatureTest1 | FeatureTest1 Desc | - | <admin> | FEATURE_SAMPLE | sssshhhh      | Sample feature | http://featurehub.dev          | prod    | production | test     | test env | dev      | dev env  | boolean   |
+      | FeatureTest1 | FeatureTest1 Desc | - | <admin> | NEW_BUTTON     | little_secret | New button     | http://featurehub.dev/new      | prod    | production | test     | test env | dev      | dev env  | boolean   |
+      | FeatureTest1 | FeatureTest1 Desc | - | <admin> | NEW_BOAT       | not_secret    | New boat       | http://featurehub.dev/new/boat | prod    | production | test     | test env | dev      | dev env  | boolean   |
 
   Scenario Outline: I create a random portfolio, with a well known application then two environments, a feature and two environments and all feature flags should exist and be set to false
-    Given the first superuser is used for authentication
     And I have a randomly named portfolio with the prefix "feature_env_test"
     And I create an application with the name "<appName>"
     And I create an environment "<envName>"
@@ -59,7 +63,6 @@ Feature: Create feature values
       | nusella | dev1    | dev2     | test1    | test3    | FEATURE_1 | FEATURE_2 | FEATURE_3 | FEATURE_4 |
 
   Scenario: A portfolio admin with just FEATURE_EDIT permissions can set features
-    Given the first superuser is used for authentication
     And I have a randomly generated person with the start of name "Admin Portfolio Bob"
     And the first superuser is used for authentication
     And I have a randomly named portfolio with the prefix "feature_edit_test_pf"
@@ -80,8 +83,7 @@ Feature: Create feature values
 
 
   Scenario Outline: I can set feature values per environment where the user doesn't have access to some of them
-    Given I ensure a portfolio named "<portfolio>" with description "business application" exists
-    And the first superuser is used for authentication
+    Given the first superuser is used for authentication
     Given I ensure an application with the name "<appName>" with description "<appDesc>" in the portfolio "<portfolio>" exists
     And I ensure that an environment "<envName>" with description "<envDesc>" exists in the app "<appName>" in the portfolio "<portfolio>"
     And I ensure that an environment "<envName2>" with description "<envDesc2>" exists in the app "<appName>" in the portfolio "<portfolio>"
@@ -109,10 +111,10 @@ Feature: Create feature values
 
     Examples:
       | appName      | appDesc           | portfolio          | adminGroup                        | group   | featureKey     | alias         | featureName    | link                           | envName | envDesc    | envName2 | envDesc2 | envName3 | envDesc3 | valueType |
-      | FeatureTest1 | FeatureTest1 Desc | Feature restricted | Feature restricted Administrators | testers | FEATURE_SAMPLE | sssshhhh      | Sample feature | http://featurehub.dev          | prod    | production | test     | test env | dev      | dev env  | boolean   |
-      | FeatureTest1 | FeatureTest1 Desc | Feature restricted | Feature restricted Administrators | testers | NEW_BUTTON     | little_secret | New button     | http://featurehub.dev/new      | prod    | production | test     | test env | dev      | dev env  | boolean   |
-      | FeatureTest1 | FeatureTest1 Desc | Feature restricted | Feature restricted Administrators | testers | NEW_CAR        | not_secret    | New car        | http://featurehub.dev/new/boat | prod    | production | test     | test env | dev      | dev env  | string   |
-      | FeatureTest1 | FeatureTest1 Desc | Feature restricted | Feature restricted Administrators | testers | NEW_HOUSE      | not_secret    | New house      | http://featurehub.dev/new/boat | prod    | production | test     | test env | dev      | dev env  | string   |
+      | FeatureTest1 | FeatureTest1 Desc | - | <admin> | testers | FEATURE_SAMPLE | sssshhhh      | Sample feature | http://featurehub.dev          | prod    | production | test     | test env | dev      | dev env  | boolean   |
+      | FeatureTest1 | FeatureTest1 Desc | - | <admin> | testers | NEW_BUTTON     | little_secret | New button     | http://featurehub.dev/new      | prod    | production | test     | test env | dev      | dev env  | boolean   |
+      | FeatureTest1 | FeatureTest1 Desc | - | <admin> | testers | NEW_CAR        | not_secret    | New car        | http://featurehub.dev/new/boat | prod    | production | test     | test env | dev      | dev env  | string   |
+      | FeatureTest1 | FeatureTest1 Desc | - | <admin> | testers | NEW_HOUSE      | not_secret    | New house      | http://featurehub.dev/new/boat | prod    | production | test     | test env | dev      | dev env  | string   |
 
     # this scenario breaks the rules and depends on the data from above
     Scenario: I get the feature values from an application and set them and check they are correct
@@ -129,8 +131,8 @@ Feature: Create feature values
         | prod    | true |
 
 
+      @userwithlockperm
     Scenario Outline: A user with lock permission cannot unlock a feature
-      Given I ensure a portfolio named "<portfolio>" with description "business application" exists
       And I have a fully registered person "Martin" with email "martin@mailinator.com" and password "password123"
       And the first superuser is used for authentication
       Given I ensure an application with the name "<appName>" with description "<appDesc>" in the portfolio "<portfolio>" exists
@@ -139,6 +141,7 @@ Feature: Create feature values
       When I create the feature with a key "<featureKey>" and alias "<alias>" and name "<featureName>" and link "<link>" and type "boolean"
       When I ensure a portfolio "<portfolio>" has created a group called "<group>"
       When I add the user "martin@mailinator.com" to the group "<group>" in the portfolio "<portfolio>"
+      And the first superuser is used for authentication
       And I ensure only permissions "NONE" are set on the group "<group>" for the env "<envName>" for app "<appName>" for portfolio "<portfolio>"
       When I can login as user "martin@mailinator.com" with password "password123"
       Then I cannot read the feature flag "<featureKey>"
@@ -191,8 +194,8 @@ Feature: Create feature values
 
 
       Examples:
-        | appName           | appDesc                | portfolio                | group   | featureKey     | alias    | featureName    | link                  | envName | envDesc    | envName2 | envDesc2 | envName3 | envDesc3 | valueType |
-        | ChangingPermsTest | ChangingPermsTest Desc | Features very restricted | testers | FEATURE_SAMPLE | sssshhhh | Sample feature | http://featurehub.dev | prod    | production | test     | test env | dev      | dev env  | boolean   |
+        | appName           | appDesc                | portfolio | group   | featureKey     | alias    | featureName    | link                  | envName | envDesc    | envName2 | envDesc2 | envName3 | envDesc3 | valueType |
+        | ChangingPermsTest | ChangingPermsTest Desc | -         | testers | FEATURE_SAMPLE | sssshhhh | Sample feature | http://featurehub.dev | prod    | production | test     | test env | dev      | dev env  | boolean   |
 
 
 
