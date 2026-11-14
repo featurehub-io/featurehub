@@ -1,11 +1,19 @@
 import {Given, Then, When} from "@cucumber/cucumber";
-import {CreatePortfolioRolloutStrategy, FeatureHistoryOrder, RolloutStrategyInstance} from "../apis/mr-service";
+import {CreatePortfolioRolloutStrategy, PortfolioRolloutStrategy, RolloutStrategyInstance} from "../apis/mr-service";
 import {SdkWorld} from "../support/world";
 import {expect} from "chai";
 import {compareStrategies, convertValue, extractRolloutStrategyFromDataTable} from "../support/utils";
 import waitForExpect from "wait-for-expect";
 import {FeatureStateBaseHolder, Readyness} from "featurehub-javascript-node-sdk";
-import {findHistory} from "./feature-history";
+import {
+  attachedPercentageOverride,
+  expectHistoryAttributes,
+  expectHistoryPercentage,
+  findHistory,
+  findStrategyInLatestHistory,
+  rulesFromDataTable,
+  validateFeatureHistory
+} from "./feature-history";
 import DataTable from "@cucumber/cucumber/lib/models/data_table";
 import {actualPercentage} from "./strategies";
 
@@ -49,6 +57,13 @@ async function findStrategy(world: SdkWorld, name: string, includeUsage = false)
   return data.data.items[0];
 }
 
+async function portfolioStrategyDetails(world: SdkWorld, name: string): Promise<{uniqueCode: string, definition: PortfolioRolloutStrategy}> {
+  const strategy = await findStrategy(world, name);
+  const details = await world.currentUser.portfolioStrategyApi.getPortfolioStrategy(world.portfolio.id, strategy.strategy.id);
+  expect(details.status).to.eq(200);
+  return { uniqueCode: strategy.uniqueCode, definition: details.data };
+}
+
 async function attachPortfolioStrategyToFeatureValue(strategyName: string, value: string|undefined, world: SdkWorld, percentage?: number) {
   const strategy = await findStrategy(world, strategyName);
 
@@ -78,30 +93,34 @@ When("I attach portfolio strategy {string} to the current environment feature va
   await attachPortfolioStrategyToFeatureValue(strategyName, value, world, percentage);
 });
 
-export async function validateFeatureHistory(world: SdkWorld, uniqueCode: string, strategyName: string, value: string) {
-  const history =
-    await world.featureHistoryApi.listFeatureHistory(world.application.id, [world.feature.key],
-      [], [], [world.environment.id], 10, 0, FeatureHistoryOrder.Desc);
-
-  expect(history.status).to.eq(200);
-  expect(history.data.items.length).to.be.gt(0);
-  expect(history.data.items[0].envId).to.eq(world.environment.id);
-  expect(history.data.items[0].history.length).to.be.gt(0);
-  let rolloutStrategies = history.data.items[0].history[0].rolloutStrategies;
-  expect(rolloutStrategies.length).to.be.gt(0);
-
-  const found = rolloutStrategies.find(rs => rs.id === uniqueCode)
-  expect(found).to.not.be.undefined;
-  expect(found.name).to.eq(strategyName);
-  expect(found.value).to.eq(convertValue(value, world.feature.valueType));
-}
-
 Then('I expect the portfolio strategy {string} to be attached to the feature history with the value set to {string}', async function (strategyName: string, value: string) {
   const world = this as SdkWorld;
 
-  const strategy = await findStrategy(world, strategyName);
+  const {uniqueCode, definition} = await portfolioStrategyDetails(world, strategyName);
+  const percentageOverride = await attachedPercentageOverride(world, definition.id, true);
 
-  await validateFeatureHistory(world, strategy.uniqueCode, strategy.strategy.name, value);
+  await validateFeatureHistory(world, uniqueCode, definition, value, percentageOverride);
+});
+
+Then("the feature history for portfolio strategy {string} has the rules", async function (strategyName: string, table: DataTable) {
+  const world = this as SdkWorld;
+
+  const {uniqueCode} = await portfolioStrategyDetails(world, strategyName);
+  expectHistoryAttributes(await findStrategyInLatestHistory(world, uniqueCode), rulesFromDataTable(table));
+});
+
+Then("the feature history for portfolio strategy {string} has percentage {int}", async function (strategyName: string, percentage: number) {
+  const world = this as SdkWorld;
+
+  const {uniqueCode} = await portfolioStrategyDetails(world, strategyName);
+  expectHistoryPercentage(await findStrategyInLatestHistory(world, uniqueCode), actualPercentage(percentage));
+});
+
+Then("the feature history for portfolio strategy {string} has no percentage", async function (strategyName: string) {
+  const world = this as SdkWorld;
+
+  const {uniqueCode} = await portfolioStrategyDetails(world, strategyName);
+  expectHistoryPercentage(await findStrategyInLatestHistory(world, uniqueCode), undefined);
 });
 
 Then('the portfolio strategy {string} should be used in {int} environment with {int} feature', async function(strategyName: string, envCount: number, featureCount: number) {
@@ -183,6 +202,6 @@ When('I expect the portfolio strategy {string} to be removed from the feature hi
   const strategy = await findStrategy(world, strategyName);
 
   const historyItem = await findHistory(world);
-  const currentStatus = historyItem.history[historyItem.history.length-1];
+  const currentStatus = historyItem.history[0];
   expect(currentStatus.rolloutStrategies.find(s => s.id === strategy.uniqueCode)).to.be.undefined;
 });
