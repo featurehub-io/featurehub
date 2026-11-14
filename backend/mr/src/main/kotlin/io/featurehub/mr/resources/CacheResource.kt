@@ -14,6 +14,8 @@ class CacheResource @Inject constructor(private val authManager: AuthManagerServ
     cacheRefreshRequest: CacheRefreshRequest,
     securityContext: SecurityContext
   ): CacheRefreshResponse {
+    // in open source the organisation admin is the superuser. This API must never be exposed in a multi-tenant
+    // deployment, as refreshEntireDatabase() spans every organisation.
     if (!authManager.isOrgAdmin(authManager.from(securityContext))) {
       throw ForbiddenException()
     }
@@ -26,7 +28,7 @@ class CacheResource @Inject constructor(private val authManager: AuthManagerServ
       cacheRefresherApi.refreshApplications(it)
     }
 
-    cacheRefreshRequest.allTheThings?.let {
+    if (cacheRefreshRequest.allTheThings == true) {
       cacheRefresherApi.refreshEntireDatabase()
     }
 

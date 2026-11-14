@@ -42,6 +42,9 @@ class Application {
       throw RuntimeException("There is no configured maintenance window")
     }
 
+    // read in  the intercept prefixes and tell the common-web layer that the jersey prefixes match these intercepts
+    AbortForMaintenanceFilter.setJerseyPrefixes()
+
     // register our resources, try and tag them as singleton as they are instantiated faster
     val config = ResourceConfig(
       CorsFilter::class.java,

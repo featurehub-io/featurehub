@@ -84,6 +84,19 @@ Then('I write out a feature-examples config file', function () {
   fs.writeFileSync((process.env.WRITE_CONFIG || '.') + '/example-test.sh', buf);
 });
 
+Then('I write out a redis-fallback config file', function () {
+  const world = this as SdkWorld;
+  // read by the Redis fallback check in the e2e build (fh-github-watcher), see features/redis-fallback.feature
+  const config = {
+    environmentId: world.environment.id,
+    serverApiKey: world.serviceAccountPermission.sdkUrlServerEval,
+    clientApiKey: world.serviceAccountPermission.sdkUrlClientEval,
+    featureKey: world.feature.key,
+    expectedValue: true,
+  };
+  fs.writeFileSync((process.env.WRITE_CONFIG || '.') + '/redis-fallback.json', JSON.stringify(config, null, 2));
+});
+
 Then(/^there are (\d+) features$/, async function (numberOfFeatures) {
   const world = this as SdkWorld;
 

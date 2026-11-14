@@ -2,6 +2,9 @@ package io.featurehub.db.publish
 
 import cd.connect.app.config.ConfigKey
 import cd.connect.app.config.DeclaredConfigResolver
+import io.ebean.DB
+import io.ebean.Transaction
+import io.ebean.TransactionCallbackAdapter
 import io.ebean.datasource.DataSourceConfig
 import io.featurehub.dacha.model.*
 import io.featurehub.db.api.CacheRefresherApi
@@ -10,6 +13,8 @@ import io.featurehub.db.model.query.*
 import io.featurehub.db.services.Conversions
 import io.featurehub.mr.events.common.CacheBroadcast
 import io.featurehub.mr.events.common.CacheSource
+import io.featurehub.mr.events.common.CacheWalker
+import io.featurehub.mr.events.common.SelfSyncingCacheBroadcast
 import io.featurehub.mr.events.dacha2.CacheApi
 import io.featurehub.mr.model.FeatureValueType
 import io.featurehub.mr.model.RolloutStrategy
@@ -26,29 +31,56 @@ import java.util.stream.Collectors
 
 
 /**
- * This allows us to have multiple active broadcasters
+ * This allows us to have multiple active broadcasters.
+ *
+ * Every caller is already on the cache executor, so broadcasts are delivered on the calling thread, in order:
+ * - self-syncing broadcasters (e.g. Redis) only schedule their own work and never block, so are always called inline.
+ * - if only one other broadcaster remains (the usual Dacha2 cloud events case) it is also called inline, so adding
+ *   Redis does not change the order or threading of what Dacha2 receives.
+ * - only with several blocking broadcasters are they fanned out to the executor, so one slow one cannot hold up
+ *   the rest.
+ *
+ * A failure in one broadcaster never stops the others.
  */
 internal class CacheBroadcastProxy(
-  private val broadcasters: List<CacheBroadcast>,
+  broadcasters: List<CacheBroadcast>,
   private val executor: ExecutorService
 ) : CacheBroadcast {
+  private val inline: List<CacheBroadcast>
+  private val fanOut: List<CacheBroadcast>
 
-  override fun publishEnvironment(eci: PublishEnvironment) {
-    broadcasters.forEach { cb ->
-      executor.submit { cb.publishEnvironment(eci) }
+  init {
+    val (selfSyncing, others) = broadcasters.partition { it is SelfSyncingCacheBroadcast }
+    if (others.size <= 1) {
+      inline = others + selfSyncing
+      fanOut = listOf()
+    } else {
+      inline = selfSyncing
+      fanOut = others
     }
   }
 
-  override fun publishServiceAccount(saci: PublishServiceAccount) {
-    broadcasters.forEach { cb ->
-      executor.submit { cb.publishServiceAccount(saci) }
+  private fun deliver(action: (CacheBroadcast) -> Unit) {
+    fanOut.forEach { cb -> executor.submit { safely(cb, action) } }
+    inline.forEach { cb -> safely(cb, action) }
+  }
+
+  private fun safely(cb: CacheBroadcast, action: (CacheBroadcast) -> Unit) {
+    try {
+      action(cb)
+    } catch (e: Exception) {
+      log.error("cache broadcaster {} failed", cb.javaClass.name, e)
     }
   }
 
-  override fun publishFeatures(features: PublishFeatureValues) {
-    broadcasters.forEach { cb ->
-      executor.submit { cb.publishFeatures(features) }
-    }
+  override fun publishEnvironment(eci: PublishEnvironment) = deliver { it.publishEnvironment(eci) }
+
+  override fun publishServiceAccount(saci: PublishServiceAccount) = deliver { it.publishServiceAccount(saci) }
+
+  override fun publishFeatures(features: PublishFeatureValues) = deliver { it.publishFeatures(features) }
+
+  companion object {
+    private val log = LoggerFactory.getLogger(CacheBroadcastProxy::class.java)
   }
 }
 
@@ -60,12 +92,15 @@ open class DbCacheSource @Inject constructor(
   private val featureModelWalker: FeatureModelWalker,
   private val commonCacheGenerator: CommonCacheGenerator,
   executorSupplier: ExecutorSupplier
-) : CacheSource, CacheApi, CacheRefresherApi {
+) : CacheSource, CacheApi, CacheRefresherApi, CacheWalker {
   private val executor: ExecutorService
 
   @ConfigKey("cache.pool-size")
   private var cachePoolSize: Int?
   private var cacheBroadcast: CacheBroadcast
+  // used when publishing *everything* - excludes broadcasters that manage their own full publish (e.g. Redis)
+  private var fullPublishBroadcast: CacheBroadcast
+  private var selfSyncingBroadcasters: List<SelfSyncingCacheBroadcast> = listOf()
 
   val featureGroupsEnabled: Boolean
 
@@ -83,24 +118,118 @@ open class DbCacheSource @Inject constructor(
     log.info("Using maximum of {} connections to service request from Dacha", cachePoolSize)
     executor = executorSupplier.executorService(cachePoolSize!!)
     cacheBroadcast = CacheBroadcastProxy(emptyList(), executor)
+    fullPublishBroadcast = cacheBroadcast
   }
 
   @PostConstruct
-  fun publishInit() = if (cacheBroadcasters.size == 1) {
-    cacheBroadcast = cacheBroadcasters.first()
-  } else {
-    cacheBroadcast = CacheBroadcastProxy(cacheBroadcasters.toList(), executor)
+  fun publishInit() {
+    val all = cacheBroadcasters.toList()
+    cacheBroadcast = proxyFor(all)
+
+    selfSyncingBroadcasters = all.filterIsInstance<SelfSyncingCacheBroadcast>()
+    fullPublishBroadcast = proxyFor(all.filter { it !is SelfSyncingCacheBroadcast })
+  }
+
+  private fun proxyFor(broadcasters: List<CacheBroadcast>): CacheBroadcast =
+    if (broadcasters.size == 1) broadcasters.first() else CacheBroadcastProxy(broadcasters, executor)
+
+  /**
+   * Change events are raised by the service layer, frequently inside an open transaction (e.g. @Transactional updates
+   * or a feature group republishing all of its values). Every publish re-reads the database on another thread, so it
+   * must not start until that transaction has committed, otherwise it can read (and publish to Dacha2 and Redis) the
+   * pre-commit state. If the transaction rolls back nothing is published, as nothing changed.
+   *
+   * Known limitation (deliberately not guarded against): the publish is bound to whatever transaction is current on
+   * this thread when the publishX call is made, which is assumed to be the one that carried the change. If a caller
+   * commits a change in one transaction and then calls publishX while a *different* transaction is open on the same
+   * thread, the publish rides on that other transaction - if it rolls back, the committed change is not published
+   * until the next full sync (Redis) or cache refresh. No caller does this today; keep it that way.
+   */
+  private fun afterCommit(task: () -> Unit) {
+    // declared nullable: ebean marks it non-null, but it returns null when there is no current transaction
+    val txn: Transaction? = DB.currentTransaction()
+
+    if (txn != null && txn.isActive) {
+      txn.register(object : TransactionCallbackAdapter() {
+        override fun postCommit() {
+          submit(task)
+        }
+      })
+    } else {
+      submit(task)
+    }
+  }
+
+  private fun submit(task: () -> Unit) {
+    executor.submit {
+      try {
+        task()
+      } catch (e: Exception) {
+        log.error("Failed to publish", e)
+      }
+    }
   }
 
   override fun publishObjectsAssociatedWithCache() {
-    val saFuture = executor.submit { publishToCacheServiceAccounts(cacheBroadcast) }
-    val envFuture = executor.submit { publishCacheEnvironments(cacheBroadcast) }
+    publishObjectsAssociatedWithCache(true)
+  }
+
+  override fun publishToStreamingCaches() {
+    publishObjectsAssociatedWithCache(false)
+  }
+
+  /**
+   * Publishes everything to the streaming caches (e.g. Dacha2 via cloud events). If requestSelfSyncing is false,
+   * self-syncing broadcasters (Redis) are not asked to do their own full sync - for callers that run it themselves.
+   */
+  private fun publishObjectsAssociatedWithCache(requestSelfSyncing: Boolean) {
+    // self-syncing broadcasters (e.g. Redis) do their own full walk + sweep in the background
+    if (requestSelfSyncing) selfSyncingBroadcasters.forEach {
+      try {
+        it.fullPublishRequested()
+      } catch (e: Exception) {
+        log.error("Failed to request full publish from {}", it.javaClass.name, e)
+      }
+    }
+
+    val saFuture = executor.submit { publishToCacheServiceAccounts(fullPublishBroadcast) }
+    val envFuture = executor.submit { publishCacheEnvironments(fullPublishBroadcast) }
     try {
       saFuture.get()
       envFuture.get()
     } catch (e: Exception) {
       log.error("Failed to publish cache.", e)
     }
+  }
+
+  override fun publishableEnvironmentIds(): List<UUID> {
+    return publishableEnvironments()
+      .select(QDbEnvironment.Alias.id)
+      .findList().map { it.id }
+  }
+
+  override fun publishableServiceAccountIds(): List<UUID> {
+    return allServiceAccounts().select(QDbServiceAccount.Alias.id).findList().map { it.id }
+  }
+
+  override fun publishableEnvironment(id: UUID): PublishEnvironment? {
+    return publishableEnvironments().id.eq(id)
+      .select(
+        QDbEnvironment.Alias.id,
+        QDbEnvironment.Alias.version,
+        QDbEnvironment.Alias.userEnvironmentInfo,
+        QDbEnvironment.Alias.managementEnvironmentInfo,
+        QDbEnvironment.Alias.webhookEnvironmentInfo
+      ).findOne()?.let { fillEnvironmentCacheItem(0, it, PublishAction.CREATE) }
+  }
+
+  override fun publishableServiceAccount(id: UUID): CacheServiceAccount? {
+    return allServiceAccounts().id.eq(id).select(
+      QDbServiceAccount.Alias.id,
+      QDbServiceAccount.Alias.version,
+      QDbServiceAccount.Alias.apiKeyClientEval,
+      QDbServiceAccount.Alias.apiKeyServerEval,
+    ).findOne()?.let { fillServiceAccount(it) }
   }
 
   private fun publishToCacheServiceAccounts(cacheBroadcast: CacheBroadcast) {
@@ -121,8 +250,12 @@ open class DbCacheSource @Inject constructor(
     }
   }
 
+  /**
+   * only finds publishable service accounts - this is what dacha2 asks for when it does not have a service account
+   * cached, so an unpublished or archived one (or one in an archived organisation) must not come back
+   */
   private fun findServiceAccount(key: String): DbServiceAccount? {
-    var finder = QDbServiceAccount()
+    var finder = allServiceAccounts()
 
     finder = if (key.contains('*')) {
       finder.apiKeyClientEval.eq(key)
@@ -169,10 +302,25 @@ open class DbCacheSource @Inject constructor(
     return serviceAccount
   }
 
+  /**
+   * The single definition of a publishable service account: not archived, not unpublished, and in an organisation
+   * that is not archived. Every query that decides which service accounts reach a cache starts here.
+   */
   private fun allServiceAccounts(): QDbServiceAccount {
     return QDbServiceAccount()
       .whenArchived.isNull
+      .whenUnpublished.isNull
       .portfolio.organization.whenArchived.isNull
+  }
+
+  /**
+   * The single definition of a publishable environment: not archived, not unpublished, and in an organisation that
+   * is not archived. Every query that decides which environments reach a cache starts here.
+   */
+  private fun publishableEnvironments(): QDbEnvironment {
+    return QDbEnvironment()
+      .whenArchived.isNull.whenUnpublished.isNull
+      .parentApplication.portfolio.organization.whenArchived.isNull
   }
 
   private fun publishCacheEnvironments(cacheBroadcast: CacheBroadcast) {
@@ -287,17 +435,6 @@ open class DbCacheSource @Inject constructor(
       .featureProperties(featureModelWalker.walk(feature, dfv, toCacheFeature, toCacheFeatureValue, featureGroupRolloutStrategies))
   }
 
-  // we should select out only the details we need to publish
-  private fun findEnvironment(id: UUID): DbEnvironment? {
-    return QDbEnvironment().id.eq(id).select(
-      QDbEnvironment.Alias.id,
-      QDbEnvironment.Alias.version,
-      QDbEnvironment.Alias.userEnvironmentInfo,
-      QDbEnvironment.Alias.managementEnvironmentInfo,
-      QDbEnvironment.Alias.webhookEnvironmentInfo
-    ).findOne()
-  }
-
   private fun toEnvironment(env: DbEnvironment): CacheEnvironment {
     // match these fields with the finder environmentsByCacheName, so you don't get fields you don't need
     val ce = CacheEnvironment()
@@ -360,14 +497,13 @@ open class DbCacheSource @Inject constructor(
   }
 
   private fun allEnvironments(wantCount: Boolean): QDbEnvironment {
-    val envQuery = QDbEnvironment()
-      .whenArchived.isNull.whenUnpublished.isNull
+    val envQuery = publishableEnvironments()
       .environmentFeatures.feature.fetch().parentApplication.fetch(
         QDbApplication.Alias.id
       ).parentApplication.portfolio.fetch(QDbPortfolio.Alias.id)
       .parentApplication.portfolio.organization.fetch(
         QDbOrganization.Alias.id
-      ).parentApplication.portfolio.organization.whenArchived.isNull
+      )
 
     return if (wantCount) {
       envQuery.select(
@@ -386,13 +522,7 @@ open class DbCacheSource @Inject constructor(
   }
 
   override fun publishFeatureChange(featureValue: DbFeatureValue) {
-    executor.submit {
-      try {
-        innerPublishFeatureValueChange(featureValue, cacheBroadcast)
-      } catch (e: Exception) {
-        log.error("Failed to publish", e)
-      }
-    }
+    afterCommit { innerPublishFeatureValueChange(featureValue, cacheBroadcast) }
   }
 
   private fun innerPublishFeatureValueChange(
@@ -423,7 +553,7 @@ open class DbCacheSource @Inject constructor(
 
 
   override fun deleteFeatureChange(feature: DbApplicationFeature, environmentId: UUID) {
-    executor.submit {
+    afterCommit {
       cacheBroadcast.publishFeatures(
         PublishFeatureValues().addFeaturesItem(
           PublishFeatureValue()
@@ -440,7 +570,7 @@ open class DbCacheSource @Inject constructor(
 
   // this call comes in from the service layer
   override fun updateServiceAccount(serviceAccount: DbServiceAccount, publishAction: PublishAction) {
-    executor.submit { internalUpdateServiceAccount(serviceAccount, publishAction) }
+    afterCommit { internalUpdateServiceAccount(serviceAccount, publishAction) }
   }
 
   private fun internalUpdateServiceAccount(serviceAccount: DbServiceAccount, publishAction: PublishAction) {
@@ -459,7 +589,7 @@ open class DbCacheSource @Inject constructor(
 
 
   override fun deleteServiceAccount(id: UUID) {
-    executor.submit { internalDeleteServiceAccount(id) }
+    afterCommit { internalDeleteServiceAccount(id) }
   }
 
   private fun internalDeleteServiceAccount(id: UUID) {
@@ -479,7 +609,7 @@ open class DbCacheSource @Inject constructor(
   }
 
   override fun updateEnvironment(environment: DbEnvironment, publishAction: PublishAction) {
-    executor.submit { internalUpdateEnvironment(environment, publishAction) }
+    afterCommit { internalUpdateEnvironment(environment, publishAction) }
   }
 
   private fun internalUpdateEnvironment(environment: DbEnvironment?, publishAction: PublishAction) {
@@ -495,6 +625,10 @@ open class DbCacheSource @Inject constructor(
   }
 
   override fun deleteEnvironment(id: UUID) {
+    afterCommit { internalDeleteEnvironment(id) }
+  }
+
+  private fun internalDeleteEnvironment(id: UUID) {
     log.debug("deleting environment: `{}`", id)
     val randomUUID = UUID.randomUUID() // we use this to fill in not-nullable fields
     cacheBroadcast.publishEnvironment(
@@ -565,21 +699,23 @@ open class DbCacheSource @Inject constructor(
   }
 
   override fun publishFeatureChange(appFeature: DbApplicationFeature, action: PublishAction) {
-    executor.submit { publishAppLevelFeatureChange(appFeature, action, null) } // background as not going away
+    afterCommit { publishAppLevelFeatureChange(appFeature, action, null) }
   }
 
   override fun publishFeatureChange(appFeature: DbApplicationFeature, update: PublishAction, featureKey: String) {
-    executor.submit { publishAppLevelFeatureChange(appFeature, update, featureKey) } // background as not going away
+    afterCommit { publishAppLevelFeatureChange(appFeature, update, featureKey) }
   }
 
   companion object {
     private val log = LoggerFactory.getLogger(DbCacheSource::class.java)
   }
 
+  /**
+   * dacha2 asks for this when it does not have the environment cached, so it must only return publishable
+   * environments - otherwise an unpublished or archived one (or one in an archived organisation) comes straight back
+   */
   override fun getEnvironment(id: UUID): PublishEnvironment? {
-    return findEnvironment(id)?.let {
-      fillEnvironmentCacheItem(0, it, PublishAction.CREATE)
-    }
+    return publishableEnvironment(id)
   }
 
   override fun getServiceAccount(apiKey: String): CacheServiceAccount? {

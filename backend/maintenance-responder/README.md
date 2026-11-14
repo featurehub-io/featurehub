@@ -56,7 +56,7 @@ You can set any configuration property as an environment variable with the same 
 | `maintenance.start` | **Required.** Start of the maintenance window, as an ISO-8601 instant (for example `2026-11-08T01:00:00Z`). |
 | `maintenance.end` | **Required.** End of the maintenance window, as an ISO-8601 instant. Used for the `Retry-After` header. |
 | `maintenance.message` | **Required.** Message returned in the 503 body and in the `X-Maintenance-Message` header. |
-| `interceptPrefixes` | Comma-separated path prefixes that get a 503 (default `mr-api,saml,oauth`). |
+| `interceptPrefixes` | Comma-separated path prefixes that get a 503 (default `mr-api,saml,oauth,dacha2`). |
 | `featurehub.url-path` | Context path, if your MR is served under a path other than `/`. |
 
 You can also use the general server options in

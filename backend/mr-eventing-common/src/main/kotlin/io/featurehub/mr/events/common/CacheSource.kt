@@ -11,6 +11,14 @@ interface CacheSource {
    */
   fun publishObjectsAssociatedWithCache()
 
+  /**
+   * As [publishObjectsAssociatedWithCache], but only to the streaming caches (e.g. Dacha2 via cloud events): caches
+   * that manage their own full publish (e.g. Redis) are not asked to - for callers that run that themselves.
+   */
+  fun publishToStreamingCaches() {
+    publishObjectsAssociatedWithCache()
+  }
+
   fun deleteFeatureChange(feature: DbApplicationFeature, environmentId: UUID)
 
   /**

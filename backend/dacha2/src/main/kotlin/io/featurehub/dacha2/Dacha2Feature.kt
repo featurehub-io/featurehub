@@ -59,6 +59,7 @@ class Dacha2Feature : Feature {
     })
 
     LifecycleListeners.starter(Dacha2CloudEventListenerImpl::class.java, context)
+    LifecycleListeners.starter(io.featurehub.dacha2.client.Dacha2RedisRecovery::class.java, context)
 
     return true
   }

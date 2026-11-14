@@ -12,6 +12,8 @@ import io.featurehub.events.CloudEventsFeature
 import io.featurehub.messaging.MessagingPublishingFeature
 import io.featurehub.mr.events.common.CacheBroadcast
 import io.featurehub.mr.events.common.CacheSource
+import io.featurehub.mr.events.common.CacheWalker
+import io.featurehub.mr.events.redis.RedisCacheFeature
 import io.featurehub.mr.events.common.CloudEventCacheBroadcaster
 import io.featurehub.mr.events.common.listeners.FeatureUpdateListener
 import io.featurehub.mr.events.dacha2.CacheApi
@@ -31,6 +33,14 @@ class EventingFeature : Feature {
 
     context.register(MessagingPublishingFeature::class.java)
 
+    if (amPublishing) {
+      // only does anything if redis.url is configured
+      context.register(RedisCacheFeature::class.java)
+    } else if (io.featurehub.redis.RedisConfig.enabled()) {
+      org.slf4j.LoggerFactory.getLogger(EventingFeature::class.java)
+        .warn("redis.url is configured but cloud event publishing is disabled, Redis will not be updated")
+    }
+
     context.register(object : AbstractBinder() {
       override fun configure() {
         bind(FeatureUpdateListenerImpl::class.java).to(FeatureUpdateListener::class.java).`in`(Immediate::class.java)
@@ -42,7 +52,7 @@ class EventingFeature : Feature {
           // the broadcaster will determine if dacha2 is enabled and not publish to that channel if not
           bind(CloudEventCacheBroadcaster::class.java).to(CacheBroadcast::class.java).`in`(Singleton::class.java)
           bind(DbCacheSource::class.java).to(CacheSource::class.java).to(CacheApi::class.java)
-            .to(CacheRefresherApi::class.java)
+            .to(CacheRefresherApi::class.java).to(CacheWalker::class.java)
             .`in`(
               Singleton::class.java
             )

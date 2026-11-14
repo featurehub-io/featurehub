@@ -5,7 +5,8 @@ a dedicated *Maintenance Responder* image that holds the Admin app in maintenanc
 (MR) is shut down, for example during a database upgrade.
 
 Maintenance windows only affect the Admin app and the MR API. SDK traffic through Edge keeps working, so your
-applications continue to receive features throughout.
+applications continue to receive features throughout. Edge can also be told to refuse feature *updates* for the
+duration, see <<_sdk_feature_updates,SDK feature updates during a window>>.
 
 [#_configuring_a_maintenance_window]
 == Configuring a maintenance window
@@ -43,9 +44,12 @@ NOTE: Announcing a window does not stop the server accepting API calls. A user w
 xref:admin-development-kit.adoc[Admin SDK] calling the API, can still make changes during the window. To make sure
 nothing writes to the database, route the Admin traffic to the Maintenance Responder (below).
 
-It is recommended that you use the Publish All to Cache feature of the System Configuration setting before shutting
-your Management Repositories down so you won't suffer an outage. Most modern container scheduling frameworks (like
-Karpenter) allow you to annotate your Dacha2 containers to prevent them from moving during this process. 
+It is recommended that you republish everything to the caches before shutting your Management Repositories down so
+you won't suffer an outage. Do it with the <<_maintenance_publish_all,maintenance publish-all endpoint>> after the
+Admin traffic has been routed to the Maintenance Responder, so nothing can change in between. Most modern container scheduling frameworks (like
+Karpenter) allow you to annotate your Dacha2 containers to prevent them from moving during this process. If you
+configure the <<_redis_fallback,Redis fallback>>, Dacha2 can also serve environments it has not cached yet, and
+Dacha2 pods can be moved or restarted during the window.
 
 [#_maintenance_responder]
 == The Maintenance Responder
@@ -54,7 +58,7 @@ The Maintenance Responder (Docker image `featurehub/maintenance-responder`) is a
 during maintenance. It:
 
 - serves the Admin web app as normal, so users get a maintenance page instead of a connection error
-- answers every API request whose path starts with `mr-api`, `saml` or `oauth` with *HTTP 503 Service Unavailable*,
+- answers every API request whose path starts with `mr-api`, `saml`, `oauth` or `dacha2` with *HTTP 503 Service Unavailable*,
 with the maintenance message as the body and a `Retry-After` header set to `maintenance.end`. When the Admin app
 receives this, it switches to the maintenance page.
 - sends the `X-Maintenance-*` headers described above
@@ -70,7 +74,7 @@ The Maintenance Responder *will not start* unless all three `maintenance.*` prop
 
 - `maintenance.start`, `maintenance.end`, `maintenance.message` - as described
 <<_configuring_a_maintenance_window,above>>. Use the same values as on MR.
-- `interceptPrefixes` - a comma-separated list of path prefixes that get a 503 (default `mr-api,saml,oauth`).
+- `interceptPrefixes` - a comma-separated list of path prefixes that get a 503 (default `mr-api,saml,oauth,dacha2`).
 - `server.port` - the HTTP port (default `8553`). Many installs set this to match MR, for example `8085`.
 - `monitor.port` - the metrics and health check port (default `8701`).
 - `featurehub.url-path` - set this if FeatureHub is served under a context path other than `/`, the same as on MR.
@@ -100,13 +104,264 @@ maintenance notice.
 . *Deploy the Maintenance Responder* with the same `maintenance.*` values and wait until it is ready.
 . *Switch the routes.* When the window starts, change your ingress or load balancer so that all Admin traffic goes to the
 Maintenance Responder instead of MR. Keep SDK traffic (Edge, usually under `/features`) where it is.
-. *Shut down MR* once no traffic reaches it, then carry out the database work.
+. *Block feature updates through Edge* by creating the <<_edge_update_block,update block file>> on every Edge, and
+wait until each one logs `feature updates are now BLOCKED`.
+. *Publish everything to the caches* with the <<_maintenance_publish_all,maintenance publish-all endpoint>>. Admin
+changes can no longer reach MR at this point, so the caches and (with the <<_redis_fallback,Redis fallback>>) Redis
+end up exactly matching the database. The call returns straight away and the outcome is in MR's log.
+. *Shut down MR* once no traffic reaches it, then carry out the database work. With the Redis fallback, MR writes any
+pending Redis updates before it exits.
 . *Start MR* again (removing the `maintenance.*` properties, or leaving them until the end time has passed) and wait
 until it is ready.
 . *Switch the routes back* to MR and remove the Maintenance Responder.
 
 On ECS and other platforms the same pattern applies: move the Admin target group or route to the Maintenance Responder
 for the duration of the work.
+
+[#_sdk_feature_updates]
+=== SDK feature updates during a window
+
+SDKs, and scripts or test automation using a service account allowed to change feature values, can update features
+through *Edge* rather than the Admin API. Routing the Admin traffic to the Maintenance Responder does not stop these
+requests. Edge passes them to MR over the messaging layer:
+
+* *While MR is still running* (after the routes are switched, before it is shut down), MR applies them to the database
+as normal. They happen *after* your final publish-all, so the database is not frozen. With the
+<<_redis_fallback,Redis fallback>> and more than one MR instance, Redis can again hold an out-of-order version of the
+affected environments.
+* *While MR is shut down*, what happens depends on your messaging platform and how it is configured. The updates
+may be held and applied when MR starts again (against the migrated database), or they may be lost.
+
+If anything changes features through Edge:
+
+* block the updates in Edge for the whole window, from when you switch the routes until MR is back and checked (see
+below), or pause whatever makes them, and
+* if you can do neither, call the <<_maintenance_publish_all,maintenance publish-all endpoint>> again immediately
+before shutting MR down, to make the window as small as possible.
+
+[#_edge_update_block]
+==== Blocking feature updates in Edge
+
+Edge refuses feature updates while a file exists, without restarting. While it is blocked, every feature update (the
+`PUT`/`POST` on `/features/...`) gets a `503` with a `Retry-After` header, and nothing is sent to MR. Reading features
+(GET and SSE) is not affected.
+
+[cols="2,1,4",options="header"]
+|===
+| Property | Default | Meaning
+| `edge.update-block.file` | _(unset)_ | The file. While it exists, updates are blocked. If it is unset, updates are never blocked.
+| `edge.update-block.check-interval-seconds` | `30` | How often Edge checks for the file. Less than `1` logs an error and uses `1`.
+| `edge.update-block.retry-after` | `60` | The `Retry-After` value when the file is empty.
+|===
+
+If the file has content, its first non-blank line is the `Retry-After` value: a number of seconds, or an HTTP date
+such as the end of the window (`Fri, 13 Nov 2026 10:00:00 GMT`). A file that exists but cannot be read blocks with the
+default. Each Edge logs `feature updates are now BLOCKED` and `feature updates are now allowed again` (WARN) when it
+sees the change.
+
+On Kubernetes, make the file a key of a ConfigMap mounted as a directory (*not* with `subPath`, as those mounts never
+update), e.g. mount it at `/etc/edge-update-block` and set `edge.update-block.file=/etc/edge-update-block/blocked`.
+Adding or removing the `blocked` key adds or removes the file in the running pods. The kubelet can take a minute or two
+to do that, plus the check interval, so wait for the log line on every Edge before you publish.
+
+Updates that Edge accepted before it logged the block still reach MR while it is running, and the publish-all that
+follows includes them.
+
+[#_maintenance_publish_all]
+=== The maintenance publish-all endpoint
+
+MR has an endpoint on its *monitoring port* (`monitor.port`, `8701` in the examples) that republishes everything:
+
+[source,sh]
+----
+kubectl port-forward <an mr pod> 8701:8701
+curl -X POST http://localhost:8701/maintenance/publish-all
+----
+
+It republishes every environment and service account to Dacha2, the same as Publish All to Cache does. If the
+<<_redis_fallback,Redis fallback>> is configured, it first runs a full Redis sync: everything is written, and
+anything no longer in the database is removed. Dacha2 is republished after the sync, whatever its outcome.
+
+The work is done *in the background*, because a full sync of a large database, or one queued behind MR's startup
+sync, can take longer than an HTTP or port-forward timeout. The call returns `202` straight away:
+
+[source,json]
+----
+{ "redisConfigured": true,
+  "message": "redis full sync and cache publish started in the background, check the MR log for 'maintenance-publish-all: finished'" }
+----
+
+`503` means cache publishing is not enabled on this MR.
+
+*The outcome is only reported in the MR log* of the instance you called. Wait for the line
+`redis: maintenance-publish-all: finished`:
+
+* `finished. Redis: complete, it matches the database: RedisSyncResult(environments=120, serviceAccounts=45, ...)`
+(INFO): Redis is a complete copy of the database and Dacha2 has been republished. `mr_redis_last_full_sync_seconds`
+is updated only by a complete sync.
+* `finished WITH PROBLEMS` (ERROR) is followed by what went wrong. Fix the cause and call the endpoint again before
+shutting MR down:
+** `Redis: NOT SYNCED, another instance holds the sync lock`: another full sync (for example MR's startup sync on
+another instance) was running. Call it again once that has finished.
+** `Redis: INCOMPLETE, N environments and M service accounts failed to write`: the errors logged above it say which
+objects and why (for example a Redis timeout, or Redis being out of memory).
+** `Redis: FAILED (...)`: the sync could not run at all, usually because Redis or the database is unreachable.
+** `Streaming caches: FAILED (...)`: republishing to Dacha2 failed.
+
+Call it on *one* MR instance only.
+
+The endpoint is only available when MR has a separate monitoring port (`monitor.port` set and not `0`), and it is
+never added to the main port. It is not authenticated, so the monitoring port must never be exposed outside the
+cluster. That is already the case for the Dacha2 API and metrics MR serves on it. It is not available in
+`party-server` or `party-server-ish`.
+
+Unlike Publish All to Cache in the Admin app, it works while the Admin traffic is routed to the Maintenance
+Responder. That is the point of it: it is the last sync before MR is shut down, with nothing changing in between.
+
+[#_redis_fallback]
+=== Serving Dacha2 cache misses from Redis
+
+Normally, when Dacha2 is asked for an environment or service account it does not have in memory, it asks MR. While
+MR is shut down those requests fail, so SDKs using an API key Dacha2 has not yet seen, or any Dacha2 pod that
+restarts, cannot get features until MR is back.
+
+To avoid this, give MR and Dacha2 a Redis instance:
+
+* *MR* writes every environment and service account to Redis, as well as publishing changes in the normal way.
+Redis only stores whole environments, so when a single feature changes MR rewrites the entire environment in Redis.
+This extra work is deliberate: Redis is only read while MR is unavailable.
+* *Dacha2* keeps asking MR first. If MR cannot be reached (connection refused, timeout) or the answer is a 502, 503
+(including the Maintenance Responder's) or 504, Dacha2 serves cache misses from Redis instead, and checks MR again every 10 seconds
+(`dacha2.redis.mr-retry-interval-ms`, at least 1000; a smaller value is logged as an error and 1000 is used) in the
+background, so it notices MR is back even if every request is being answered from its cache. Once MR answers,
+Dacha2 drops the entries it got from Redis and reloads them from MR.
+* Any other error from MR, including a 500, is MR's answer for that one request: it is passed on and does not open the
+fallback. Note that an MR that is running but cannot reach its database answers 500, so it does *not* trigger the
+fallback: stop MR (or route it to the Maintenance Responder) for the fallback to be used.
+* A single failure that does trigger it opens the fallback for *every* environment and API key, not just the one that
+failed, until the next check of MR. This is why Redis should only be configured around a maintenance window.
+* A value in Redis that cannot be read is treated as a Redis failure (counted in `dacha2_redis_errors`), so the request
+gets a 503 rather than a parse error. MR overwrites such a service account the next time it writes it, rather than
+failing on it.
+* Redis is optional: an invalid Redis configuration at startup (a malformed `redis.url`, port, mode or timeout) logs
+an error and leaves the fallback *disabled*, in MR and in Dacha2, rather than stopping them starting. A numeric setting
+that is not a number logs an error and uses its default.
+* A `404` from MR is always trusted and Redis is not consulted. Anything not found in Redis is treated as "not
+available right now", so once MR is back it loads normally.
+
+MR keeps Redis complete by running a full sync, which writes everything and removes anything that is no longer in the
+database:
+
+* when MR starts,
+* every 24 hours,
+* when Publish All to Cache (the cache refresh API with `allTheThings`) is used,
+* when the <<_maintenance_publish_all,maintenance publish-all endpoint>> is called. It runs in the background and
+logs its outcome.
+
+Only one MR instance runs a full sync at a time. The lock is held in Redis for `redis.full-sync-lock-ms` (default two
+minutes) and renewed while the sync runs, so a sync that takes longer keeps it, and an MR that dies part way through
+frees it quickly. If a sync ever loses the lock, it stops before removing anything from Redis.
+
+*With more than one MR instance*, the incremental updates are only ordered within each instance. If two instances
+rewrite the same environment or service account at almost the same moment, the older database read can land last.
+Redis then holds an earlier version of that object until it next changes or the next full sync. This includes a
+removed permission or a reset API key, which Dacha2 would honour while MR is down. The objects are always complete:
+it is the version that can be stale. The <<_maintenance_publish_all,maintenance publish-all endpoint>>, called after
+the Admin traffic has gone to the Maintenance Responder, is the fix. With nothing changing, its full sync leaves Redis
+exactly matching the database just before MR stops.
+
+Feature updates made through Edge are not stopped by the Maintenance Responder and can still arrive after that final
+sync, unless Edge <<_edge_update_block,blocks them>>. See <<_sdk_feature_updates,SDK feature updates during a window>>.
+
+==== MR configuration
+
+- `redis.url` - enables the feature, for example `redis://user:password@redis:6379` or
+`rediss://password@10.0.0.3:6378` (TLS). A value with no `:` before the `@` is treated as the password only.
+- `redis.mode` - `standalone` (default), `sentinel` or `cluster`. For sentinel and cluster, list several
+`host:port` pairs separated by commas in the URL.
+- `redis.sentinel.master` - the master name, required for sentinel mode.
+- `redis.username`, `redis.password` - override the values in the URL.
+- `redis.tls.ca-cert` - a PEM file with the CA certificate(s) to trust for `rediss://`, if it is not a public CA.
+- `redis.key-prefix` - default `featurehub`. Use a different prefix for each FeatureHub install sharing one Redis.
+- `redis.connect-timeout-ms`, `redis.socket-timeout-ms` - default `2000`.
+- `redis.full-sync-interval-hours` - default `24`, `0` disables the periodic sync.
+- `redis.full-sync-on-startup` - default `true`.
+- `redis.env-republish-debounce-ms` - default `250`. Changes to one environment within this time cause a single
+rewrite.
+- `redis.pool-size` - the number of Redis writer threads, default `2`.
+- `redis.shutdown-drain-seconds` - how long MR waits for pending Redis writes when shutting down, default `10`.
+- `redis.full-sync-lock-ms` - how long the full sync lock lasts if it is not renewed, default `120000` (two minutes).
+- `redis.full-sync-max-consecutive-failures` - default `10`. A full sync retries a write that failed (e.g. a write that
+took longer than the socket timeout) once at the end, and only counts it as failed if it fails again. This many
+failed writes in a row means Redis is unavailable, so the sync stops (without removing anything from Redis).
+
+MR only writes to Redis when it publishes cache updates (cloud events publishing is enabled).
+
+==== Dacha2 configuration
+
+Dacha2 reads `dacha2.redis.*` first and falls back to the `redis.*` value, so it can use different credentials from
+MR. All the connection options above are supported, and the key prefix must match MR's.
+
+- `dacha2.redis.url` (or `redis.url`) - enables the fallback.
+- `dacha2.redis.mr-retry-interval-ms` - how long to wait before trying MR again, default `10000`.
+- `dacha2.redis.evict-on-recovery` - drop entries that came from Redis when MR is available again, default `true`.
+- `dacha2.redis.mr-connect-timeout-ms` - connect timeout for requests to MR when the fallback is on, default `2000`.
+- `dacha2.redis.mr-read-timeout-ms` - read timeout for requests to MR when the fallback is on, default `15000`.
+- `dacha2.redis.config-file` - a comma-separated list of properties files to read the `dacha2.redis.*` (and
+`redis.*`) settings from. They are re-read while Dacha2 runs (see below). Settings in the files take precedence, and
+later files win.
+- `dacha2.redis.config-reload-seconds` - how often to re-read those files, default `30`.
+
+[#_redis_without_restart]
+==== Enabling the fallback on Dacha2 without a restart
+
+Restarting Dacha2 empties its cache, so all of it has to be reloaded from MR. To avoid that, put the Dacha2 Redis
+settings in files and point `dacha2.redis.config-file` at them. Running Dacha2 instances pick up changes within
+`dacha2.redis.config-reload-seconds`, and new instances read the same files when they start. Adding a URL enables
+the fallback, changing a setting reconnects, and removing the URL disables it again. If a change is invalid or Redis
+cannot be reached, the current connection is kept and an error is logged.
+
+In Kubernetes, mount a ConfigMap (connection settings) and a Secret (password) as volumes, for example at
+`/etc/redis-config/redis.properties` and `/etc/redis-secret/redis.properties`, and set
+`dacha2.redis.config-file=/etc/redis-config/redis.properties,/etc/redis-secret/redis.properties`. Kubernetes updates
+mounted ConfigMaps and Secrets in running pods without restarting them, as long as:
+
+* the volume is *not* mounted with `subPath` (those are never updated), and
+* nothing in the pod template changes when the data changes (for example a checksum annotation of the ConfigMap),
+otherwise the pods are restarted anyway.
+
+The files can exist and be empty until you are ready, or not exist yet: missing files are treated as empty. With
+`dacha2.redis.config-file` set, Dacha2 uses the shorter MR timeouts above even before Redis is configured.
+
+Enable Redis on MR first (that needs a restart, which is cheap because MR holds no cache). Then wait for its full
+sync to finish (`mr_redis_last_full_sync_seconds`) before adding the settings for Dacha2.
+
+==== Redis requirements
+
+* Set `maxmemory-policy noeviction`. An eviction policy such as `allkeys-lru` would silently remove environments.
+* Redis holds your server-evaluated API keys, so protect it like the database: use authentication, TLS and network
+policy. If your Redis supports ACLs, give Dacha2 a user that can only read keys starting with the prefix (for example
+`+get` on `~{featurehub}:*`) and MR a read/write user for the same keys.
+* Dacha2 only ever reads from Redis.
+
+==== Metrics
+
+- MR: `mr_redis_writes_total`, `mr_redis_write_failures_total`, `mr_redis_corrupt_values_total`, `mr_redis_env_republish_queue`,
+`mr_redis_last_full_sync_seconds`, `mr_redis_environments`, `mr_redis_service_accounts`,
+`mr_redis_full_sync_failures`.
+- Dacha2: `dacha2_redis_configured` (`1` while a Redis connection is configured), `dacha2_mr_fallback_state` (`1` while serving from Redis), `dacha2_redis_hits_total`,
+`dacha2_redis_misses_total`, `dacha2_redis_errors`, `dacha2_cache_load_unavailable_total{type}` (cache loads that
+failed because MR, and Redis if configured, could not answer).
+
+Failed cache loads during an MR outage are expected, so Dacha2 does not log each one as an error: they are logged at
+DEBUG, counted in `dacha2_cache_load_unavailable_total`, and summarised in one WARN a minute while they continue
+(`dacha2: N cache loads failed in the last 60s because MR is unavailable`). "MR is unavailable" means the same as for
+the fallback: a connection failure, a 502/503/504, or Redis not being able to answer while the fallback is in use. Any
+other failure, including a 500, is still logged at ERROR with its stack trace. Alert on the rate of the metric rather
+than on log volume.
+
+The Redis fallback does not apply to `party-server` or `party-server-ish`, where Dacha2 runs inside the same process as
+MR.
 
 === Party Server and Party Server-ish
 

@@ -1,0 +1,242 @@
+package io.featurehub.redis
+
+import io.featurehub.utils.FallbackPropertyConfig
+import java.net.URLDecoder
+import java.nio.charset.StandardCharsets
+
+enum class RedisMode { STANDALONE, SENTINEL, CLUSTER }
+
+data class RedisHost(val host: String, val port: Int)
+
+/**
+ * Connection configuration for Redis. The URL is of the form
+ *
+ *   redis[s]://[user[:password]@]host:port[,host:port...][/db]
+ *
+ * Multiple hosts are only meaningful for sentinel (they are the sentinels) and cluster (seed nodes).
+ */
+data class RedisConfig(
+  val tls: Boolean,
+  val hosts: List<RedisHost>,
+  val username: String?,
+  val password: String?,
+  val database: Int,
+  val mode: RedisMode,
+  val sentinelMaster: String?,
+  val keyPrefix: String,
+  val connectTimeoutMs: Int,
+  val socketTimeoutMs: Int,
+  val caCertPath: String?,
+) {
+  val keys: RedisKeys by lazy { RedisKeys(keyPrefix) }
+
+  override fun toString(): String {
+    // never log the password
+    return "RedisConfig(tls=$tls, hosts=$hosts, username=$username, database=$database, mode=$mode, " +
+      "sentinelMaster=$sentinelMaster, keyPrefix='$keyPrefix')"
+  }
+
+  companion object {
+    const val DEFAULT_PREFIX = "redis"
+
+    /**
+     * Load the configuration. Each key is looked up as `$prefix.<name>` first and then, if prefix is not "redis",
+     * falls back to `redis.<name>`. This lets Dacha2 use `dacha2.redis.*` with different credentials to MR
+     * while still sharing the base `redis.*` settings if desired.
+     *
+     * Returns null if no URL is configured - which means the Redis fallback is disabled.
+     */
+    @JvmStatic @JvmOverloads
+    fun load(prefix: String = DEFAULT_PREFIX): RedisConfig? = loadFrom(prefix) { FallbackPropertyConfig.getConfig(it) }
+
+    /**
+     * As [load], but looking each key up with the supplied function (e.g. a properties file that can change at
+     * runtime, falling back to the normal configuration).
+     */
+    @JvmStatic
+    fun loadFrom(prefix: String, lookup: (String) -> String?): RedisConfig? {
+      fun cfg(name: String): String? {
+        val v = lookup("$prefix.$name")?.trim()?.ifEmpty { null }
+        if (v != null || prefix == DEFAULT_PREFIX) return v
+        return lookup("$DEFAULT_PREFIX.$name")?.trim()?.ifEmpty { null }
+      }
+
+      val url = cfg("url") ?: return null
+
+      return parse(
+        url,
+        mode = cfg("mode"),
+        username = cfg("username"),
+        password = cfg("password"),
+        sentinelMaster = cfg("sentinel.master"),
+        keyPrefix = cfg("key-prefix"),
+        connectTimeoutMs = cfg("connect-timeout-ms")?.let { number("$prefix.connect-timeout-ms", it) },
+        socketTimeoutMs = cfg("socket-timeout-ms")?.let { number("$prefix.socket-timeout-ms", it) },
+        caCertPath = cfg("tls.ca-cert"),
+      )
+    }
+
+    /**
+     * As [load], but a malformed configuration (bad url, port, mode or timeout) logs an error and returns null, so
+     * the Redis fallback is disabled rather than stopping the application starting - Redis is optional.
+     */
+    private fun number(name: String, value: String): Int =
+      value.toIntOrNull() ?: throw IllegalArgumentException("`$name` must be a number, not `$value`")
+
+    @JvmStatic @JvmOverloads
+    fun loadOrDisable(prefix: String = DEFAULT_PREFIX): RedisConfig? {
+      return try {
+        load(prefix)
+      } catch (e: IllegalArgumentException) {
+        configLog.error("redis: the `{}.*` configuration is invalid ({}), the Redis fallback is DISABLED", prefix, e.message)
+        null
+      }
+    }
+
+    /**
+     * Reads a numeric Redis setting. A value that is not a number logs an error and uses the default, so a typo in an
+     * optional Redis setting never stops the application starting.
+     */
+    @JvmStatic
+    fun longSetting(name: String, default: Long): Long {
+      val value = FallbackPropertyConfig.getConfig(name)?.trim()?.ifEmpty { null } ?: return default
+      return value.toLongOrNull() ?: run {
+        configLog.error("redis: `{}` is `{}`, which is not a number, using {}", name, value, default)
+        default
+      }
+    }
+
+    @JvmStatic
+    fun intSetting(name: String, default: Int): Int {
+      val value = longSetting(name, default.toLong())
+      return if (value in Int.MIN_VALUE..Int.MAX_VALUE) value.toInt() else {
+        configLog.error("redis: `{}` is {}, which is too large, using {}", name, value, default)
+        default
+      }
+    }
+
+    private val configLog: org.slf4j.Logger = org.slf4j.LoggerFactory.getLogger(RedisConfig::class.java)
+
+    @JvmStatic @JvmOverloads
+    fun enabled(prefix: String = DEFAULT_PREFIX): Boolean = load(prefix) != null
+
+    @JvmStatic @JvmOverloads
+    fun parse(
+      url: String,
+      mode: String? = null,
+      username: String? = null,
+      password: String? = null,
+      sentinelMaster: String? = null,
+      keyPrefix: String? = null,
+      connectTimeoutMs: Int? = null,
+      socketTimeoutMs: Int? = null,
+      caCertPath: String? = null,
+    ): RedisConfig {
+      val schemeIdx = url.indexOf("://")
+      if (schemeIdx < 0) throw IllegalArgumentException("redis url must start with redis:// or rediss://")
+      val scheme = url.substring(0, schemeIdx).lowercase()
+      val tls = when (scheme) {
+        "redis" -> false
+        "rediss" -> true
+        else -> throw IllegalArgumentException("redis url scheme must be redis or rediss, not `${scheme}`")
+      }
+
+      var rest = url.substring(schemeIdx + 3)
+
+      var urlUser: String? = null
+      var urlPassword: String? = null
+      val at = rest.lastIndexOf('@')
+      if (at >= 0) {
+        val userInfo = rest.substring(0, at)
+        rest = rest.substring(at + 1)
+        val colon = userInfo.indexOf(':')
+        if (colon >= 0) {
+          urlUser = decode(userInfo.substring(0, colon)).ifEmpty { null }
+          urlPassword = decode(userInfo.substring(colon + 1)).ifEmpty { null }
+        } else {
+          // redis://password@host is the common "AUTH string only" form used by several managed Redis services
+          urlPassword = decode(userInfo).ifEmpty { null }
+        }
+      }
+
+      var database = 0
+      val slash = rest.indexOf('/')
+      if (slash >= 0) {
+        val db = rest.substring(slash + 1)
+        rest = rest.substring(0, slash)
+        if (db.isNotEmpty()) database = db.toInt()
+      }
+
+      val hosts = rest.split(",").map { it.trim() }.filter { it.isNotEmpty() }.map { parseHost(it) }
+
+      if (hosts.isEmpty()) throw IllegalArgumentException("redis url has no hosts")
+
+      val redisMode = when (mode?.lowercase()) {
+        null, "", "standalone" -> RedisMode.STANDALONE
+        "sentinel" -> RedisMode.SENTINEL
+        "cluster" -> RedisMode.CLUSTER
+        else -> throw IllegalArgumentException("unknown redis mode `$mode`")
+      }
+
+      if (redisMode == RedisMode.SENTINEL && sentinelMaster == null) {
+        throw IllegalArgumentException("redis sentinel mode requires sentinel.master")
+      }
+
+      if (redisMode == RedisMode.STANDALONE && hosts.size > 1) {
+        throw IllegalArgumentException("redis standalone mode supports only a single host")
+      }
+
+      return RedisConfig(
+        tls = tls,
+        hosts = hosts,
+        username = username ?: urlUser,
+        password = password ?: urlPassword,
+        database = database,
+        mode = redisMode,
+        sentinelMaster = sentinelMaster,
+        keyPrefix = keyPrefix ?: "featurehub",
+        connectTimeoutMs = connectTimeoutMs ?: 2000,
+        socketTimeoutMs = socketTimeoutMs ?: 2000,
+        caCertPath = caCertPath,
+      )
+    }
+
+    private fun decode(s: String) = URLDecoder.decode(s, StandardCharsets.UTF_8)
+
+    /**
+     * `host`, `host:port`, `[ipv6]` or `[ipv6]:port`. Deliberately not java.net.URI, which rejects hostnames that
+     * contain underscores (common for docker-compose service names).
+     */
+    internal fun parseHost(hp: String): RedisHost {
+      fun port(p: String): Int {
+        val port = p.toIntOrNull() ?: throw IllegalArgumentException("invalid redis port in `$hp`")
+        if (port !in 1..65535) throw IllegalArgumentException("invalid redis port in `$hp`")
+        return port
+      }
+
+      if (hp.startsWith("[")) {
+        val end = hp.indexOf(']')
+        if (end < 2) throw IllegalArgumentException("invalid redis host `$hp`")
+        val host = hp.substring(1, end)
+        val after = hp.substring(end + 1)
+        return when {
+          after.isEmpty() -> RedisHost(host, 6379)
+          after.startsWith(":") -> RedisHost(host, port(after.substring(1)))
+          else -> throw IllegalArgumentException("invalid redis host `$hp`")
+        }
+      }
+
+      val colon = hp.lastIndexOf(':')
+      if (colon >= 0 && hp.indexOf(':') != colon) {
+        throw IllegalArgumentException("IPv6 redis hosts must be in brackets, e.g. [::1]:6379, not `$hp`")
+      }
+
+      val host = if (colon >= 0) hp.substring(0, colon) else hp
+      if (host.isEmpty() || host.any { it.isWhitespace() || it == '/' || it == '@' }) {
+        throw IllegalArgumentException("invalid redis host `$hp`")
+      }
+
+      return RedisHost(host, if (colon >= 0) port(hp.substring(colon + 1)) else 6379)
+    }
+  }
+}

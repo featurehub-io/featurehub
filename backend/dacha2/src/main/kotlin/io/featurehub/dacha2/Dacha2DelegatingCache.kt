@@ -62,6 +62,10 @@ class Dacha2DelegatingCache @Inject constructor(private val mrDacha2Api: Dacha2S
     cache.closeCache()
   }
 
+  override fun invalidateEntries(environmentIds: Set<UUID>, apiKeys: Set<String>) {
+    cache.invalidateEntries(environmentIds, apiKeys)
+  }
+
   override fun getEnrichableEnvironment(eId: UUID): EnrichmentEnvironment {
     return cache.getEnrichableEnvironment(eId)
   }

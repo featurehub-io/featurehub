@@ -44,7 +44,8 @@ interface FeatureUpdatePublisher {
 class FeatureUpdateProcessor @Inject constructor(private val updateMapper: UpdateMapper,
                                                  private val dachaClientRegistry: DachaClientServiceRegistry,
                                                  private val featureUpdatePublisher: FeatureUpdatePublisher,
-                                                 private val sourceResponseInterceptors: IterableProvider<FeatureUpdateResponseInterceptor>
+                                                 private val sourceResponseInterceptors: IterableProvider<FeatureUpdateResponseInterceptor>,
+                                                 private val featureUpdateBlock: FeatureUpdateBlock
 ) : FeatureUpdate {
   private val log: Logger = LoggerFactory.getLogger(FeatureUpdateProcessor::class.java)
   private val responseInterceptors = mutableListOf<FeatureUpdateResponseInterceptor>()
@@ -64,6 +65,15 @@ class FeatureUpdateProcessor @Inject constructor(private val updateMapper: Updat
     featureStateUpdate: FeatureStateUpdate,
     statRecorder: StatRecorder?
   ) {
+    // blocked (e.g. MR is in maintenance), so nothing may reach MR - tell the client when to try again
+    featureUpdateBlock.blockedRetryAfter()?.let { retryAfter ->
+      log.trace("FeatureUpdate blocked: updates are currently blocked")
+      response.resume(Response.status(Response.Status.SERVICE_UNAVAILABLE)
+        .header("Retry-After", retryAfter)
+        .entity("feature updates are temporarily unavailable").build())
+      return
+    }
+
     val timer = testSpeedHistogram.startTimer()
 
     try {

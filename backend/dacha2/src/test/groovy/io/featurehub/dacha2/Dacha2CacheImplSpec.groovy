@@ -491,4 +491,27 @@ class Dacha2CacheImplSpec extends Specification {
       cache.getFeatureCollection(envId, apiKeyServerSide, true) == null
 
   }
+
+  def "removing an environment twice (a recovery eviction and a DELETE) only takes its features off the gauge once"() {
+    given:
+      def envFeature = new CacheEnvironmentFeature().feature(new CacheFeature().id(UUID.randomUUID()).key("fred").version(1))
+      def pubEnv = new Dacha2Environment().env(new PublishEnvironment()
+        .environment(new CacheEnvironment().id(envId))
+        .featureValues([envFeature]))
+      api.getEnvironment(envId, null) >> pubEnv
+      api.getServiceAccount(apiKeyServerSide, null) >> new Dacha2ServiceAccount().serviceAccount(saWithPermission())
+      def gauge = Dacha2CacheImpl.gaugeFeaturesInCache
+      def before = gauge.get()
+    when: "the environment is loaded"
+      cache.getFeatureCollection(envId, apiKeyServerSide, true)
+    then:
+      gauge.get() == before + 1
+    when: "it is evicted by recovery and also deleted by a cloud event"
+      cache.invalidateEntries([envId] as Set, [] as Set)
+      cache.updateEnvironment(new PublishEnvironment().action(PublishAction.DELETE).environment(new CacheEnvironment().id(envId)))
+      cache.invalidateEntries([envId] as Set, [] as Set)
+    then:
+      gauge.get() == before
+      !cache.isEnvironmentPresent(envId)
+  }
 }

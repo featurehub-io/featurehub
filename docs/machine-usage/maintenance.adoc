@@ -32,3 +32,72 @@ applications which are tied to the database.
 == Prepublishing State
 
 
+
+Before MR is shut down, all caches should hold everything they might be asked for. "Publish All to Cache"
+(`CacheResource.cacheRefresh` with `allTheThings`) calls `DbCacheSource.publishObjectsAssociatedWithCache()`, which
+republishes every environment and service account to Dacha2 over CloudEvents.
+
+== Redis fallback for Dacha2
+
+If `redis.url` is set on MR, `RedisCacheFeature` (`backend/mr-eventing-redis`) registers a `RedisCacheBroadcaster`
+alongside the normal broadcasters.
+
+- Every environment, service account or feature event schedules a debounced re-read of the *whole* object from the
+  database (`CacheWalker`, implemented by `DbCacheSource`), which is then written to Redis. All work for one id runs on
+  the same `RedisCacheWriter` worker, so the last write for an id is the latest database state.
+- It is a `SelfSyncingCacheBroadcast`: `publishObjectsAssociatedWithCache()` does not fan out to it. Instead it asks it
+  to run `RedisFullSync`, which writes everything and sweeps keys that are no longer in the database (re-checking each
+  one first). A full sync also runs at startup and every `redis.full-sync-interval-hours`, guarded by a Redis lock.
+- On shutdown, `RedisCacheWriter` (an `ExecutorPoolDrainageSource`) finishes pending writes.
+
+If `dacha2.redis.url` (or `redis.url`) is set on Dacha2, `Dacha2MRClientFeature` binds `Dacha2FallbackServiceClient`
+in front of the MR client.
+
+- Connection failures and 5xx responses (including the maintenance responder's 503) open a circuit, and cache misses
+  are then read from Redis. MR is probed again every `dacha2.redis.mr-retry-interval-ms`.
+- MR 4xx responses are authoritative. A Redis miss is a `ServiceUnavailableException`, so it never lands in the
+  non-expiring miss caches.
+- When the circuit closes, `Dacha2RedisRecovery` invalidates the entries that came from Redis
+  (`dacha2.redis.evict-on-recovery`, default true).
+- The Redis connection comes from a `RedisSource`. With `dacha2.redis.config-file` set it is a
+  `ReloadingRedisSource`, which re-reads those properties files every `dacha2.redis.config-reload-seconds`. It swaps
+  connections atomically, closes the old one after a grace period, and keeps the current one if the new config is
+  invalid. Each request fetches the connection once. While there is none, the client passes MR failures straight
+  through and the circuit never opens. That way Redis can be enabled on running Dacha2 instances, which matters
+  because restarting Dacha2 empties its cache.
+
+`dacha2` is in the maintenance responder's default `interceptPrefixes`, so if MR's address is pointed at the
+responder, Dacha2 gets a 503 (fallback) rather than a 404 (which it would cache as "does not exist").
+
+== Maintenance publish-all endpoint
+
+`MaintenancePublishResource` (`backend/mr`, `POST /maintenance/publish-all`) is registered by the open-source MR
+`Application` *only* on the separate monitoring port (`MetricsHealthRegistration.hasExternalMonitoringPort()`), never
+on the main port, as it is unauthenticated.
+
+- MR passes `/maintenance/*` to `MetricsHealthRegistration.registerMetrics(config, monitorJerseyPrefixes, ...)`, so
+  only MR's monitoring port routes it. Other applications' monitoring ports serve just metrics and health.
+
+- Its services come from the main context through `MaintenancePublisher`, either of which may be missing.
+- It returns `202` straight away. If Redis is configured, `RedisFullSync.syncInBackgroundThen` runs the full sync on
+  the untenanted `redis-full-sync` thread and then, whatever its outcome, calls `CacheSource.publishToStreamingCaches()`
+  (which in `DbCacheSource` publishes to the non-self-syncing broadcasters without asking Redis for a second sync).
+- The outcome is only logged: `redis: maintenance-publish-all: finished` (INFO) when Redis is complete, or
+  `finished WITH PROBLEMS` (ERROR) when the sync was skipped (lock held), failed, or had writes fail. Writes that fail
+  are counted in `RedisSyncResult.failedEnvironments` / `failedServiceAccounts` (`complete` is false), and
+  `mr_redis_last_full_sync_seconds` is only set by a complete sync.
+- It is meant to be called once Admin traffic is on the maintenance responder. That makes it a race-free final sync,
+  which matters because incremental Redis updates are only ordered per MR process: several MRs can overwrite each
+  other out of order.
+- Other applications that embed MR do not register it.
+
+The operator documentation is in `docs/modules/ROOT/pages/maintenance.adoc`.
+
+== Edge feature update block
+
+`FileFeatureUpdateBlock` (edge-common, bound in `EdgeCommonFeature`) checks `edge.update-block.file` on its own daemon
+thread every `edge.update-block.check-interval-seconds` (default 30, minimum 1). `FeatureUpdateProcessor.updateFeature`
+asks it first: while the file exists it resumes the request with a 503 and `Retry-After` (the file's first non-blank
+line, or `edge.update-block.retry-after`) before asking Dacha for permissions or publishing anything to MR. Every
+update path (edge-full, edge-rest, the Party Servers and the SaaS slice-edge) goes through `FeatureUpdateProcessor`,
+so they are all covered. With no file configured nothing is scheduled.
