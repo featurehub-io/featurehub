@@ -319,7 +319,7 @@ to prevent reconnect storms as infrastructure is restarted.
 connection while it is alive. If you set `edge.sse.drop-after-seconds` to 0, then the SSE connection will stay open, sending heartbeat
 signals until the remote system drops the connection. This allows the heartbeat to be used as well as or instead of kicking SSE connections
 off to ensure ghost connections.
-- `edge.etags-for-sse-enabled` (false) - if `true`, Edge treats the `Last-Event-ID` header on an SSE connection the way the polling
+- `edge.sse.use-last-event-id` (false) - if `true`, Edge treats the `Last-Event-ID` header on an SSE connection the way the polling
 API treats an `ETag` (an `If-None-Match` request that gets a `304 Not Modified`). The `features` event that Edge sends carries an event id made
 from the environment's current etag (from Dacha) and the client's context, if one was provided. SSE clients send that id back
 as `Last-Event-ID` when they reconnect. When this option is enabled and the id still matches, Edge sends no `discover` acknowledgement and no
