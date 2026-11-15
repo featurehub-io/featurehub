@@ -139,7 +139,6 @@ class _MenuContainer extends StatelessWidget {
             iconData: Icons.filter_alt_outlined,
             permissionType: PermissionType.any,
             path: '/feature-filters',
-            displayNewLabel: true,
             params: {}),
       if (rel.currentPortfolioStrategyEditor ||
           rel.currentPortfolioStrategyEditDelete)
@@ -148,6 +147,7 @@ class _MenuContainer extends StatelessWidget {
             iconData: Icons.call_split_outlined,
             permissionType: PermissionType.any,
             path: '/portfolio-strategies',
+            displayNewLabel: true,
             params: {}),
       if (rel.currentPortfolioGroupManager)
         FHMenuItem(
@@ -252,13 +252,13 @@ class _MenuPortfolioAdminOptionsWidget extends StatelessWidget {
           iconData: Icons.call_split_outlined,
           permissionType: PermissionType.any,
           path: '/portfolio-strategies',
+          displayNewLabel: true,
           params: {}),
       FHMenuItem(
           name: l10n.featureFilters,
           iconData: Icons.filter_alt_outlined,
           permissionType: PermissionType.portfolioadmin,
           path: '/feature-filters',
-          displayNewLabel: true,
           params: {}),
     ]);
   }

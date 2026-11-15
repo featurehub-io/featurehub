@@ -1127,6 +1127,11 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
+  String portfolioStrategyUsage(int appCount, int envCount, int featureCount) {
+    return '应用：$appCount，环境：$envCount，功能标志值：$featureCount';
+  }
+
+  @override
   String get addRule => '添加规则';
 
   @override

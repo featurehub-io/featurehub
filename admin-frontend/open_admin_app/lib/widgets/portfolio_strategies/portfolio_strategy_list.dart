@@ -201,6 +201,7 @@ class PortfolioStrategyDataTableSource
     final strategy = lastDetails!.rows[index];
     final l10n = AppLocalizations.of(context)!;
     final usage = strategy.usage ?? [];
+    final appCount = usage.map((e) => e.appId).toSet().length;
     final envCount = usage.length;
     final featureCount = usage.map((e) => e.featuresCount).sum;
 
@@ -217,7 +218,7 @@ class PortfolioStrategyDataTableSource
           DataCell(
             Text(strategy.updatedBy.email),
           ),
-          DataCell(Text(l10n.strategyUsage(envCount, featureCount))),
+          DataCell(Text(l10n.portfolioStrategyUsage(appCount, envCount, featureCount))),
           DataCell(Row(children: <Widget>[
             StreamBuilder<ReleasedPortfolio?>(
                 stream: bloc.mrClient.streamValley.currentPortfolioStream,
