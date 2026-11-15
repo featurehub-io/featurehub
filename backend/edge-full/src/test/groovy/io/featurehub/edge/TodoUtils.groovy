@@ -1,6 +1,6 @@
 package io.featurehub.edge
 
-import cd.connect.jersey.common.LoggingConfiguration
+import cd.connect.jersey.common.ClientLoggingConfiguration
 import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.ObjectMapper
 import groovy.transform.CompileStatic
@@ -18,7 +18,7 @@ class TodoUtils {
 
   static final client = ClientBuilder.newClient()
   .register(CommonConfiguration)
-  .register(LoggingConfiguration)
+  .register(ClientLoggingConfiguration)
 
   static final TodoService todoService;
   static LocalFeatureService edgeService;
