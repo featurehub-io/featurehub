@@ -1,4 +1,5 @@
 import 'package:collection/collection.dart' show IterableExtension;
+import 'package:e2e_tests/shared.dart' show Shared;
 import 'package:e2e_tests/util.dart';
 import 'package:mrapi/api.dart';
 import 'package:openapi_dart_common/openapi.dart';
@@ -20,6 +21,8 @@ class UserCommon {
   final ApplicationRolloutStrategyServiceApi rolloutStrategyService;
   final ApiClient apiClient;
 
+  Shared? shared;
+
   UserCommon._(
       this.apiClient,
       this.personService,
@@ -37,6 +40,8 @@ class UserCommon {
 
   factory UserCommon.create() {
     ApiClient apiClient = new ApiClient(basePath: baseUrl());
+
+    checkLoggingForApiClient(apiClient);
 
     return new UserCommon._(
         apiClient,
@@ -101,6 +106,11 @@ class UserCommon {
   // operates in user space
   Future<Portfolio?> findExactPortfolio(String? portfolioName,
       {PortfolioServiceApi? portfolioServiceApi}) async {
+    if (portfolioName == "-") {
+      assert(shared != null, 'Shared must be set on userCommon otherwise we cannot use - as portfolio');
+      return shared!.portfolio;
+    }
+
     PortfolioServiceApi _pService =
         portfolioServiceApi ?? this.portfolioService;
     final portfolios = await _pService.findPortfolios(
@@ -131,10 +141,17 @@ class UserCommon {
       {GroupServiceApi? groupServiceApi}) async {
     GroupServiceApi _gService = groupServiceApi ?? this.groupService;
     assert(portfolioId != null, 'portfolio id is null');
+
     try {
-      var groups = await _gService.findGroups(portfolioId!,
-          filter: groupName, includePeople: true);
-      return groups.firstWhereOrNull((g) => g.name == groupName);
+      if (groupName == "<admin>") {
+        var groups = await _gService.findGroups(
+            portfolioId!, includePeople: true);
+        return groups.firstWhereOrNull((g) => g.admin == true);
+      } else {
+        var groups = await _gService.findGroups(portfolioId!,
+            filter: groupName, includePeople: true);
+        return groups.firstWhereOrNull((g) => g.name == groupName);
+      }
     } catch (e) {
       if (e is ApiException && e.code == 404) {
         return null;
@@ -163,8 +180,9 @@ class UserCommon {
   Future<Group?> findExactGroupWithPerms(String groupName, String portfolioId,
       {GroupServiceApi? groupServiceApi}) async {
     GroupServiceApi _gService = groupServiceApi ?? this.groupService;
-    var groups = await _gService.findGroups(portfolioId, filter: groupName);
-    Group? group = groups.firstWhereOrNull((g) => g.name == groupName);
+
+    var groups = await _gService.findGroups(portfolioId);
+    Group? group = (groupName == "<admin>") ? groups.firstWhereOrNull((g) => g.admin == true) : groups.firstWhereOrNull((g) => g.name == groupName);
     return group?.id == null
         ? null
         : await _gService.getGroup(group!.id,
