@@ -7,7 +7,7 @@ class EtagStructureHolder(val environmentTags: Map<KeyParts, String>, val contex
 
 class ETagSplitter {
   companion object {
-    val etagsEnabledForSse = FallbackPropertyConfig.getConfig("edge.etags-for-sse-enabled", "false") == "true"
+    val etagsEnabledForSse = FallbackPropertyConfig.getConfig("edge.sse.use-last-event-id", "false") == "true"
 
     fun makeEtagHolderForSSE(etag: String?, keys: List<KeyParts>, etagFromClientContext: String): EtagStructureHolder {
       // if we aren't presented with an etag or the number of keys we are looking at is > 1 (which seems impossible now because SSE doesn't support it)
