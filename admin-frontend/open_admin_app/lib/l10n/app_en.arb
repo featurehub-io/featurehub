@@ -1167,6 +1167,16 @@
     }
   },
 
+  "portfolioStrategyUsage": "applications: {appCount}, environments: {envCount}, feature values: {featureCount}",
+  "@portfolioStrategyUsage": {
+    "description": "Portfolio strategy usage cell: how many applications, environments and feature values use this strategy",
+    "placeholders": {
+      "appCount": { "type": "int" },
+      "envCount": { "type": "int" },
+      "featureCount": { "type": "int" }
+    }
+  },
+
   "addRule": "Add rule",
   "@addRule": { "description": "Label before the well-known rule type buttons in the strategy editor" },
 

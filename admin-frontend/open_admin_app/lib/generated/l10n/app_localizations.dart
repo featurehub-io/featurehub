@@ -2132,6 +2132,12 @@ abstract class AppLocalizations {
   /// **'environments: {envCount}, feature values: {featureCount}'**
   String strategyUsage(int envCount, int featureCount);
 
+  /// Portfolio strategy usage cell: how many applications, environments and feature values use this strategy
+  ///
+  /// In en, this message translates to:
+  /// **'applications: {appCount}, environments: {envCount}, feature values: {featureCount}'**
+  String portfolioStrategyUsage(int appCount, int envCount, int featureCount);
+
   /// Label before the well-known rule type buttons in the strategy editor
   ///
   /// In en, this message translates to:

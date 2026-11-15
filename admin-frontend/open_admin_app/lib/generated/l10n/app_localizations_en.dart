@@ -1181,6 +1181,11 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String portfolioStrategyUsage(int appCount, int envCount, int featureCount) {
+    return 'applications: $appCount, environments: $envCount, feature values: $featureCount';
+  }
+
+  @override
   String get addRule => 'Add rule';
 
   @override
