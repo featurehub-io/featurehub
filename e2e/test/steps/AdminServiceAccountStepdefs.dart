@@ -11,7 +11,10 @@ class AdminServiceAccountStepdefs {
   final Shared shared;
   final UserCommon userCommon;
 
-  AdminServiceAccountStepdefs(this.common, this.shared, this.userCommon);
+  AdminServiceAccountStepdefs(this.common, this.shared, this.userCommon)  {
+    this.common.shared = this.shared;
+    this.userCommon.shared = this.shared;
+  }
 
   @Given(r'I create a admin service account called {string}')
   Future<void> iCreateANewAdminServiceAccount(String name) async {

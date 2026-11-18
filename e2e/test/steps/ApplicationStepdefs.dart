@@ -10,7 +10,9 @@ class ApplicationStepdefs {
   final UserCommon userCommon;
   final Shared shared;
 
-  ApplicationStepdefs(this.userCommon, this.shared);
+  ApplicationStepdefs(this.userCommon, this.shared)  {
+    this.userCommon.shared = this.shared;
+  }
 
   @When(
       r'I ensure an application with the name {string} with description {string} in the portfolio {string} exists')
@@ -141,7 +143,7 @@ class ApplicationStepdefs {
 
   @When(
       r'I create the feature with a key {string} and alias {string} and name {string} and link {string} and type {string}')
-  void iCreateTheFeatureWithAKeyAndAliasAndName(String key, String alias,
+  Future<void> iCreateTheFeatureWithAKeyAndAliasAndName(String key, String alias,
       String name, String link, String valueType) async {
     FeatureValueType fvt = mapFeatureValueType(valueType);
 

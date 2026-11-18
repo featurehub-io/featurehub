@@ -10,7 +10,10 @@ class AdminPersonStepdefs {
   final UserCommon userCommon;
   final Shared shared;
 
-  AdminPersonStepdefs(this.common, this.shared, this.userCommon);
+  AdminPersonStepdefs(this.common, this.shared, this.userCommon)  {
+    this.common.shared = this.shared;
+    this.userCommon.shared = this.shared;
+  }
 
   /// this must be run by a superuser
   @When(r'I register a new user with email {string}')

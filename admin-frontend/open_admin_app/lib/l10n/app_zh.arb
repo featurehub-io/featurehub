@@ -363,6 +363,7 @@
 
   "strategyUsage": "环境：{envCount}，功能标志值：{featureCount}",
 
+  "portfolioStrategyUsage": "应用：{appCount}，环境：{envCount}，功能标志值：{featureCount}",
   "addRule": "添加规则",
   "addCustomRule": "添加自定义规则",
   "addCustomButton": "+ 自定义",
