@@ -10,6 +10,7 @@ import io.featurehub.edge.bucket.TimedBucketSlot;
 import io.featurehub.edge.features.ETagSplitter;
 import io.featurehub.edge.features.EtagStructureHolder;
 import io.featurehub.edge.features.FeatureRequestResponse;
+import io.featurehub.edge.rest.EdgeGetProcessor;
 import io.featurehub.edge.stats.StatRecorder;
 import io.featurehub.edge.strategies.ClientContext;
 import io.featurehub.jersey.config.CacheJsonMapper;
@@ -40,6 +41,7 @@ public class TimedBucketClientConnection implements ClientConnection {
   protected final String extraContext;
   protected boolean allowExtendedProperties = false;
   @NotNull protected final BucketService bucketService;
+  @NotNull private final BucketProtocolVersion bucketProtocolVersion;
   private List<PublishFeatureValue> heldFeatureUpdates = new ArrayList<>();
   @NotNull protected final FeatureTransformer featureTransformer;
   @NotNull protected final ClientContext attributesForStrategy;
@@ -64,21 +66,22 @@ public class TimedBucketClientConnection implements ClientConnection {
       @NotNull KeyParts apiKey,
       @NotNull FeatureTransformer featureTransformer,
       @NotNull StatRecorder statRecorder,
-      @Nullable List<String> featureHubAttributes,
+      @NotNull ClientContext attributesForStrategy,
       @Nullable String etag,
       @Nullable String extraContext,
-      @NotNull BucketService bucketService) {
+      @NotNull BucketService bucketService,
+      @NotNull BucketProtocolVersion bucketProtocolVersion
+      ) {
     this.extraContext = extraContext;
     this.bucketService = bucketService;
+    this.bucketProtocolVersion = bucketProtocolVersion;
+    this.attributesForStrategy = attributesForStrategy;
     id = UUID.randomUUID();
 
     this.output = output;
     this.apiKey = apiKey;
     this.featureTransformer = featureTransformer;
     this.statRecorder = statRecorder;
-
-    attributesForStrategy =
-        ClientContext.decode(featureHubAttributes, Collections.singletonList(apiKey));
 
     etags =
         ETagSplitter.Companion.splitTag(etag, List.of(apiKey), attributesForStrategy.makeEtag());
@@ -241,7 +244,10 @@ public class TimedBucketClientConnection implements ClientConnection {
                 ETagSplitter.Companion.makeEtags(
                     etags, Collections.singletonList(edgeResponse.getEtag())),
                 CacheJsonMapper.mapper.writeValueAsString(
-                  features));
+                  bucketProtocolVersion == BucketProtocolVersion.V1
+                    ? features
+                    : EdgeGetProcessor.Companion.mapFeatures(
+                    features)));
 
             statRecorder.recordHit(
                 apiKey, EdgeHitResultType.SUCCESS, EdgeHitSourceType.EVENTSOURCE);
@@ -290,9 +296,11 @@ public class TimedBucketClientConnection implements ClientConnection {
         heldFeatureUpdates.add(rf);
       } else {
         try {
+          final FeatureState feature = featureTransformer.transform(rf.getFeature(), attributesForStrategy, allowExtendedProperties);
           String data =
               CacheJsonMapper.mapper.writeValueAsString(
-                  featureTransformer.transform(rf.getFeature(), attributesForStrategy, allowExtendedProperties));
+                bucketProtocolVersion == BucketProtocolVersion.V1 ?
+                  feature : EdgeGetProcessor.Companion.mapFeature(feature));
           // if it was a DELETE or it was being triggered as a retired feature
           if (rf.getAction() == PublishAction.DELETE
               || (rf.getFeature().getValue() != null

@@ -4,12 +4,18 @@ import io.featurehub.edge.FeatureTransformer
 import io.featurehub.edge.KeyParts
 import io.featurehub.edge.bucket.BucketService
 import io.featurehub.edge.stats.StatRecorder
+import io.featurehub.edge.strategies.ClientContext
 import jakarta.inject.Inject
 import org.glassfish.jersey.media.sse.EventOutput
 
+enum class BucketProtocolVersion {
+  V1, V2
+}
+
 interface TimedBucketClientFactory {
   fun createBucket(output: EventOutput, apiKey: KeyParts,
-                   featureHubAttributes: List<String>?,
+                   context: ClientContext,
+                   bucketProtocolVersion: BucketProtocolVersion,
                    etag: String?,
                    extraContext: String?): TimedBucketClientConnection
 }
@@ -20,10 +26,11 @@ class TimedBucketClientFactoryImpl @Inject constructor(
   override fun createBucket(
     output: EventOutput,
     apiKey: KeyParts,
-    featureHubAttributes: List<String>?,
+    context: ClientContext,
+    bucketProtocolVersion: BucketProtocolVersion,
     etag: String?,
     extraContext: String?
   ): TimedBucketClientConnection =
     TimedBucketClientConnection(InternalEventOutput(output), apiKey, featureTransformer,
-      statRecorder, featureHubAttributes, etag, extraContext, bucketService)
+      statRecorder, context, etag, extraContext, bucketService, bucketProtocolVersion)
 }

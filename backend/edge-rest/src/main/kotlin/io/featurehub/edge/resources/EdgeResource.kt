@@ -28,7 +28,7 @@ class EdgeResource @Inject constructor(private val featureGetProcessor: FeatureG
     @HeaderParam("x-featurehub") featureHubAttrs: List<String>?,
     @HeaderParam("if-none-match") etagHeader: String?
   ) {
-    featureGetProcessor.processGet(response, sdkUrls, apiKeys, featureHubAttrs, etagHeader, null)
+    featureGetProcessor.processGet(response, sdkUrls, apiKeys, featureHubAttrs, etagHeader)
   }
 
   @GET
