@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:mrapi/api.dart';
 import 'package:open_admin_app/api/client_api.dart';
 import 'package:open_admin_app/common/stream_valley.dart';
+import 'package:open_admin_app/maintenance/maintenance_banner_widget.dart';
 import 'package:open_admin_app/maintenance/maintenance_info.dart';
 import 'package:open_admin_app/maintenance/maintenance_mode_widget.dart';
 import 'package:open_admin_app/utils/custom_scroll_behavior.dart';
@@ -131,30 +132,8 @@ class _InternalFHScaffoldWidgetWidgetState extends StatelessWidget {
   }
 
 
-  Widget maintenanceWidget(ManagementRepositoryClientBloc mrBloc) {
-    return StreamBuilder(stream: mrBloc.pendingMaintenanceStream,
-        builder: (BuildContext context, AsyncSnapshot<MaintenanceInfo?> snapshot) {
-          if (snapshot.hasData) {
-            final message = snapshot.data!.message!;
-            return Container(
-              color: Colors.yellow,
-              padding: const EdgeInsets.symmetric(vertical: 2.0),
-              child:
-              Center(
-                child: Text(
-                  message,
-                  style: TextStyle(
-                    color: Colors.black,
-                    fontSize: 16.0,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
-            );
-          }
-          return SizedBox.shrink();
-        });
-  }
+  Widget maintenanceWidget(ManagementRepositoryClientBloc mrBloc) =>
+      MaintenanceBannerWidget(mrBloc: mrBloc);
 
 
   Widget _mainContent(BuildContext context) {
