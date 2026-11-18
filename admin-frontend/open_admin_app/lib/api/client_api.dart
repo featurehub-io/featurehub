@@ -294,6 +294,11 @@ class ManagementRepositoryClientBloc implements Bloc {
             handler.resolve(response);
             return;
           }
+
+          // the server (or what is in front of it) answered with an error, which still carries the maintenance
+          // headers, so keep the banner up to date. We don't touch the active state here, a 502/504 from a proxy
+          // doesn't tell us whether maintenance is over.
+          _updatePendingMaintenance(MaintenanceInfo.fromHeaders(headers));
         }
       } finally {
         if (!handled) {
@@ -301,36 +306,33 @@ class ManagementRepositoryClientBloc implements Bloc {
         }
       }
     }, onResponse: (Response response, ResponseInterceptorHandler handler) {
-      // it is seeded null, so we just need to know if it isn't already null -
-      // clear it in case it is left over, it will be added again below if it is active
-      if (_activeMaintenanceSource.valueOrNull != null) {
-        _activeMaintenanceSource.add(null);
+      final maintenanceInfo = MaintenanceInfo.fromHeaders(response.headers);
+
+      if (maintenanceInfo != null && maintenanceInfo.isActive()) {
+        // we are inside the announced window, overlay the UI
+        _addIfChanged(_activeMaintenanceSource, maintenanceInfo);
+      } else {
+        // a successful response outside a window means we are not (or no longer) in active maintenance
+        _addIfChanged(_activeMaintenanceSource, null);
+        _updatePendingMaintenance(maintenanceInfo);
       }
-      // if we get a 503 with a retry-after set, we are in active maintenance mode and should overlay the UI
-      final headers = response.headers;
 
-      // if we
-      final endStr = headers.value('x-maintenance-end');
-
-      if (endStr != null) {
-        final maintenanceInfo = MaintenanceInfo(
-          message: headers.value('x-maintenance-message'),
-          start: DateTime.tryParse(headers.value('x-maintenance-start') ?? ''),
-          end: DateTime.tryParse(endStr),
-        );
-
-        if (maintenanceInfo.isValid()) {
-          if (maintenanceInfo.isActive()) {
-            _activeMaintenanceSource.add(maintenanceInfo);
-          } else {
-            _pendingMaintenanceSource.add(maintenanceInfo);
-          }
-        }
-      } else if (_pendingMaintenanceSource.hasValue) {
-        _pendingMaintenanceSource.add(null);
-      }
       handler.next(response);
     }));
+  }
+
+  /// The banner for an upcoming maintenance window. [info] is null when the server stopped announcing one.
+  void _updatePendingMaintenance(MaintenanceInfo? info) {
+    _addIfChanged(
+        _pendingMaintenanceSource, (info != null && !info.isActive()) ? info : null);
+  }
+
+  /// Only push when the value differs, otherwise every response rebuilds the banner and the maintenance overlay
+  /// (losing the overlay's state).
+  static void _addIfChanged(BehaviorSubject<MaintenanceInfo?> source, MaintenanceInfo? info) {
+    if (source.valueOrNull != info) {
+      source.add(info);
+    }
   }
 
   ManagementRepositoryClientBloc({String? basePathUrl})
