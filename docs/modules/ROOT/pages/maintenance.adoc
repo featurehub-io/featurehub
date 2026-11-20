@@ -142,27 +142,55 @@ before shutting MR down, to make the window as small as possible.
 [#_edge_update_block]
 ==== Blocking feature updates in Edge
 
-Edge refuses feature updates while a file exists, without restarting. While it is blocked, every feature update (the
-`PUT`/`POST` on `/features/...`) gets a `503` with a `Retry-After` header, and nothing is sent to MR. Reading features
-(GET and SSE) is not affected.
+Edge refuses feature updates while a file it watches contains a `blocked` key, without restarting. The file itself
+can stay in place permanently: only the key matters. While it is blocked, every feature update (the `PUT`/`POST` on
+`/features/...`) gets a `503` with a `Retry-After` header, and nothing is sent to MR. Reading features (GET and SSE) is
+not affected.
 
 [cols="2,1,4",options="header"]
 |===
 | Property | Default | Meaning
-| `edge.update-block.file` | _(unset)_ | The file. While it exists, updates are blocked. If it is unset, updates are never blocked.
-| `edge.update-block.check-interval-seconds` | `30` | How often Edge checks for the file. Less than `1` logs an error and uses `1`.
-| `edge.update-block.retry-after` | `60` | The `Retry-After` value when the file is empty.
+| `edge.update-block.file` | _(unset)_ | The file. While it has a `blocked` key, updates are blocked. If it is unset, updates are never blocked.
+| `edge.update-block.check-interval-seconds` | `30` | How often Edge re-reads the file. Less than `1` logs an error and uses `1`.
+| `edge.update-block.retry-after` | `60` | The `Retry-After` value when `blocked` has no valid value.
 |===
 
-If the file has content, its first non-blank line is the `Retry-After` value: a number of seconds, or an HTTP date
-such as the end of the window (`Fri, 13 Nov 2026 10:00:00 GMT`). A file that exists but cannot be read blocks with the
-default. Each Edge logs `feature updates are now BLOCKED` and `feature updates are now allowed again` (WARN) when it
-sees the change.
+The file is read as a properties file, so any of these block:
 
-On Kubernetes, make the file a key of a ConfigMap mounted as a directory (*not* with `subPath`, as those mounts never
-update), e.g. mount it at `/etc/edge-update-block` and set `edge.update-block.file=/etc/edge-update-block/blocked`.
-Adding or removing the `blocked` key adds or removes the file in the running pods. The kubelet can take a minute or two
-to do that, plus the check interval, so wait for the log line on every Edge before you publish.
+[source,properties]
+----
+blocked
+blocked=300
+blocked: Fri, 13 Nov 2026 10:00:00 GMT
+----
+
+If the value of `blocked` is a number of seconds or an HTTP date (such as the end of the window), it is the
+`Retry-After` value; anything else, including no value or `true`, uses `edge.update-block.retry-after`. Note that
+`blocked=false` still blocks: remove the key (or comment it out with `#`) to allow updates again. Other keys in the
+file are ignored. A missing file, or one that cannot be read, does not block (an unreadable file is logged as an
+error). Each Edge logs `feature updates are now BLOCKED` and `feature updates are now allowed again` (WARN) when it
+sees the change, and keeps re-reading the file for as long as it runs.
+
+On Kubernetes, put the file in a ConfigMap and mount it into Edge as a directory from the start (*not* with
+`subPath`, as those mounts never update), e.g. a ConfigMap `edge-update-block` with a key `update-block`, mounted at
+`/etc/edge-update-block`, and `edge.update-block.file=/etc/edge-update-block/update-block`. Because the volume is
+always there, you block and unblock by editing the ConfigMap's content, without changing the Deployment or restarting
+pods:
+
+[source,yaml]
+----
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: edge-update-block
+data:
+  update-block: |
+    # uncomment to block feature updates in Edge
+    # blocked=300
+----
+
+The kubelet can take a minute or two to update the mounted file, plus the check interval, so wait for the log line on
+every Edge before you publish.
 
 Updates that Edge accepted before it logged the block still reach MR while it is running, and the publish-all that
 follows includes them.

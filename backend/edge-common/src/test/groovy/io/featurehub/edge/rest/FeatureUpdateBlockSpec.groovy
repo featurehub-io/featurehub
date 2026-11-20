@@ -32,32 +32,57 @@ class FeatureUpdateBlockSpec extends Specification {
       block(null).blockedRetryAfter() == null
   }
 
-  def "an existing empty file blocks with the default retry-after, and removing it unblocks"() {
+  def "the file existing without a blocked key does not block"() {
     given:
-      def f = dir.resolve("blocked").toFile()
-      f.text = ""
-    when:
-      def b = block(f.absolutePath, 3600, "120")
-    then: "it is checked straight away at startup"
-      b.blockedRetryAfter() == "120"
-    when:
-      f.delete()
-      b.check()
-    then:
-      b.blockedRetryAfter() == null
+      def f = dir.resolve("update-block").toFile()
+      f.text = content
+    expect:
+      block(f.absolutePath).blockedRetryAfter() == null
+    where:
+      content << ["", "\n\n", "# blocked\n", "ling=orm\nkeep-silent: true\n", "blockedx=1", "Blocked=1"]
   }
 
-  def "the file's first non-blank line is the retry-after"() {
+  def "a missing file does not block"() {
+    expect:
+      block(dir.resolve("not-there").toFile().absolutePath).blockedRetryAfter() == null
+  }
+
+  def "the blocked key blocks, and removing the key (leaving the file) unblocks"() {
     given:
-      def f = dir.resolve("blocked").toFile()
-      def b = block(f.absolutePath)
-    expect: "not there yet"
-      b.blockedRetryAfter() == null
+      def f = dir.resolve("update-block").toFile()
+      f.text = "ormkorn=always wonder\nblocked\n"
     when:
-      f.text = "\n  Fri, 13 Nov 2026 10:00:00 GMT  \nignored"
+      def b = block(f.absolutePath, 3600, "120")
+    then: "it is checked straight away at startup, an empty value uses the default retry-after"
+      b.blockedRetryAfter() == "120"
+    when:
+      f.text = "ormkorn=always wonder\n"
       b.check()
     then:
-      b.blockedRetryAfter() == "Fri, 13 Nov 2026 10:00:00 GMT"
+      f.exists()
+      b.blockedRetryAfter() == null
+    when: "and adding it back blocks again"
+      f.text = "blocked=\n"
+      b.check()
+    then:
+      b.blockedRetryAfter() == "120"
+  }
+
+  def "the blocked value is the retry-after when it is seconds or an http date, otherwise the default"() {
+    given:
+      def f = dir.resolve("update-block").toFile()
+      f.text = content
+    expect:
+      block(f.absolutePath, 3600, "60").blockedRetryAfter() == expected
+    where:
+      content                                     | expected
+      "blocked=300"                               | "300"
+      "blocked: 300"                              | "300"
+      "  blocked = 45  "                          | "45"
+      "blocked: Fri, 13 Nov 2026 10:00:00 GMT"    | "Fri, 13 Nov 2026 10:00:00 GMT"
+      "blocked=true"                              | "60"
+      "blocked=-5"                                | "60"
+      "blocked=kwong pastry"                      | "60"
   }
 
   def "a directory at the path does not block"() {
@@ -67,18 +92,44 @@ class FeatureUpdateBlockSpec extends Specification {
       b.blockedRetryAfter() == null
   }
 
-  def "the scheduled check picks up the file appearing"() {
+  def "an unreadable file does not block"() {
     given:
-      def f = dir.resolve("blocked").toFile()
+      def f = dir.resolve("update-block").toFile()
+      f.text = "blocked=30"
+      def b = block(f.absolutePath)
+    expect:
+      b.blockedRetryAfter() == "30"
+    when:
+      f.setReadable(false)
+      b.check()
+    then:
+      f.canRead() || b.blockedRetryAfter() == null  // root can always read, so only assert when it really is unreadable
+    cleanup:
+      f.setReadable(true)
+  }
+
+  def "the scheduled check keeps polling, picking up the key being added and removed"() {
+    given:
+      def f = dir.resolve("update-block").toFile()
+      f.text = "lingling=kwong"
       def b = block(f.absolutePath, 1)
     when:
-      f.text = "30"
-      def deadline = System.currentTimeMillis() + 5000
-      while (b.blockedRetryAfter() == null && System.currentTimeMillis() < deadline) {
-        Thread.sleep(50)
-      }
+      f.text = "lingling=kwong\nblocked=30"
+      waitFor { b.blockedRetryAfter() != null }
     then:
       b.blockedRetryAfter() == "30"
+    when:
+      f.text = "lingling=kwong"
+      waitFor { b.blockedRetryAfter() == null }
+    then:
+      b.blockedRetryAfter() == null
+  }
+
+  private static void waitFor(Closure<Boolean> condition) {
+    def deadline = System.currentTimeMillis() + 5000
+    while (!condition() && System.currentTimeMillis() < deadline) {
+      Thread.sleep(50)
+    }
   }
 
   def "a check interval below the minimum uses the minimum"() {
