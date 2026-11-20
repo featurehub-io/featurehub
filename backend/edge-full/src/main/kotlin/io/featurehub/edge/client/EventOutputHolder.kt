@@ -28,6 +28,7 @@ class InternalEventOutput(private val output: EventOutput) : EventOutputHolder {
     }
     eventBuilder.data(data)
     val event = eventBuilder.build()
+    // callers (TimedBucketClientConnection) rely on the IOException to detect dead connections
     output.write(event)
   }
 

@@ -319,6 +319,21 @@ to prevent reconnect storms as infrastructure is restarted.
 connection while it is alive. If you set `edge.sse.drop-after-seconds` to 0, then the SSE connection will stay open, sending heartbeat
 signals until the remote system drops the connection. This allows the heartbeat to be used as well as or instead of kicking SSE connections
 off to ensure ghost connections.
+- `edge.sse.use-last-event-id` (false) - if `true`, Edge treats the `Last-Event-ID` header on an SSE connection the way the polling
+API treats an `ETag` (an `If-None-Match` request that gets a `304 Not Modified`). The `features` event that Edge sends carries an event id made
+from the environment's current etag (from Dacha) and the client's context, if one was provided. SSE clients send that id back
+as `Last-Event-ID` when they reconnect. When this option is enabled and the id still matches, Edge sends no `discover` acknowledgement and no
+`features` event on the new connection. The client keeps the features it already has and still receives any feature updates that arrive while
+it is connected. When Edge closes the connection, the `bye` event carries no id, so the client keeps the last id it was given.
+Updates to individual features sent during a connection do not change the event id, so a client that received any updates will
+get a full set of features on its next connection. This option significantly reduces traffic for SSE clients that reconnect often (because of `edge.sse.drop-after-seconds`) and whose
+features rarely change. It depends on the SDK's SSE client keeping and sending `Last-Event-ID`
+across reconnections. SDKs that don't do this will always get the full set of features, which is the same behaviour as when this option is disabled.
+A full set of features is sent as normal when:
+** the environment's features have changed since the id was issued (the etag from Dacha no longer matches)
+** the client context (`x-featurehub` header or `xfeaturehub` query parameter) has been added, removed or changed since the id was
+issued, because the features the client holds were evaluated against a different context
+** no `Last-Event-ID` is provided or it is not in the expected format
 - `dacha.url.default` = url - *You MUST specify this for Dacha2* this is only relevant if you are running split servers - so Dacha and Edge run in their own containers. You
 need to tell Edge where Dacha is located. In the
 sample docker-compose where they are split, the hostname for Dacha is `dacha`, so this is `dacha.url.default=http://localhost:8034`. This isn't
