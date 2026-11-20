@@ -2,9 +2,9 @@ import 'package:universal_html/html.dart';
 
 import 'package:bloc_provider/bloc_provider.dart';
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 
 import 'package:mrapi/api.dart';
+import 'package:open_admin_app/utils/date_format.dart';
 import 'package:open_admin_app/widgets/common/copy_to_clipboard_html.dart';
 import 'package:open_admin_app/widgets/common/fh_icon_button.dart';
 import 'package:open_admin_app/widgets/features/edit-feature/create_update_feature_dialog_widget.dart';
@@ -157,8 +157,7 @@ class FeatureCellHolder extends StatelessWidget {
                       padding: const EdgeInsets.only(left: 8.0),
                       child: Tooltip(
                         message: l10n.archivedFeatureTooltip(
-                            DateFormat('yyyy-MM-dd HH:mm:ss')
-                                .format(feature.whenArchived!)),
+                            formatLocalDateTime(feature.whenArchived!)),
                         child: Chip(
                           avatar: const Icon(Icons.archive_outlined,
                               size: 14, color: Colors.red),

@@ -3,8 +3,8 @@ import 'package:advanced_datatable/datatable.dart';
 import 'package:bloc_provider/bloc_provider.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 import 'package:mrapi/api.dart';
+import 'package:open_admin_app/utils/date_format.dart';
 import 'package:open_admin_app/api/client_api.dart';
 import 'package:open_admin_app/common/stream_valley.dart';
 import 'package:open_admin_app/generated/l10n/app_localizations.dart';
@@ -210,10 +210,10 @@ class PortfolioStrategyDataTableSource
         cells: [
           DataCell(Text(strategy.strategy.name)),
           DataCell(Text(
-            DateFormat('yyyy-MM-dd HH:mm:ss').format(strategy.whenCreated),
+            formatLocalDateTime(strategy.whenCreated),
           )),
           DataCell(Text(
-            DateFormat('yyyy-MM-dd HH:mm:ss').format(strategy.whenUpdated),
+            formatLocalDateTime(strategy.whenUpdated),
           )),
           DataCell(
             Text(strategy.updatedBy.email),

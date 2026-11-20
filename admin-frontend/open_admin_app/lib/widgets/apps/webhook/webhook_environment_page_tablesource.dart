@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:advanced_datatable/advanced_datatable_source.dart';
 import 'package:flutter/material.dart';
 import 'package:mrapi/api.dart';
+import 'package:open_admin_app/utils/date_format.dart';
 import 'package:open_admin_app/generated/l10n/app_localizations.dart';
 import 'package:open_admin_app/widgets/apps/webhook/webhook_detail_table_widget.dart';
 import 'package:open_admin_app/widgets/apps/webhook/webhook_env_bloc.dart';
@@ -70,7 +71,7 @@ class WebhookTableSource extends AdvancedDataTableSource<WebhookSummaryItem> {
         final l10n = AppLocalizations.of(context)!;
         return Text(item.status == 0 ? l10n.undelivered : item.status.toString());
       })),
-      DataCell(Text(item.whenSent.toIso8601String())),
+      DataCell(Text(formatLocalDateTime(item.whenSent))),
       DataCell(Builder(builder: (context) {
         final l10n = AppLocalizations.of(context)!;
         return FHIconButton(

@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:open_admin_app/generated/l10n/app_localizations.dart';
 import 'package:mrapi/api.dart';
+import 'package:open_admin_app/utils/date_format.dart';
 import 'package:open_admin_app/widgets/common/fh_flat_button.dart';
 import 'package:open_admin_app/widgets/common/fh_loading_error.dart';
 import 'package:open_admin_app/widgets/common/fh_loading_indicator.dart';
@@ -164,7 +165,7 @@ class TrackEventItemWidget extends StatelessWidget {
                   Row(
                     children: [
                       SelectableText(l10n.unacknowledgedRequest(
-                          event.whenSent.toLocal().toString()))
+                          formatLocalDateTime(event.whenSent)))
                     ],
                   ),
                 ],
@@ -185,7 +186,7 @@ class TrackEventItemWidget extends StatelessWidget {
                     children: [
                       SelectableText(l10n.deliveryStatusReceived(
                           _decodeStatus(response.status, l10n),
-                          response.whenReceived.toLocal().toString()))
+                          formatLocalDateTime(response.whenReceived)))
                     ],
                   ),
                 ],
@@ -206,7 +207,7 @@ class TrackEventItemWidget extends StatelessWidget {
                     SelectableText(
                         l10n.deliveryStatusError(
                             _decodeStatus(response.status, l10n),
-                            response.whenReceived.toLocal().toString()),
+                            formatLocalDateTime(response.whenReceived)),
                         style:
                             Theme.of(context).snackBarTheme.contentTextStyle),
                   ],

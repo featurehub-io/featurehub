@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 import 'package:mrapi/api.dart';
+import 'package:open_admin_app/utils/date_format.dart';
 import 'package:open_admin_app/generated/l10n/app_localizations.dart';
 import 'package:open_admin_app/theme/custom_text_style.dart';
 import 'package:open_admin_app/widgets/common/decorations/fh_page_divider.dart';
@@ -441,9 +441,8 @@ class _EditFeatureValueWidgetState extends State<EditFeatureValueWidget> {
                             for (FeatureHistoryValue value
                             in item.history)
                               DataRow(cells: [
-                                DataCell(Text(DateFormat(
-                                    'yyyy-MM-dd HH:mm:ss')
-                                    .format(value.when_))),
+                                DataCell(Text(
+                                    formatLocalDateTime(value.when_))),
                                 DataCell(
                                   Text(value.who.name),
                                 ),
