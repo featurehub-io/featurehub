@@ -151,7 +151,7 @@ class FeatureSpec extends Base2Spec {
     and: "i get the version after addition"
     Map<UUID, Long> envAfterFeatures = appApi.getApplication(appId, Opts.opts(FillOpts.Environments)).environments.collectEntries({ [it.id, it.version]})
     then:
-      envBeforeFeatures.each { envAfterFeatures[it.key] == envBeforeFeatures[it.key] + 1 }
+      envBeforeFeatures.each { assert envAfterFeatures[it.key] == envBeforeFeatures[it.key] + 1 }
       features.find({ it -> it.key == 'FEATURE_ONE'}) != null
       foundFeatures.find({ it -> it.key == 'FEATURE_ONE'}) != null
       appApi.getApplicationSummary(appId).featureCount == 1
@@ -232,7 +232,7 @@ class FeatureSpec extends Base2Spec {
     and: "get the env version numbers after the delete"
       Map<UUID, Long> envAfterDelete = appApi.getApplication(appId, Opts.opts(FillOpts.Environments)).environments.collectEntries({ [it.id, it.version]})
     then: "env versions should have bumped to force republishing envs"
-      envBeforeDelete.each { envAfterDelete[it.key] == envBeforeDelete[it.key] + 1 }
+      envBeforeDelete.each { assert envAfterDelete[it.key] == envBeforeDelete[it.key] + 1 }
     and: "the feature should be deleted"
       features.find({it.key  == key}) != null
       deletedList == getList
@@ -255,7 +255,7 @@ class FeatureSpec extends Base2Spec {
     then:
       fullDetails.features.find({it.key == key}) != null
       environments.each {e ->
-        fullDetails.environments.find({env -> env.environmentId == e.id})
+        assert fullDetails.environments.find({env -> env.environmentId == e.id})
           .features.find({ f -> f.key == key }).value == newCounter
         newCounter ++
       }
