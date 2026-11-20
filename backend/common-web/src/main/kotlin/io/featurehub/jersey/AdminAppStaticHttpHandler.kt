@@ -194,7 +194,22 @@ class AdminAppStaticHttpHandler constructor(private val offsetBaseUrl: String) :
     }
 
     response.setHeader("Cache-Control", restCacheControlHeader)
+    // content type must come from the original file name, sendFile won't override it once set
     pickupContentType(response, resource!!.path)
+
+    if (PrecompressedAssets.hasVariants(resource)) {
+      response.addHeader(Header.Vary, "Accept-Encoding")
+
+      val variant = if (response.response.isContentTypeSet)
+        PrecompressedAssets.select(resource, request.getHeader(Header.AcceptEncoding)) else null
+
+      if (variant != null) {
+        response.setHeader(Header.ContentEncoding, variant.encoding)
+        sendFile(response, variant.file)
+        return true
+      }
+    }
+
     addToFileCache(request, response, resource)
     sendFile(response, resource)
     return true
