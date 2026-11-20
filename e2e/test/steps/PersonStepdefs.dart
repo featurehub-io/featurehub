@@ -10,7 +10,10 @@ class PersonStepdefs {
   final Shared shared;
   final SuperuserCommon common;
 
-  PersonStepdefs(this.userCommon, this.shared, this.common);
+  PersonStepdefs(this.userCommon, this.shared, this.common)  {
+    this.common.shared = this.shared;
+    this.userCommon.shared = this.shared;
+  }
 
   RegistrationUrl? registrationUrl;
 

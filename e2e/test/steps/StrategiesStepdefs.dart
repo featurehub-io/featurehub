@@ -8,7 +8,9 @@ class StrategiesStepdefs {
   final UserCommon userCommon;
   final Shared shared;
 
-  StrategiesStepdefs(this.userCommon, this.shared);
+  StrategiesStepdefs(this.userCommon, this.shared)  {
+    this.userCommon.shared = this.shared;
+  }
 
   // @And(r'I create shared rollout strategies')
   // void iSetTheRolloutStrategyToPercentage(GherkinTable table) async {

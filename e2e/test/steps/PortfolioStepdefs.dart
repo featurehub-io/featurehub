@@ -9,7 +9,9 @@ class PortfolioStepdefs {
   final Shared shared;
   final UserCommon userCommon;
 
-  PortfolioStepdefs(this.shared, this.userCommon);
+  PortfolioStepdefs(this.shared, this.userCommon) {
+    this.userCommon.shared = this.shared;
+  }
 
   Portfolio? found;
 

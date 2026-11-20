@@ -1,10 +1,10 @@
 import 'package:ogurets/ogurets.dart';
 
 /// this file is manually maintained, if you add new stepdefs, you must add them to this list.
-void main(args) async {
+void main() async {
   var def = new OguretsOpts()
     ..feature('test/features')
-    ..tags('@Demo')
+    ..tags("@paired")
     ..steps('test/steps');
 
   await def.run();
