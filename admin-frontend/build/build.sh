@@ -93,5 +93,23 @@ rm -rf build
 
 mv build_original build
 
+# Precompress static assets so the server (AdminAppStaticHttpHandler) can send them with a Content-Encoding
+# rather than compressing per request. index.html is skipped as the server rewrites it in memory. Source maps
+# are skipped as they are large and rarely fetched. Brotli is optional, gzip is always produced.
+echo FLUTTER: precompressing web assets
+HAVE_BROTLI=0
+if which brotli >/dev/null 2>&1; then
+  HAVE_BROTLI=1
+else
+  echo "brotli not found, only producing gzip assets"
+fi
+find build/web -type f -size +1k \( -name '*.js' -o -name '*.mjs' -o -name '*.wasm' -o -name '*.css' \
+  -o -name '*.json' -o -name '*.svg' -o -name '*.ttf' -o -name '*.otf' \) | while read -r f; do
+  gzip -9 -n -k -f "$f"
+  if [ "$HAVE_BROTLI" = "1" ]; then
+    brotli -q 11 -k -f "$f"
+  fi
+done
+
 echo FLUTTER: finished building, cleaning
 exit 0
