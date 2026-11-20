@@ -67,8 +67,11 @@ open class Dacha2NewCacheImpl @Inject constructor(private val mrDacha2Api: Dacha
       .maximumSize(maximumServiceAccountPermissionsSize)
       .build()
 
+    // removal listeners clear permsCache, so they run on the calling thread (Caffeine's default is async on the
+    // common pool) - otherwise a read straight after an update can see stale permissions
     environmentCache = Caffeine.newBuilder()
       .maximumSize(maximumEnvironments)
+      .executor(Runnable::run)
       .removalListener(RemovalListener<UUID, EnvironmentFeatures> { envId, eFeatures, _ ->
         if (envId == null || eFeatures == null || resettingCache) return@RemovalListener
         permsCache.invalidateAll(eFeatures.env.serviceAccounts.map { "$envId/$it" })
@@ -93,6 +96,7 @@ open class Dacha2NewCacheImpl @Inject constructor(private val mrDacha2Api: Dacha
 
     serviceAccountApiKeyCache = Caffeine.newBuilder()
       .maximumSize(maximumServiceAccounts)
+      .executor(Runnable::run)
       .removalListener(RemovalListener<String, CacheServiceAccount> { key, value, _ ->
         if (key == null || value == null || resettingCache) return@RemovalListener
         permsCache.invalidateAll(value.permissions.map { permCacheKey(it.environmentId, key) })
@@ -366,9 +370,9 @@ open class Dacha2NewCacheImpl @Inject constructor(private val mrDacha2Api: Dacha
 
         val envs = sa.permissions.associateBy { it.environmentId }
 
-        // take while the envId in the existing list doesn't exist in the new one, map it to a list of
+        // filter the envIds in the existing list that don't exist in the new one, map it to a list of
         // perm cache keys we have to remove, flatten, invalidate
-        permsCache.invalidateAll(existing.permissions.takeWhile { envs[it.environmentId] == null }.flatMap {
+        permsCache.invalidateAll(existing.permissions.filter { envs[it.environmentId] == null }.flatMap {
           listOf(
             permCacheKey(it.environmentId, sa.apiKeyServerSide),
             permCacheKey(it.environmentId, sa.apiKeyClientSide)
