@@ -97,7 +97,9 @@ The operator documentation is in `docs/modules/ROOT/pages/maintenance.adoc`.
 
 `FileFeatureUpdateBlock` (edge-common, bound in `EdgeCommonFeature`) checks `edge.update-block.file` on its own daemon
 thread every `edge.update-block.check-interval-seconds` (default 30, minimum 1). `FeatureUpdateProcessor.updateFeature`
-asks it first: while the file exists it resumes the request with a 503 and `Retry-After` (the file's first non-blank
-line, or `edge.update-block.retry-after`) before asking Dacha for permissions or publishing anything to MR. Every
+asks it first: while the file (read as properties) has a `blocked` key it resumes the request with a 503 and
+`Retry-After` (the `blocked` value if it is seconds or an RFC 1123 date, otherwise `edge.update-block.retry-after`)
+before asking Dacha for permissions or publishing anything to MR. The file existing without the key does not block, so
+it can be mounted permanently and the key toggled without a restart. A missing or unreadable file does not block. Every
 update path (edge-full, edge-rest, the Party Servers and the SaaS slice-edge) goes through `FeatureUpdateProcessor`,
 so they are all covered. With no file configured nothing is scheduled.

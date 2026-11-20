@@ -6,6 +6,9 @@ import jakarta.inject.Inject
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.io.File
+import java.time.format.DateTimeFormatter
+import java.time.format.DateTimeParseException
+import java.util.Properties
 import java.util.concurrent.Executors
 import java.util.concurrent.ScheduledExecutorService
 import java.util.concurrent.TimeUnit
@@ -23,13 +26,16 @@ interface FeatureUpdateBlock {
 }
 
 /**
- * Updates are blocked while the file `edge.update-block.file` exists. It is checked every
- * `edge.update-block.check-interval-seconds` (default 30, minimum 1). If the file has any content, its first line is
- * used as the Retry-After value (seconds, or an RFC 1123 date), otherwise `edge.update-block.retry-after`
- * (default 60 seconds).
+ * Updates are blocked while the file `edge.update-block.file` contains a `blocked` key. The file is read as a Java
+ * properties file, so `blocked`, `blocked=` and `blocked: 120` all count. The file existing on its own does not block,
+ * so it can be mounted permanently (e.g. a Kubernetes ConfigMap mounted as a directory, not with subPath) and the key
+ * added or removed without restarting Edge. It is re-read every `edge.update-block.check-interval-seconds`
+ * (default 30, minimum 1) for as long as Edge runs.
  *
- * The file is meant to be a key of a mounted (Kubernetes) ConfigMap: adding or removing the key adds or removes the
- * file in a running pod. It must not be mounted with subPath, as those mounts never update.
+ * If the `blocked` value is a number of seconds or an RFC 1123 date it is used as the Retry-After value, otherwise
+ * `edge.update-block.retry-after` (default 60 seconds) is.
+ *
+ * A file that is missing or cannot be read does not block (an unreadable file is logged as an error).
  *
  * If no file is configured, updates are never blocked and nothing is scheduled.
  */
@@ -53,6 +59,9 @@ class FileFeatureUpdateBlock(private val blockFile: String?,
   @Volatile
   private var retryAfter: String? = null
 
+  // so a file that stays unreadable is only logged when it first becomes so, not on every check
+  private var unreadable = false
+
   private val executor: ScheduledExecutorService? = blockFile?.let {
     Executors.newSingleThreadScheduledExecutor { r ->
       Thread(r, "edge-update-block").apply { isDaemon = true }
@@ -63,7 +72,8 @@ class FileFeatureUpdateBlock(private val blockFile: String?,
     if (blockFile == null) {
       log.info("edge.update-block.file is not set, feature updates are never blocked")
     } else {
-      log.info("feature updates are blocked while {} exists, checked every {}s", blockFile, this.checkIntervalSeconds)
+      log.info("feature updates are blocked while {} has a `{}` key, checked every {}s", blockFile, BLOCKED_KEY,
+        this.checkIntervalSeconds)
       check()
       executor!!.scheduleWithFixedDelay({ check() }, this.checkIntervalSeconds, this.checkIntervalSeconds, TimeUnit.SECONDS)
     }
@@ -72,28 +82,61 @@ class FileFeatureUpdateBlock(private val blockFile: String?,
   override fun blockedRetryAfter(): String? = retryAfter
 
   /**
-   * reads the file - called on the schedule, public so tests can call it directly
+   * reads the file - called on the schedule, public so tests can call it directly. It never throws, as an exception
+   * would stop the scheduled checks.
    */
+  @Synchronized
   fun check() {
     val file = blockFile?.let { File(it) } ?: return
 
     val newRetryAfter = try {
-      if (file.isFile) {
-        file.readLines().firstOrNull { it.isNotBlank() }?.trim() ?: defaultRetryAfter
+      val result = if (file.isFile) {
+        val props = Properties()
+        file.reader(Charsets.UTF_8).use { props.load(it) }
+        props.getProperty(BLOCKED_KEY)?.let { retryAfterFrom(it) }
       } else null
+
+      if (unreadable) {
+        log.info("feature update block file {} can be read again", blockFile)
+        unreadable = false
+      }
+
+      result
     } catch (e: Exception) {
-      // it exists but we can't read it - an operator put it there, so block rather than let updates through
-      log.error("feature update block file {} exists but cannot be read, blocking updates", blockFile, e)
-      defaultRetryAfter
+      if (!unreadable) {
+        log.error("feature update block file {} cannot be read, feature updates are not blocked", blockFile, e)
+        unreadable = true
+      }
+      null
     }
 
     val wasBlocked = retryAfter != null
     retryAfter = newRetryAfter
 
     if (newRetryAfter != null && !wasBlocked) {
-      log.warn("feature updates are now BLOCKED ({} exists), responding 503 with retry-after {}", blockFile, newRetryAfter)
+      log.warn("feature updates are now BLOCKED ({} has a `{}` key), responding 503 with retry-after {}", blockFile,
+        BLOCKED_KEY, newRetryAfter)
     } else if (newRetryAfter == null && wasBlocked) {
-      log.warn("feature updates are now allowed again ({} has gone)", blockFile)
+      log.warn("feature updates are now allowed again ({} has no `{}` key)", blockFile, BLOCKED_KEY)
+    }
+  }
+
+  private fun retryAfterFrom(value: String): String {
+    val v = value.trim()
+
+    if (v.isEmpty()) {
+      return defaultRetryAfter
+    }
+
+    if (v.all { it.isDigit() }) {
+      return v
+    }
+
+    return try {
+      DateTimeFormatter.RFC_1123_DATE_TIME.parse(v)
+      v
+    } catch (e: DateTimeParseException) {
+      defaultRetryAfter
     }
   }
 
@@ -107,5 +150,6 @@ class FileFeatureUpdateBlock(private val blockFile: String?,
     const val DEFAULT_CHECK_INTERVAL_SECONDS = 30L
     const val MINIMUM_CHECK_INTERVAL_SECONDS = 1L
     const val DEFAULT_RETRY_AFTER = "60"
+    const val BLOCKED_KEY = "blocked"
   }
 }
