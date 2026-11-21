@@ -3689,8 +3689,8 @@ abstract class AppLocalizations {
   /// Badge in the strategy hover card for a strategy defined on the feature value itself
   ///
   /// In en, this message translates to:
-  /// **'Custom Strategy'**
-  String get tooltipCustomStrategy;
+  /// **'Feature Strategy'**
+  String get tooltipFeatureStrategy;
 
   /// Label for the percentage rollout section in the strategy hover card
   ///
@@ -3721,6 +3721,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Rule details unavailable'**
   String get tooltipRulesUnavailable;
+
+  /// Shown in the strategy hover card while the strategy definition is still being fetched
+  ///
+  /// In en, this message translates to:
+  /// **'Loading rule details…'**
+  String get tooltipRulesLoading;
 
   /// Banner shown in the feature value side sheet when there are unsaved changes
   ///
@@ -3839,7 +3845,7 @@ abstract class AppLocalizations {
   /// Info tooltip describing portfolio strategy variations
   ///
   /// In en, this message translates to:
-  /// **'Portfolio strategies are created at portfolio level and can be assigned to multiple features in any environment. Portfolio strategy can be created and edited from the Portfolio Strategies page.'**
+  /// **'Portfolio strategies are created at portfolio level and can be used in any application under the portfolio and assigned to any feature in any environment. Portfolio strategy can be created and edited from the Portfolio Strategies page.'**
   String get portfolioStrategyVariationsInfo;
 
   /// Placeholder when no portfolio strategies have been assigned

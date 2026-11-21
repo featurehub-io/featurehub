@@ -1974,7 +1974,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get tooltipCustom => '自定义';
 
   @override
-  String get tooltipCustomStrategy => '自定义策略';
+  String get tooltipFeatureStrategy => '功能策略';
 
   @override
   String get tooltipRollout => '发布比例';
@@ -1990,6 +1990,9 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get tooltipRulesUnavailable => '规则详情不可用';
+
+  @override
+  String get tooltipRulesLoading => '正在加载规则详情…';
 
   @override
   String get unsavedChanges => '您有未保存的更改，是否保存？';
@@ -2055,7 +2058,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get portfolioStrategyVariationsInfo =>
-      '项目组合策略在项目组合层面创建，可分配给任意环境中的多个功能。项目组合策略可在「项目组合策略」页面中创建和编辑。';
+      '项目组合策略在项目组合层面创建，可用于该项目组合下的任意应用程序，并可分配给任意环境中的任意功能。项目组合策略可在「项目组合策略」页面中创建和编辑。';
 
   @override
   String get noPortfolioStrategiesSet => '未设置项目组合策略';
@@ -2122,7 +2125,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get moreDetails => '更多';
 
   @override
-  String get groupStrategyTooltip => '用户组策略';
+  String get groupStrategyTooltip => '功能标志组策略';
 
   @override
   String get applicationStrategyTooltip => '应用程序策略';

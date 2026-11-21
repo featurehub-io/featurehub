@@ -107,13 +107,33 @@ class _ValueContainer extends StatelessWidget {
                       ),
                   if (fv!.featureGroupStrategies != null &&
                       fv!.featureGroupStrategies!.isNotEmpty)
-                    for (ThinGroupRolloutStrategy rsi
-                        in fv!.featureGroupStrategies!)
-                      _ValueCard(
-                        groupStrategy: rsi,
-                        fv: fv!,
-                        feature: feature,
-                      ),
+                    // group details load after the table is shown, so only
+                    // this part of the cell rebuilds when they arrive
+                    StreamBuilder<GroupStrategyDetails>(
+                      stream: bloc.groupStrategiesStream,
+                      initialData: bloc.groupStrategies,
+                      builder: (context, snapshot) {
+                        final groupDetails =
+                            snapshot.data ?? const GroupStrategyDetails();
+                        return Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            for (ThinGroupRolloutStrategy rsi
+                                in fv!.featureGroupStrategies!)
+                              _ValueCard(
+                                groupStrategy: rsi,
+                                sharedStrategyDetails:
+                                    _groupStrategyDetails(groupDetails, rsi),
+                                sharedStrategyDetailsLoading: groupDetails
+                                    .loading
+                                    .contains(rsi.featureGroupId),
+                                fv: fv!,
+                                feature: feature,
+                              ),
+                          ],
+                        );
+                      },
+                    ),
                   if (fv?.rolloutStrategyInstances?.isNotEmpty == true)
                     for (RolloutStrategyInstance rsi
                         in fv!.rolloutStrategyInstances!)
@@ -158,6 +178,17 @@ StrategyTooltipDetails? _sharedStrategyDetails(RolloutStrategyInstance rsi,
       percentage: rsi.percentageOverride ?? percentage,
       percentageOverridden: rsi.percentageOverride != null,
       attributes: attributes);
+}
+
+StrategyTooltipDetails? _groupStrategyDetails(
+    GroupStrategyDetails groupDetails, ThinGroupRolloutStrategy gs) {
+  final fgId = gs.featureGroupId;
+  final strategy = fgId == null ? null : groupDetails.strategies[fgId];
+  if (strategy == null) {
+    return null;
+  }
+  return StrategyTooltipDetails(
+      percentage: strategy.percentage, attributes: strategy.attributes);
 }
 
 StrategyTooltipDetails? _applicationStrategyDetails(
@@ -218,6 +249,9 @@ class _ValueCard extends StatelessWidget {
   final RolloutStrategyInstance? portfolioStrategy;
   final StrategyTooltipDetails? sharedStrategyDetails;
 
+  /// true while [sharedStrategyDetails] is still being fetched
+  final bool sharedStrategyDetailsLoading;
+
   const _ValueCard(
       {required this.fv,
       required this.feature,
@@ -225,7 +259,8 @@ class _ValueCard extends StatelessWidget {
       this.groupStrategy,
       this.applicationStrategy,
       this.portfolioStrategy,
-      this.sharedStrategyDetails});
+      this.sharedStrategyDetails,
+      this.sharedStrategyDetailsLoading = false});
 
   @override
   Widget build(BuildContext context) {
@@ -290,8 +325,12 @@ class _ValueCard extends StatelessWidget {
                         ),
                       )
                     : groupStrategy != null
-                        ? Tooltip(
-                            message: l10n.groupStrategyTooltip,
+                        ? StrategyTooltip(
+                            name: groupStrategy!.name,
+                            kind: StrategyTooltipKind.group,
+                            accent: groupStrategyTextColor,
+                            details: sharedStrategyDetails,
+                            loading: sharedStrategyDetailsLoading,
                             child: Padding(
                               padding: const EdgeInsets.all(4.0),
                               child: Text(

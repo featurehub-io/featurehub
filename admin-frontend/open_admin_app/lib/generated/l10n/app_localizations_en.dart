@@ -2062,7 +2062,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get tooltipCustom => 'Custom';
 
   @override
-  String get tooltipCustomStrategy => 'Custom Strategy';
+  String get tooltipFeatureStrategy => 'Feature Strategy';
 
   @override
   String get tooltipRollout => 'Rollout';
@@ -2078,6 +2078,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get tooltipRulesUnavailable => 'Rule details unavailable';
+
+  @override
+  String get tooltipRulesLoading => 'Loading rule details…';
 
   @override
   String get unsavedChanges => 'You have unsaved changes, save?';
@@ -2145,7 +2148,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get portfolioStrategyVariationsInfo =>
-      'Portfolio strategies are created at portfolio level and can be assigned to multiple features in any environment. Portfolio strategy can be created and edited from the Portfolio Strategies page.';
+      'Portfolio strategies are created at portfolio level and can be used in any application under the portfolio and assigned to any feature in any environment. Portfolio strategy can be created and edited from the Portfolio Strategies page.';
 
   @override
   String get noPortfolioStrategiesSet => 'No portfolio strategies set';
