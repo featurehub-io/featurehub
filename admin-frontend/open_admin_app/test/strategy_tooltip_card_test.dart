@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mrapi/api.dart';
 import 'package:open_admin_app/generated/l10n/app_localizations.dart';
 import 'package:open_admin_app/widgets/features/cell-view/strategy_tooltip.dart';
+import 'package:open_admin_app/widgets/features/feature_dashboard_constants.dart';
 
 Widget _wrap(Widget child) => MaterialApp(
       localizationsDelegates: AppLocalizations.localizationsDelegates,
@@ -43,14 +44,42 @@ void main() {
   });
 
   testWidgets('shows unavailable when definition is unknown', (tester) async {
-    await tester.pumpWidget(_wrap(const StrategyTooltipCard(
+    await tester.pumpWidget(_wrap(StrategyTooltipCard(
       name: 'Shared',
       kind: StrategyTooltipKind.portfolio,
-      accent: Colors.orangeAccent,
+      accent: portfolioStrategyTextColor,
       details: null,
     )));
 
     expect(tester.takeException(), isNull);
+    expect(find.text('Portfolio Strategy'), findsOneWidget);
     expect(find.text('Rule details unavailable'), findsOneWidget);
+  });
+
+  testWidgets('labels group strategies', (tester) async {
+    await tester.pumpWidget(_wrap(StrategyTooltipCard(
+      name: 'Checkout group',
+      kind: StrategyTooltipKind.group,
+      accent: groupStrategyTextColor,
+      details: StrategyTooltipDetails(percentage: 500000),
+    )));
+
+    expect(tester.takeException(), isNull);
+    expect(find.text('Checkout group'), findsOneWidget);
+    expect(find.text('Group Strategy'), findsOneWidget);
+    expect(find.text('50.0%'), findsOneWidget);
+  });
+
+  testWidgets('labels feature strategies', (tester) async {
+    await tester.pumpWidget(_wrap(StrategyTooltipCard(
+      name: 'Internal testers',
+      kind: StrategyTooltipKind.custom,
+      accent: strategyTextColor,
+      details: StrategyTooltipDetails(),
+    )));
+
+    expect(tester.takeException(), isNull);
+    expect(find.text('Feature Strategy'), findsOneWidget);
+    expect(find.text('No targeting rules'), findsOneWidget);
   });
 }

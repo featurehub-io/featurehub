@@ -107,18 +107,29 @@ class _ValueContainer extends StatelessWidget {
                       ),
                   if (fv!.featureGroupStrategies != null &&
                       fv!.featureGroupStrategies!.isNotEmpty)
-                    for (ThinGroupRolloutStrategy rsi
-                        in fv!.featureGroupStrategies!)
-                      StreamBuilder<Map<String, GroupRolloutStrategy>>(
-                        stream: bloc.groupStrategiesStream,
-                        builder: (context, _) => _ValueCard(
-                          groupStrategy: rsi,
-                          sharedStrategyDetails:
-                              _groupStrategyDetails(bloc, rsi),
-                          fv: fv!,
-                          feature: feature,
-                        ),
-                      ),
+                    // group details load after the table is shown, so only
+                    // this part of the cell rebuilds when they arrive
+                    StreamBuilder<Map<String, GroupRolloutStrategy>>(
+                      stream: bloc.groupStrategiesStream,
+                      initialData: bloc.groupStrategies,
+                      builder: (context, snapshot) {
+                        final groupDetails = snapshot.data ?? const {};
+                        return Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            for (ThinGroupRolloutStrategy rsi
+                                in fv!.featureGroupStrategies!)
+                              _ValueCard(
+                                groupStrategy: rsi,
+                                sharedStrategyDetails:
+                                    _groupStrategyDetails(groupDetails, rsi),
+                                fv: fv!,
+                                feature: feature,
+                              ),
+                          ],
+                        );
+                      },
+                    ),
                   if (fv?.rolloutStrategyInstances?.isNotEmpty == true)
                     for (RolloutStrategyInstance rsi
                         in fv!.rolloutStrategyInstances!)
@@ -166,8 +177,10 @@ StrategyTooltipDetails? _sharedStrategyDetails(RolloutStrategyInstance rsi,
 }
 
 StrategyTooltipDetails? _groupStrategyDetails(
-    PerApplicationFeaturesBloc bloc, ThinGroupRolloutStrategy gs) {
-  final strategy = bloc.groupStrategy(gs.featureGroupId);
+    Map<String, GroupRolloutStrategy> groupDetails,
+    ThinGroupRolloutStrategy gs) {
+  final fgId = gs.featureGroupId;
+  final strategy = fgId == null ? null : groupDetails[fgId];
   if (strategy == null) {
     return null;
   }

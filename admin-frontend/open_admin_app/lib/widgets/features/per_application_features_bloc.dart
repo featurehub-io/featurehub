@@ -102,10 +102,8 @@ class PerApplicationFeaturesBloc
   Stream<Map<String, GroupRolloutStrategy>> get groupStrategiesStream =>
       _groupStrategiesSource.stream;
 
-  GroupRolloutStrategy? groupStrategy(String? featureGroupId) =>
-      featureGroupId == null
-          ? null
-          : _groupStrategiesSource.value[featureGroupId];
+  Map<String, GroupRolloutStrategy> get groupStrategies =>
+      _groupStrategiesSource.value;
 
   final _appFeatureValues = BehaviorSubject<CollectedFeatureTableData?>();
 
@@ -464,8 +462,9 @@ class PerApplicationFeaturesBloc
 
   /// Loads the strategy of each feature group referenced by the feature values
   /// on this page, as feature values only carry the group's name and value.
-  /// Failures are logged and ignored, the tooltip then shows no rule detail.
-  /// Results of a load superseded by a later one are discarded.
+  /// A group that fails to load keeps the details from the previous load (if
+  /// any) and is otherwise shown with no rule detail. Results of a load
+  /// superseded by a later one are discarded.
   Future<void> _loadGroupStrategies(
       String appId, ApplicationFeatureValues featureValues) async {
     final generation = ++_groupStrategiesLoadGeneration;
@@ -477,6 +476,7 @@ class PerApplicationFeaturesBloc
         .nonNulls
         .toSet();
 
+    final previous = _groupStrategiesSource.value;
     final loaded = <String, GroupRolloutStrategy>{};
     await Future.wait(groupIds.map((fgId) =>
         _featureGroupServiceApi.getFeatureGroup(appId, fgId).then((group) {
@@ -486,6 +486,10 @@ class PerApplicationFeaturesBloc
           }
         }).catchError((e) {
           _log.fine("unable to load feature group $fgId for $appId", e);
+          final last = previous[fgId];
+          if (last != null) {
+            loaded[fgId] = last;
+          }
         })));
 
     if (generation == _groupStrategiesLoadGeneration &&
