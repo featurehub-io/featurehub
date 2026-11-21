@@ -4,10 +4,13 @@ import cd.connect.app.config.ThreadLocalConfigurationSource
 import io.featurehub.dacha.model.CacheEnvironment
 import io.featurehub.dacha.model.CacheEnvironmentFeature
 import io.featurehub.dacha.model.CacheFeature
+import io.featurehub.dacha.model.CacheServiceAccount
+import io.featurehub.dacha.model.CacheServiceAccountPermission
 import io.featurehub.dacha.model.PublishAction
 import io.featurehub.dacha.model.PublishEnvironment
 import io.featurehub.dacha.model.PublishFeatureValue
 import io.featurehub.dacha.model.PublishServiceAccount
+import io.featurehub.mr.model.RoleType
 import jakarta.ws.rs.ProcessingException
 import jakarta.ws.rs.client.Client
 import jakarta.ws.rs.client.Invocation
@@ -109,9 +112,55 @@ class FastlyPublisherSpec extends Specification {
       action << [PublishAction.CREATE, PublishAction.EMPTY]
   }
 
-  def "a service account change never purges"() {
+  PublishServiceAccount serviceAccount(PublishAction action, List<UUID> envIds) {
+    return new PublishServiceAccount()
+      .action(action)
+      .count(1)
+      .serviceAccount(new CacheServiceAccount()
+        .id(UUID.randomUUID())
+        .version(1)
+        .apiKeyClientSide("ling-client-key")
+        .apiKeyServerSide("orm-server-key")
+        .filters([UUID.randomUUID()])
+        .permissions(envIds.collect { new CacheServiceAccountPermission().environmentId(it).permissions([RoleType.READ]) }))
+  }
+
+  @Unroll
+  def "a service account #action purges every environment it has permissions on"() {
+    given:
+      def otherEnvId = UUID.randomUUID()
     when:
-      publisher.updateServiceAccount(new PublishServiceAccount().action(PublishAction.UPDATE))
+      publisher.updateServiceAccount(serviceAccount(action, [envId, otherEnvId]))
+    then:
+      interaction { expectPurgeOf(envId) }
+      interaction { expectPurgeOf(otherEnvId) }
+      0 * _
+    where:
+      action << [PublishAction.UPDATE, PublishAction.DELETE]
+  }
+
+  def "a service account with the same environment listed twice only purges it once"() {
+    when:
+      publisher.updateServiceAccount(serviceAccount(PublishAction.UPDATE, [envId, envId]))
+    then:
+      interaction { expectPurgeOf(envId) }
+      0 * _
+  }
+
+  @Unroll
+  def "a service account #action does not purge"() {
+    when:
+      publisher.updateServiceAccount(serviceAccount(action, [envId]))
+    then:
+      0 * _
+    where:
+      action << [PublishAction.CREATE, PublishAction.EMPTY]
+  }
+
+  def "a service account update with no service account or no permissions does not purge"() {
+    when:
+      publisher.updateServiceAccount(new PublishServiceAccount().action(PublishAction.UPDATE).count(0))
+      publisher.updateServiceAccount(serviceAccount(PublishAction.UPDATE, []))
     then:
       0 * _
   }

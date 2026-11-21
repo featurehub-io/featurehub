@@ -277,19 +277,7 @@ open class DbCacheSource @Inject constructor(
       .version(sa.version)
       .apiKeyClientSide(sa.apiKeyClientEval)
       .apiKeyServerSide(sa.apiKeyServerEval)
-      .permissions(
-        QDbServiceAccountEnvironment()
-          .select(QDbServiceAccountEnvironment.Alias.permissions)
-          .serviceAccount.id.eq(sa.id)
-          .environment.whenUnpublished.isNull
-          .environment.whenArchived.isNull
-          .environment.fetch(QDbEnvironment.Alias.id)
-          .findList().map { sap: DbServiceAccountEnvironment ->
-            CacheServiceAccountPermission()
-              .permissions(convertUtils.splitServiceAccountPermissions(sap.permissions) ?: listOf())
-              .environmentId(sap.environment.id)
-          }
-      )
+      .permissions(serviceAccountPermissions(sa.id))
       .filters(
         QDbFeatureFilter()
           .select(QDbFeatureFilter.Alias.id)
@@ -603,9 +591,28 @@ open class DbCacheSource @Inject constructor(
             .apiKeyServerSide("")
             .apiKeyClientSide("")
             .version(Long.MAX_VALUE)
-        ) // just send the id, that is all the cache needs
+            .permissions(serviceAccountPermissions(id))
+        ) // the cache only needs the id, the permissions let edge caches (e.g. Fastly) purge what it was served
         .action(PublishAction.DELETE)
     )
+  }
+
+  /**
+   * The permissions on publishable environments. Archiving and unpublishing a service account only mark it, so these
+   * are still present when its delete is published (after commit), which lets edge caches keyed by environment purge.
+   */
+  private fun serviceAccountPermissions(id: UUID): List<CacheServiceAccountPermission> {
+    return QDbServiceAccountEnvironment()
+      .select(QDbServiceAccountEnvironment.Alias.permissions)
+      .serviceAccount.id.eq(id)
+      .environment.whenUnpublished.isNull
+      .environment.whenArchived.isNull
+      .environment.fetch(QDbEnvironment.Alias.id)
+      .findList().map { sap: DbServiceAccountEnvironment ->
+        CacheServiceAccountPermission()
+          .permissions(convertUtils.splitServiceAccountPermissions(sap.permissions) ?: listOf())
+          .environmentId(sap.environment.id)
+      }
   }
 
   override fun updateEnvironment(environment: DbEnvironment, publishAction: PublishAction) {
