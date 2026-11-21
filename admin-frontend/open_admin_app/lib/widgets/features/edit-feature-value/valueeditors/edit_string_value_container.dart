@@ -26,7 +26,7 @@ class EditStringValueContainerState
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    final v = resolveStrategyValue() ?? widget.strBloc.featureValue.valueString;
+    final v = resolveValue(widget.strBloc.featureValue.valueString);
     tec.text = (v ?? '').toString();
   }
 

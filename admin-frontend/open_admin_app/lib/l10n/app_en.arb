@@ -2008,8 +2008,8 @@
   "tooltipCustom": "Custom",
   "@tooltipCustom": { "description": "Tooltip line indicating a custom attribute rule is applied" },
 
-  "tooltipCustomStrategy": "Custom Strategy",
-  "@tooltipCustomStrategy": { "description": "Badge in the strategy hover card for a strategy defined on the feature value itself" },
+  "tooltipFeatureStrategy": "Feature Strategy",
+  "@tooltipFeatureStrategy": { "description": "Badge in the strategy hover card for a strategy defined on the feature value itself" },
 
   "tooltipRollout": "Rollout",
   "@tooltipRollout": { "description": "Label for the percentage rollout section in the strategy hover card" },
@@ -2025,6 +2025,9 @@
 
   "tooltipRulesUnavailable": "Rule details unavailable",
   "@tooltipRulesUnavailable": { "description": "Shown in the strategy hover card when the shared strategy definition could not be loaded" },
+
+  "tooltipRulesLoading": "Loading rule details…",
+  "@tooltipRulesLoading": { "description": "Shown in the strategy hover card while the strategy definition is still being fetched" },
 
   "unsavedChanges": "You have unsaved changes, save?",
   "@unsavedChanges": { "description": "Banner shown in the feature value side sheet when there are unsaved changes" },
@@ -2083,7 +2086,7 @@
     "portfolioStrategyVariations": "Portfolio strategy variations",
     "@portfolioStrategyVariations": { "description": "Section heading for portfolio-level strategy variations" },
 
-    "portfolioStrategyVariationsInfo": "Portfolio strategies are created at portfolio level and can be assigned to multiple features in any environment. Portfolio strategy can be created and edited from the Portfolio Strategies page.",
+    "portfolioStrategyVariationsInfo": "Portfolio strategies are created at portfolio level and can be used in any application under the portfolio and assigned to any feature in any environment. Portfolio strategy can be created and edited from the Portfolio Strategies page.",
     "@portfolioStrategyVariationsInfo": { "description": "Info tooltip describing portfolio strategy variations" },
 
     "noPortfolioStrategiesSet": "No portfolio strategies set",

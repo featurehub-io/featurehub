@@ -31,6 +31,16 @@ class FeatureStatusFeatures {
   }
 }
 
+/// Group strategy details for the dashboard hover cards, keyed by feature
+/// group id, plus the ids whose details are still being fetched.
+class GroupStrategyDetails {
+  final Map<String, GroupRolloutStrategy> strategies;
+  final Set<String> loading;
+
+  const GroupStrategyDetails(
+      {this.strategies = const {}, this.loading = const {}});
+}
+
 class CollectedFeatureTableData {
   final ApplicationFeatureValues applicationFeatureValues;
   final List<Environment> availableEnvironments;
@@ -52,6 +62,7 @@ class PerApplicationFeaturesBloc
   late UserStateServiceApi _userStateServiceApi;
   late ApplicationRolloutStrategyServiceApi _rolloutStrategyServiceApi;
   late PortfolioRolloutStrategyServiceApi _portfolioRolloutStrategyServiceApi;
+  late FeatureGroupServiceApi _featureGroupServiceApi;
   late EnvironmentServiceApi _environmentServiceApi;
 
   late FeatureServiceApi _featureServiceApi;
@@ -91,6 +102,18 @@ class PerApplicationFeaturesBloc
   PortfolioRolloutStrategy? portfolioStrategy(String strategyId) =>
       _portfolioStrategies[strategyId];
 
+  // feature-group-id -> the group's strategy, for group strategy tooltips.
+  // Loaded after the table is shown so it doesn't hold up the table, hence a
+  // stream the group cells listen to.
+  final _groupStrategiesSource = BehaviorSubject<GroupStrategyDetails>.seeded(
+      const GroupStrategyDetails());
+  int _groupStrategiesLoadGeneration = 0;
+
+  Stream<GroupStrategyDetails> get groupStrategiesStream =>
+      _groupStrategiesSource.stream;
+
+  GroupStrategyDetails get groupStrategies => _groupStrategiesSource.value;
+
   final _appFeatureValues = BehaviorSubject<CollectedFeatureTableData?>();
 
   Stream<CollectedFeatureTableData?> get appFeatureValuesStream =>
@@ -117,6 +140,7 @@ class PerApplicationFeaturesBloc
         ApplicationRolloutStrategyServiceApi(_mrClient.apiClient);
     _portfolioRolloutStrategyServiceApi =
         PortfolioRolloutStrategyServiceApi(_mrClient.apiClient);
+    _featureGroupServiceApi = FeatureGroupServiceApi(_mrClient.apiClient);
     _environmentServiceApi = EnvironmentServiceApi(_mrClient.apiClient);
 
     _currentPid = _mrClient.streamValley.currentPortfolioIdStream
@@ -363,6 +387,7 @@ class PerApplicationFeaturesBloc
     _currentEnvironmentFilter.cancel();
     _appSearchResultSource.close();
     _featureMetadataStream.close();
+    _groupStrategiesSource.close();
     _appFeatureValues.close();
   }
 
@@ -394,6 +419,9 @@ class PerApplicationFeaturesBloc
 
     _appFeatureValues
         .add(CollectedFeatureTableData(allFeatureValues, _environments));
+    // group strategy details only feed the hover cards, so load them after
+    // the table is shown rather than holding it up
+    unawaited(_loadGroupStrategies(appId, allFeatureValues));
     // set current values
     searchFieldTerm = searchTerm;
     totalFeatures = allFeatureValues.maxFeatures;
@@ -439,6 +467,50 @@ class PerApplicationFeaturesBloc
           _log.fine("unable to load portfolio strategies for $pid", e);
         }),
     ]);
+  }
+
+  /// Loads the strategy of each feature group referenced by the feature values
+  /// on this page, as feature values only carry the group's name and value.
+  /// A group that fails to load keeps the details from the previous load (if
+  /// any) and is otherwise shown with no rule detail. Results of a load
+  /// superseded by a later one are discarded.
+  Future<void> _loadGroupStrategies(
+      String appId, ApplicationFeatureValues featureValues) async {
+    final generation = ++_groupStrategiesLoadGeneration;
+    final groupIds = featureValues.environments
+        .expand((env) => env.features)
+        .expand(
+            (fv) => fv.featureGroupStrategies ?? <ThinGroupRolloutStrategy>[])
+        .map((gs) => gs.featureGroupId)
+        .nonNulls
+        .toSet();
+
+    final previous = _groupStrategiesSource.value.strategies;
+    if (groupIds.isNotEmpty && !_groupStrategiesSource.isClosed) {
+      // keep showing what we have while these are fetched
+      _groupStrategiesSource
+          .add(GroupStrategyDetails(strategies: previous, loading: groupIds));
+    }
+
+    final loaded = <String, GroupRolloutStrategy>{};
+    await Future.wait(groupIds.map((fgId) =>
+        _featureGroupServiceApi.getFeatureGroup(appId, fgId).then((group) {
+          final strategy = group.strategies?.firstOrNull;
+          if (strategy != null) {
+            loaded[fgId] = strategy;
+          }
+        }).catchError((e) {
+          _log.fine("unable to load feature group $fgId for $appId", e);
+          final last = previous[fgId];
+          if (last != null) {
+            loaded[fgId] = last;
+          }
+        })));
+
+    if (generation == _groupStrategiesLoadGeneration &&
+        !_groupStrategiesSource.isClosed) {
+      _groupStrategiesSource.add(GroupStrategyDetails(strategies: loaded));
+    }
   }
 
   Future<void> updateApplicationFeatureValuesStream() async {
