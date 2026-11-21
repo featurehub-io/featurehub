@@ -111,6 +111,7 @@ class _ValueContainer extends StatelessWidget {
                         in fv!.featureGroupStrategies!)
                       _ValueCard(
                         groupStrategy: rsi,
+                        sharedStrategyDetails: _groupStrategyDetails(bloc, rsi),
                         fv: fv!,
                         feature: feature,
                       ),
@@ -158,6 +159,16 @@ StrategyTooltipDetails? _sharedStrategyDetails(RolloutStrategyInstance rsi,
       percentage: rsi.percentageOverride ?? percentage,
       percentageOverridden: rsi.percentageOverride != null,
       attributes: attributes);
+}
+
+StrategyTooltipDetails? _groupStrategyDetails(
+    PerApplicationFeaturesBloc bloc, ThinGroupRolloutStrategy gs) {
+  final strategy = bloc.groupStrategy(gs.featureGroupId);
+  if (strategy == null) {
+    return null;
+  }
+  return StrategyTooltipDetails(
+      percentage: strategy.percentage, attributes: strategy.attributes);
 }
 
 StrategyTooltipDetails? _applicationStrategyDetails(
@@ -290,8 +301,11 @@ class _ValueCard extends StatelessWidget {
                         ),
                       )
                     : groupStrategy != null
-                        ? Tooltip(
-                            message: l10n.groupStrategyTooltip,
+                        ? StrategyTooltip(
+                            name: groupStrategy!.name,
+                            kind: StrategyTooltipKind.group,
+                            accent: groupStrategyTextColor,
+                            details: sharedStrategyDetails,
                             child: Padding(
                               padding: const EdgeInsets.all(4.0),
                               child: Text(

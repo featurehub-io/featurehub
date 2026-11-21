@@ -10,7 +10,7 @@ const _maxPercentage = 1000000.0;
 const _maxValueChips = 8;
 const _cardWidth = 340.0;
 
-enum StrategyTooltipKind { custom, application, portfolio }
+enum StrategyTooltipKind { custom, group, application, portfolio }
 
 /// The rollout details of a strategy as shown in the dashboard hover card.
 class StrategyTooltipDetails {
@@ -77,6 +77,8 @@ class StrategyTooltipCard extends StatelessWidget {
     switch (kind) {
       case StrategyTooltipKind.custom:
         return l10n.tooltipFeatureStrategy;
+      case StrategyTooltipKind.group:
+        return l10n.groupStrategyTooltip;
       case StrategyTooltipKind.application:
         return l10n.applicationStrategyTooltip;
       case StrategyTooltipKind.portfolio:
