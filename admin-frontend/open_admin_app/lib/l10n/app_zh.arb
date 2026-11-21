@@ -672,7 +672,7 @@
   "showAvailableAppStrategies": "显示可用的应用程序策略",
   "addApplicationStrategy": "添加策略",
   "portfolioStrategyVariations": "项目组合策略变体",
-  "portfolioStrategyVariationsInfo": "项目组合策略在项目组合层面创建，可分配给任意环境中的多个功能。项目组合策略可在「项目组合策略」页面中创建和编辑。",
+  "portfolioStrategyVariationsInfo": "项目组合策略在项目组合层面创建，可用于该项目组合下的任意应用程序，并可分配给任意环境中的任意功能。项目组合策略可在「项目组合策略」页面中创建和编辑。",
   "noPortfolioStrategiesSet": "未设置项目组合策略",
   "showAvailablePortfolioStrategies": "显示可用的项目组合策略",
   "addPortfolioStrategy": "添加策略",

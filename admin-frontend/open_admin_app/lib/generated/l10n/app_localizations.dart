@@ -3839,7 +3839,7 @@ abstract class AppLocalizations {
   /// Info tooltip describing portfolio strategy variations
   ///
   /// In en, this message translates to:
-  /// **'Portfolio strategies are created at portfolio level and can be assigned to multiple features in any environment. Portfolio strategy can be created and edited from the Portfolio Strategies page.'**
+  /// **'Portfolio strategies are created at portfolio level and can be used in any application under the portfolio and assigned to any feature in any environment. Portfolio strategy can be created and edited from the Portfolio Strategies page.'**
   String get portfolioStrategyVariationsInfo;
 
   /// Placeholder when no portfolio strategies have been assigned

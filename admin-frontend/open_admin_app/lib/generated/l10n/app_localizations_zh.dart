@@ -2055,7 +2055,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get portfolioStrategyVariationsInfo =>
-      '项目组合策略在项目组合层面创建，可分配给任意环境中的多个功能。项目组合策略可在「项目组合策略」页面中创建和编辑。';
+      '项目组合策略在项目组合层面创建，可用于该项目组合下的任意应用程序，并可分配给任意环境中的任意功能。项目组合策略可在「项目组合策略」页面中创建和编辑。';
 
   @override
   String get noPortfolioStrategiesSet => '未设置项目组合策略';

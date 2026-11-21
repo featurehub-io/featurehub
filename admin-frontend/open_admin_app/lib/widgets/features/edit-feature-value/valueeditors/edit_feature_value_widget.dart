@@ -27,8 +27,22 @@ abstract class EditFeatureValueWidget extends StatefulWidget {
 /// Base state providing value-resolution and update-dispatch helpers.
 abstract class EditFeatureValueState<W extends EditFeatureValueWidget>
     extends State<W> {
+  /// True when this editor is for a strategy row rather than the feature's
+  /// default value. Strategy rows must never fall back to the default value:
+  /// a strategy whose value is not yet set should display as empty.
+  bool get isStrategyRow =>
+      widget.rolloutStrategy != null ||
+      widget.groupRolloutStrategy != null ||
+      widget.applicationRolloutStrategy != null ||
+      widget.portfolioRolloutStrategy != null;
+
+  /// Returns the strategy's value for a strategy row (which may be null when
+  /// not yet set), or [defaultValue] for the feature's default row.
+  dynamic resolveValue(dynamic defaultValue) =>
+      isStrategyRow ? resolveStrategyValue() : defaultValue;
+
   /// Returns the value from whichever strategy is active, or null when none
-  /// is active (callers should fall back to the type-specific default value).
+  /// is active or the strategy's value is not set. Prefer [resolveValue].
   dynamic resolveStrategyValue() {
     if (widget.rolloutStrategy != null) return widget.rolloutStrategy!.value;
     if (widget.groupRolloutStrategy != null) {

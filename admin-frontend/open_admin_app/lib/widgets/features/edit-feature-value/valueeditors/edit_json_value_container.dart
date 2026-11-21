@@ -33,7 +33,7 @@ class EditJsonValueContainerState
   void didChangeDependencies() {
     super.didChangeDependencies();
     final valueSource =
-        resolveStrategyValue() ?? widget.strBloc.featureValue.valueJson;
+        resolveValue(widget.strBloc.featureValue.valueJson);
     if (valueSource != null) {
       try {
         tec.text = const JsonEncoder.withIndent('  ')

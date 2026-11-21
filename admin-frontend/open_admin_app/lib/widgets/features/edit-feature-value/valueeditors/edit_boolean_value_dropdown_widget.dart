@@ -25,10 +25,8 @@ class EditBooleanValueDropDownWidgetState
   @override
   void initState() {
     super.initState();
-    final v = resolveStrategyValue();
-    final boolValue = v != null
-        ? v as bool
-        : (widget.strBloc.featureValue.valueBoolean ?? false);
+    final v = resolveValue(widget.strBloc.featureValue.valueBoolean);
+    final boolValue = (v as bool?) ?? false;
     boolFeatureValue = boolValue ? 'On' : 'Off';
   }
 
