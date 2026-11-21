@@ -2,6 +2,7 @@ package io.featurehub.db.publish
 
 import io.ebean.DB
 import io.ebean.datasource.DataSourceConfig
+import io.featurehub.dacha.model.PublishAction
 import io.featurehub.dacha.model.PublishEnvironment
 import io.featurehub.dacha.model.PublishServiceAccount
 import io.featurehub.db.model.DbApplication
@@ -220,6 +221,38 @@ class DbCacheSourcePublishableSpec extends Specification {
       sasPublished.isEmpty()
     cleanup:
       txn?.end()
+  }
+
+  def "deleting a service account publishes the publishable environments it had permissions on"() {
+    when: "the live service account (which can also see an unpublished and an archived environment) is deleted"
+      cacheSource.deleteServiceAccount(live.sa.id)
+      waitFor { !sasPublished.isEmpty() }
+    then:
+      sasPublished.size() == 1
+      def deleted = sasPublished.first()
+      deleted.action == PublishAction.DELETE
+      deleted.serviceAccount.id == live.sa.id
+      deleted.serviceAccount.permissions*.environmentId == [live.env.id]
+  }
+
+  def "deleting a service account that is already archived still publishes its environments"() {
+    when:
+      cacheSource.deleteServiceAccount(archivedSa.id)
+      waitFor { !sasPublished.isEmpty() }
+    then:
+      sasPublished.first().action == PublishAction.DELETE
+      sasPublished.first().serviceAccount.permissions*.environmentId == [live.env.id]
+  }
+
+  def "deleting an unknown service account publishes it with no permissions"() {
+    given:
+      def id = UUID.randomUUID()
+    when:
+      cacheSource.deleteServiceAccount(id)
+      waitFor { !sasPublished.isEmpty() }
+    then:
+      sasPublished.first().serviceAccount.id == id
+      sasPublished.first().serviceAccount.permissions == []
   }
 
   def "a change raised outside a transaction is published straight away"() {

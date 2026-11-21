@@ -24,6 +24,12 @@ class FastlyPublisher @Inject constructor(@FeatureHubConfig("edge.cache.fastly.k
 
 
   override fun updateServiceAccount(sa: PublishServiceAccount) {
+    // a service account update may have changed its filters (which features it is sent) and a delete means its api
+    // keys should stop being served. Edge tags responses with the environment ids, so purge every environment the
+    // service account can see. Environments whose permissions were removed are published (and purged) separately.
+    if (sa.action == PublishAction.UPDATE || sa.action == PublishAction.DELETE) {
+      sa.serviceAccount?.permissions?.map { it.environmentId }?.distinct()?.forEach { purge(it) }
+    }
   }
 
   override fun updateEnvironment(e: PublishEnvironment) {
