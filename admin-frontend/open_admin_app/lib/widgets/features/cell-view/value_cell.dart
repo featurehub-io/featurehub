@@ -109,11 +109,15 @@ class _ValueContainer extends StatelessWidget {
                       fv!.featureGroupStrategies!.isNotEmpty)
                     for (ThinGroupRolloutStrategy rsi
                         in fv!.featureGroupStrategies!)
-                      _ValueCard(
-                        groupStrategy: rsi,
-                        sharedStrategyDetails: _groupStrategyDetails(bloc, rsi),
-                        fv: fv!,
-                        feature: feature,
+                      StreamBuilder<Map<String, GroupRolloutStrategy>>(
+                        stream: bloc.groupStrategiesStream,
+                        builder: (context, _) => _ValueCard(
+                          groupStrategy: rsi,
+                          sharedStrategyDetails:
+                              _groupStrategyDetails(bloc, rsi),
+                          fv: fv!,
+                          feature: feature,
+                        ),
                       ),
                   if (fv?.rolloutStrategyInstances?.isNotEmpty == true)
                     for (RolloutStrategyInstance rsi

@@ -694,7 +694,7 @@
   "strategyRules": "策略规则",
   "percentageRollout": "百分比发布",
   "moreDetails": "更多",
-  "groupStrategyTooltip": "用户组策略",
+  "groupStrategyTooltip": "功能标志组策略",
   "applicationStrategyTooltip": "应用程序策略",
   "portfolioStrategyTooltip": "项目组合策略",
 

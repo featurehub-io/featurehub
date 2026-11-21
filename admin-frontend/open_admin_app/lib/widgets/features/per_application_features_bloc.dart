@@ -92,11 +92,20 @@ class PerApplicationFeaturesBloc
   PortfolioRolloutStrategy? portfolioStrategy(String strategyId) =>
       _portfolioStrategies[strategyId];
 
-  // feature-group-id -> the group's strategy, for group strategy tooltips
-  final _groupStrategies = <String, GroupRolloutStrategy>{};
+  // feature-group-id -> the group's strategy, for group strategy tooltips.
+  // Loaded after the table is shown so it doesn't hold up the table, hence a
+  // stream the group cells listen to.
+  final _groupStrategiesSource =
+      BehaviorSubject<Map<String, GroupRolloutStrategy>>.seeded({});
+  int _groupStrategiesLoadGeneration = 0;
+
+  Stream<Map<String, GroupRolloutStrategy>> get groupStrategiesStream =>
+      _groupStrategiesSource.stream;
 
   GroupRolloutStrategy? groupStrategy(String? featureGroupId) =>
-      featureGroupId == null ? null : _groupStrategies[featureGroupId];
+      featureGroupId == null
+          ? null
+          : _groupStrategiesSource.value[featureGroupId];
 
   final _appFeatureValues = BehaviorSubject<CollectedFeatureTableData?>();
 
@@ -371,6 +380,7 @@ class PerApplicationFeaturesBloc
     _currentEnvironmentFilter.cancel();
     _appSearchResultSource.close();
     _featureMetadataStream.close();
+    _groupStrategiesSource.close();
     _appFeatureValues.close();
   }
 
@@ -398,11 +408,13 @@ class PerApplicationFeaturesBloc
                 ? null
                 : hiddenEnvs.environmentIds);
 
-    await Future.wait(
-        [sharedStrategies, _loadGroupStrategies(appId, allFeatureValues)]);
+    await sharedStrategies;
 
     _appFeatureValues
         .add(CollectedFeatureTableData(allFeatureValues, _environments));
+    // group strategy details only feed the hover cards, so load them after
+    // the table is shown rather than holding it up
+    unawaited(_loadGroupStrategies(appId, allFeatureValues));
     // set current values
     searchFieldTerm = searchTerm;
     totalFeatures = allFeatureValues.maxFeatures;
@@ -453,8 +465,10 @@ class PerApplicationFeaturesBloc
   /// Loads the strategy of each feature group referenced by the feature values
   /// on this page, as feature values only carry the group's name and value.
   /// Failures are logged and ignored, the tooltip then shows no rule detail.
+  /// Results of a load superseded by a later one are discarded.
   Future<void> _loadGroupStrategies(
       String appId, ApplicationFeatureValues featureValues) async {
+    final generation = ++_groupStrategiesLoadGeneration;
     final groupIds = featureValues.environments
         .expand((env) => env.features)
         .expand(
@@ -474,9 +488,10 @@ class PerApplicationFeaturesBloc
           _log.fine("unable to load feature group $fgId for $appId", e);
         })));
 
-    _groupStrategies
-      ..clear()
-      ..addAll(loaded);
+    if (generation == _groupStrategiesLoadGeneration &&
+        !_groupStrategiesSource.isClosed) {
+      _groupStrategiesSource.add(loaded);
+    }
   }
 
   Future<void> updateApplicationFeatureValuesStream() async {

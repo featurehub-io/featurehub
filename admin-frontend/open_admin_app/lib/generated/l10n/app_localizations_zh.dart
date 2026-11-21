@@ -2122,7 +2122,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get moreDetails => '更多';
 
   @override
-  String get groupStrategyTooltip => '用户组策略';
+  String get groupStrategyTooltip => '功能标志组策略';
 
   @override
   String get applicationStrategyTooltip => '应用程序策略';
