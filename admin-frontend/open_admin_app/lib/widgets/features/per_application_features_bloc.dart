@@ -31,6 +31,16 @@ class FeatureStatusFeatures {
   }
 }
 
+/// Group strategy details for the dashboard hover cards, keyed by feature
+/// group id, plus the ids whose details are still being fetched.
+class GroupStrategyDetails {
+  final Map<String, GroupRolloutStrategy> strategies;
+  final Set<String> loading;
+
+  const GroupStrategyDetails(
+      {this.strategies = const {}, this.loading = const {}});
+}
+
 class CollectedFeatureTableData {
   final ApplicationFeatureValues applicationFeatureValues;
   final List<Environment> availableEnvironments;
@@ -95,15 +105,14 @@ class PerApplicationFeaturesBloc
   // feature-group-id -> the group's strategy, for group strategy tooltips.
   // Loaded after the table is shown so it doesn't hold up the table, hence a
   // stream the group cells listen to.
-  final _groupStrategiesSource =
-      BehaviorSubject<Map<String, GroupRolloutStrategy>>.seeded({});
+  final _groupStrategiesSource = BehaviorSubject<GroupStrategyDetails>.seeded(
+      const GroupStrategyDetails());
   int _groupStrategiesLoadGeneration = 0;
 
-  Stream<Map<String, GroupRolloutStrategy>> get groupStrategiesStream =>
+  Stream<GroupStrategyDetails> get groupStrategiesStream =>
       _groupStrategiesSource.stream;
 
-  Map<String, GroupRolloutStrategy> get groupStrategies =>
-      _groupStrategiesSource.value;
+  GroupStrategyDetails get groupStrategies => _groupStrategiesSource.value;
 
   final _appFeatureValues = BehaviorSubject<CollectedFeatureTableData?>();
 
@@ -476,7 +485,13 @@ class PerApplicationFeaturesBloc
         .nonNulls
         .toSet();
 
-    final previous = _groupStrategiesSource.value;
+    final previous = _groupStrategiesSource.value.strategies;
+    if (groupIds.isNotEmpty && !_groupStrategiesSource.isClosed) {
+      // keep showing what we have while these are fetched
+      _groupStrategiesSource
+          .add(GroupStrategyDetails(strategies: previous, loading: groupIds));
+    }
+
     final loaded = <String, GroupRolloutStrategy>{};
     await Future.wait(groupIds.map((fgId) =>
         _featureGroupServiceApi.getFeatureGroup(appId, fgId).then((group) {
@@ -494,7 +509,7 @@ class PerApplicationFeaturesBloc
 
     if (generation == _groupStrategiesLoadGeneration &&
         !_groupStrategiesSource.isClosed) {
-      _groupStrategiesSource.add(loaded);
+      _groupStrategiesSource.add(GroupStrategyDetails(strategies: loaded));
     }
   }
 

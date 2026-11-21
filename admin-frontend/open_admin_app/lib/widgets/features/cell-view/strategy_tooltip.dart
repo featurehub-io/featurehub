@@ -36,6 +36,9 @@ class StrategyTooltip extends StatelessWidget {
 
   /// null when the (shared) strategy definition is not available
   final StrategyTooltipDetails? details;
+
+  /// true while a null [details] is still being fetched
+  final bool loading;
   final Widget child;
 
   const StrategyTooltip(
@@ -44,6 +47,7 @@ class StrategyTooltip extends StatelessWidget {
       required this.kind,
       required this.accent,
       required this.details,
+      this.loading = false,
       required this.child});
 
   @override
@@ -51,7 +55,11 @@ class StrategyTooltip extends StatelessWidget {
     return Tooltip(
       richMessage: WidgetSpan(
           child: StrategyTooltipCard(
-              name: name, kind: kind, accent: accent, details: details)),
+              name: name,
+              kind: kind,
+              accent: accent,
+              details: details,
+              loading: loading)),
       decoration: const BoxDecoration(),
       padding: EdgeInsets.zero,
       waitDuration: const Duration(milliseconds: 250),
@@ -65,13 +73,15 @@ class StrategyTooltipCard extends StatelessWidget {
   final StrategyTooltipKind kind;
   final Color accent;
   final StrategyTooltipDetails? details;
+  final bool loading;
 
   const StrategyTooltipCard(
       {super.key,
       required this.name,
       required this.kind,
       required this.accent,
-      required this.details});
+      required this.details,
+      this.loading = false});
 
   String _kindLabel(AppLocalizations l10n) {
     switch (kind) {
@@ -95,7 +105,8 @@ class StrategyTooltipCard extends StatelessWidget {
 
     final sections = <Widget>[];
     if (d == null) {
-      sections.add(Text(l10n.tooltipRulesUnavailable,
+      sections.add(Text(
+          loading ? l10n.tooltipRulesLoading : l10n.tooltipRulesUnavailable,
           style: theme.textTheme.bodySmall?.copyWith(color: muted)));
     } else {
       if (d.percentage != null) {

@@ -109,11 +109,12 @@ class _ValueContainer extends StatelessWidget {
                       fv!.featureGroupStrategies!.isNotEmpty)
                     // group details load after the table is shown, so only
                     // this part of the cell rebuilds when they arrive
-                    StreamBuilder<Map<String, GroupRolloutStrategy>>(
+                    StreamBuilder<GroupStrategyDetails>(
                       stream: bloc.groupStrategiesStream,
                       initialData: bloc.groupStrategies,
                       builder: (context, snapshot) {
-                        final groupDetails = snapshot.data ?? const {};
+                        final groupDetails =
+                            snapshot.data ?? const GroupStrategyDetails();
                         return Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
@@ -123,6 +124,9 @@ class _ValueContainer extends StatelessWidget {
                                 groupStrategy: rsi,
                                 sharedStrategyDetails:
                                     _groupStrategyDetails(groupDetails, rsi),
+                                sharedStrategyDetailsLoading: groupDetails
+                                    .loading
+                                    .contains(rsi.featureGroupId),
                                 fv: fv!,
                                 feature: feature,
                               ),
@@ -177,10 +181,9 @@ StrategyTooltipDetails? _sharedStrategyDetails(RolloutStrategyInstance rsi,
 }
 
 StrategyTooltipDetails? _groupStrategyDetails(
-    Map<String, GroupRolloutStrategy> groupDetails,
-    ThinGroupRolloutStrategy gs) {
+    GroupStrategyDetails groupDetails, ThinGroupRolloutStrategy gs) {
   final fgId = gs.featureGroupId;
-  final strategy = fgId == null ? null : groupDetails[fgId];
+  final strategy = fgId == null ? null : groupDetails.strategies[fgId];
   if (strategy == null) {
     return null;
   }
@@ -246,6 +249,9 @@ class _ValueCard extends StatelessWidget {
   final RolloutStrategyInstance? portfolioStrategy;
   final StrategyTooltipDetails? sharedStrategyDetails;
 
+  /// true while [sharedStrategyDetails] is still being fetched
+  final bool sharedStrategyDetailsLoading;
+
   const _ValueCard(
       {required this.fv,
       required this.feature,
@@ -253,7 +259,8 @@ class _ValueCard extends StatelessWidget {
       this.groupStrategy,
       this.applicationStrategy,
       this.portfolioStrategy,
-      this.sharedStrategyDetails});
+      this.sharedStrategyDetails,
+      this.sharedStrategyDetailsLoading = false});
 
   @override
   Widget build(BuildContext context) {
@@ -323,6 +330,7 @@ class _ValueCard extends StatelessWidget {
                             kind: StrategyTooltipKind.group,
                             accent: groupStrategyTextColor,
                             details: sharedStrategyDetails,
+                            loading: sharedStrategyDetailsLoading,
                             child: Padding(
                               padding: const EdgeInsets.all(4.0),
                               child: Text(

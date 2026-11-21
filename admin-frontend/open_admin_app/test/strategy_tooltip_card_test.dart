@@ -56,6 +56,21 @@ void main() {
     expect(find.text('Rule details unavailable'), findsOneWidget);
   });
 
+  testWidgets('shows loading while details are being fetched',
+      (tester) async {
+    await tester.pumpWidget(_wrap(StrategyTooltipCard(
+      name: 'Checkout group',
+      kind: StrategyTooltipKind.group,
+      accent: groupStrategyTextColor,
+      details: null,
+      loading: true,
+    )));
+
+    expect(tester.takeException(), isNull);
+    expect(find.text('Loading rule details…'), findsOneWidget);
+    expect(find.text('Rule details unavailable'), findsNothing);
+  });
+
   testWidgets('labels group strategies', (tester) async {
     await tester.pumpWidget(_wrap(StrategyTooltipCard(
       name: 'Checkout group',

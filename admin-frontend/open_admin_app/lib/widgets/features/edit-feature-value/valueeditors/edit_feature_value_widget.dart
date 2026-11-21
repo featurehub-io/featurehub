@@ -39,11 +39,12 @@ abstract class EditFeatureValueState<W extends EditFeatureValueWidget>
   /// Returns the strategy's value for a strategy row (which may be null when
   /// not yet set), or [defaultValue] for the feature's default row.
   dynamic resolveValue(dynamic defaultValue) =>
-      isStrategyRow ? resolveStrategyValue() : defaultValue;
+      isStrategyRow ? _resolveStrategyValue() : defaultValue;
 
-  /// Returns the value from whichever strategy is active, or null when none
-  /// is active or the strategy's value is not set. Prefer [resolveValue].
-  dynamic resolveStrategyValue() {
+  /// The value of whichever strategy this row is for, or null when it has no
+  /// value. Private so editors go through [resolveValue], which never mixes
+  /// up "strategy value not set" with "this is the default row".
+  dynamic _resolveStrategyValue() {
     if (widget.rolloutStrategy != null) return widget.rolloutStrategy!.value;
     if (widget.groupRolloutStrategy != null) {
       return widget.groupRolloutStrategy!.value;

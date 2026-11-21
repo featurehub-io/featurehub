@@ -3722,6 +3722,12 @@ abstract class AppLocalizations {
   /// **'Rule details unavailable'**
   String get tooltipRulesUnavailable;
 
+  /// Shown in the strategy hover card while the strategy definition is still being fetched
+  ///
+  /// In en, this message translates to:
+  /// **'Loading rule details…'**
+  String get tooltipRulesLoading;
+
   /// Banner shown in the feature value side sheet when there are unsaved changes
   ///
   /// In en, this message translates to:

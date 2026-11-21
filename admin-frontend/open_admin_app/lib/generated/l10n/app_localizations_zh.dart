@@ -1992,6 +1992,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get tooltipRulesUnavailable => '规则详情不可用';
 
   @override
+  String get tooltipRulesLoading => '正在加载规则详情…';
+
+  @override
   String get unsavedChanges => '您有未保存的更改，是否保存？';
 
   @override

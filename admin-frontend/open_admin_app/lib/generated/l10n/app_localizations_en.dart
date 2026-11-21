@@ -2080,6 +2080,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get tooltipRulesUnavailable => 'Rule details unavailable';
 
   @override
+  String get tooltipRulesLoading => 'Loading rule details…';
+
+  @override
   String get unsavedChanges => 'You have unsaved changes, save?';
 
   @override

@@ -2026,6 +2026,9 @@
   "tooltipRulesUnavailable": "Rule details unavailable",
   "@tooltipRulesUnavailable": { "description": "Shown in the strategy hover card when the shared strategy definition could not be loaded" },
 
+  "tooltipRulesLoading": "Loading rule details…",
+  "@tooltipRulesLoading": { "description": "Shown in the strategy hover card while the strategy definition is still being fetched" },
+
   "unsavedChanges": "You have unsaved changes, save?",
   "@unsavedChanges": { "description": "Banner shown in the feature value side sheet when there are unsaved changes" },
 

@@ -652,6 +652,7 @@
   "tooltipRulesAllMatch": "规则（须全部匹配）",
   "tooltipNoRules": "无定向规则",
   "tooltipRulesUnavailable": "规则详情不可用",
+  "tooltipRulesLoading": "正在加载规则详情…",
 
   "unsavedChanges": "您有未保存的更改，是否保存？",
   "featureValueUpdated": "功能标志 {feature} 在环境 {environment} 中已更新！",
