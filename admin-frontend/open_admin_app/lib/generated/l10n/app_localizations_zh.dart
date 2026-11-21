@@ -1974,7 +1974,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get tooltipCustom => '自定义';
 
   @override
-  String get tooltipCustomStrategy => '自定义策略';
+  String get tooltipFeatureStrategy => '功能策略';
 
   @override
   String get tooltipRollout => '发布比例';

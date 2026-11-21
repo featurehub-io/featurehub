@@ -76,7 +76,7 @@ class StrategyTooltipCard extends StatelessWidget {
   String _kindLabel(AppLocalizations l10n) {
     switch (kind) {
       case StrategyTooltipKind.custom:
-        return l10n.tooltipCustomStrategy;
+        return l10n.tooltipFeatureStrategy;
       case StrategyTooltipKind.application:
         return l10n.applicationStrategyTooltip;
       case StrategyTooltipKind.portfolio:

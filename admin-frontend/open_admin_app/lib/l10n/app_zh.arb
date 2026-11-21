@@ -646,7 +646,7 @@
   "tooltipDevice": "设备",
   "tooltipVersion": "版本",
   "tooltipCustom": "自定义",
-  "tooltipCustomStrategy": "自定义策略",
+  "tooltipFeatureStrategy": "功能策略",
   "tooltipRollout": "发布比例",
   "tooltipPercentageOverridden": "已针对此功能覆盖",
   "tooltipRulesAllMatch": "规则（须全部匹配）",

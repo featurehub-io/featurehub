@@ -3689,8 +3689,8 @@ abstract class AppLocalizations {
   /// Badge in the strategy hover card for a strategy defined on the feature value itself
   ///
   /// In en, this message translates to:
-  /// **'Custom Strategy'**
-  String get tooltipCustomStrategy;
+  /// **'Feature Strategy'**
+  String get tooltipFeatureStrategy;
 
   /// Label for the percentage rollout section in the strategy hover card
   ///

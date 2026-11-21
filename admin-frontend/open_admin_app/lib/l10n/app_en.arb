@@ -2008,8 +2008,8 @@
   "tooltipCustom": "Custom",
   "@tooltipCustom": { "description": "Tooltip line indicating a custom attribute rule is applied" },
 
-  "tooltipCustomStrategy": "Custom Strategy",
-  "@tooltipCustomStrategy": { "description": "Badge in the strategy hover card for a strategy defined on the feature value itself" },
+  "tooltipFeatureStrategy": "Feature Strategy",
+  "@tooltipFeatureStrategy": { "description": "Badge in the strategy hover card for a strategy defined on the feature value itself" },
 
   "tooltipRollout": "Rollout",
   "@tooltipRollout": { "description": "Label for the percentage rollout section in the strategy hover card" },

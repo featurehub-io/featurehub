@@ -2062,7 +2062,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get tooltipCustom => 'Custom';
 
   @override
-  String get tooltipCustomStrategy => 'Custom Strategy';
+  String get tooltipFeatureStrategy => 'Feature Strategy';
 
   @override
   String get tooltipRollout => 'Rollout';
