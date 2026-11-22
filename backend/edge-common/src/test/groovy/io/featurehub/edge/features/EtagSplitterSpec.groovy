@@ -141,13 +141,31 @@ class EtagSplitterSpec extends Specification {
       ctx << ["0", "1a2b3c"]
   }
 
-  def "sse: when etags for sse are disabled (the default), a matching last-event-id is ignored"() {
-    given: "a single sse key"
-      def k1 = new KeyParts("1", UUID.randomUUID(), "s1")
-    when: "i make the sse etag holder with a valid id"
-      def holder = ETagSplitter.@Companion.makeEtagHolderForSSE("abc", [k1], "0")
-    then:
-      ETagSplitter.@Companion.etagsEnabledForSse || !holder.validEtag
+  def "sse: when etags for sse are disabled (the default) and the sdk doesn't declare v2, the last-event-id is dropped"() {
+    expect:
+      ETagSplitter.@Companion.etagsEnabledForSse || ETagSplitter.@Companion.sseLastEventId("abc", sdkVersion) == null
+    where:
+      sdkVersion << [null, 0, 1]
+  }
+
+  def "sse: an sdk declaring wire-protocol version 2 or later always has its last-event-id honoured"() {
+    expect:
+      ETagSplitter.@Companion.sseLastEventId("abc//ling", sdkVersion) == "abc//ling"
+    where:
+      sdkVersion << [2, 3, 17]
+  }
+
+  def "sse: sdk_version is parsed leniently"() {
+    expect:
+      ETagSplitter.@Companion.parseSdkVersion(raw) == expected
+    where:
+      raw       | expected
+      null      | null
+      ""        | null
+      "orm"     | null
+      "2"       | 2
+      " 3 "     | 3
+      "1"       | 1
   }
 
   def "when i pass in an etag holder and a bunch of feature requests, i get the expected etag header"() {

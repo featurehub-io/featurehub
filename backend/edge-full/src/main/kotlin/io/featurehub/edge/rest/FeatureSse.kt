@@ -4,6 +4,7 @@ import io.featurehub.edge.KeyParts
 import io.featurehub.edge.StreamingFeatureController
 import io.featurehub.edge.bucket.BucketService
 import io.featurehub.edge.client.TimedBucketClientFactory
+import io.featurehub.edge.features.ETagSplitter
 import io.featurehub.edge.stats.StatRecorder
 import io.featurehub.sse.stats.model.EdgeHitResultType
 import io.featurehub.sse.stats.model.EdgeHitSourceType
@@ -22,7 +23,8 @@ interface FeatureSse {
     featureHubAttrs: List<String>?,
     browserHubAttrs: String?,
     etag: String?,
-    extraContext: String?
+    extraContext: String?,
+    sdkVersion: Int? = null
   ): EventOutput
 }
 
@@ -39,19 +41,21 @@ class FeatureSseProcessor @Inject constructor(
     featureHubAttrs: List<String>?,
     browserHubAttrs: String?,
     etag: String?,
-    extraContext: String?
+    extraContext: String?,
+    sdkVersion: Int?
   ): EventOutput {
     val outputStream = EventOutput()
+    val lastEventId = ETagSplitter.sseLastEventId(etag, sdkVersion)
 
     val apiKey = KeyParts("default", envId, apiKey)
 
     try {
       val bucket = timedBucketFactory.createBucket(
         outputStream, apiKey, browserHubAttrs?.let { listOf(it) } ?: featureHubAttrs,
-        etag, extraContext,
+        lastEventId, extraContext,
       )
       if (bucket.discovery()) {
-        log.trace("etag was {}", etag)
+        log.trace("etag was {} (sdk version {}, honoured: {})", etag, sdkVersion, lastEventId != null)
         serverConfig.requestFeatures(bucket)
         bucketService.putInBucket(bucket)
       } else {

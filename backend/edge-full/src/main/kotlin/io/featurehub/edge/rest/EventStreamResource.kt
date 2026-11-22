@@ -1,6 +1,7 @@
 package io.featurehub.edge.rest
 
 import cd.connect.jersey.prometheus.Prometheus
+import io.featurehub.edge.features.ETagSplitter
 import io.featurehub.edge.stats.StatRecorder
 import io.featurehub.edge.utils.FastlyResponseWrapper
 import io.featurehub.sse.model.FeatureStateUpdate
@@ -42,6 +43,7 @@ class EventStreamResource @Inject constructor(
     @QueryParam("sdkUrl") sdkUrls: List<String>?,
     @QueryParam("apiKey") apiKeys: List<String>?,
     @QueryParam("contextSha") contextSha: String?,
+    @QueryParam("sdk_version") sdkVersion: String?, // accepted, GET always honours etags
     @HeaderParam("x-featurehub") featureHubAttrs: List<String>?,
     @HeaderParam("if-none-match") etagHeader: String?
   ) {
@@ -69,9 +71,11 @@ class EventStreamResource @Inject constructor(
     @HeaderParam("x-featurehub") featureHubAttrs: List<String>?,  // non browsers can set headers
     @HeaderParam("x-fh-extraconfig") extraConfig: String?,
     @QueryParam("xfeaturehub") browserHubAttrs: String?,  // browsers can't set headers,
-    @HeaderParam("Last-Event-ID") etag: String?
+    @HeaderParam("Last-Event-ID") etag: String?,
+    @QueryParam("sdk_version") sdkVersion: String? // query param as browsers can't set headers
   ): EventOutput {
-    return featureSse.process(namedCache, envId!!, apiKey!!, featureHubAttrs, browserHubAttrs, etag, extraConfig)
+    return featureSse.process(namedCache, envId!!, apiKey!!, featureHubAttrs, browserHubAttrs, etag, extraConfig,
+      ETagSplitter.parseSdkVersion(sdkVersion))
   }
 
   @GET
@@ -84,9 +88,11 @@ class EventStreamResource @Inject constructor(
     @HeaderParam("x-featurehub") featureHubAttrs: List<String>?,  // non browsers can set headers
     @HeaderParam("x-fh-extraconfig") extraConfig: String?,
     @QueryParam("xfeaturehub") browserHubAttrs: String?,  // browsers can't set headers,
-    @HeaderParam("Last-Event-ID") etag: String?
+    @HeaderParam("Last-Event-ID") etag: String?,
+    @QueryParam("sdk_version") sdkVersion: String? // query param as browsers can't set headers
   ): EventOutput {
-    return featureSse.process(null, envId!!, apiKey!!, featureHubAttrs, browserHubAttrs, etag, extraConfig)
+    return featureSse.process(null, envId!!, apiKey!!, featureHubAttrs, browserHubAttrs, etag, extraConfig,
+      ETagSplitter.parseSdkVersion(sdkVersion))
   }
 
   /**

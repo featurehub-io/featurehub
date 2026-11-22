@@ -2,7 +2,7 @@ openapi: 3.0.1
 info:
   title: FeatureServiceApi
   description: This describes the API clients use for accessing features
-  version: "1.1.9"
+  version: "1.2.0"
 paths:
   /features/:
     get:
@@ -23,6 +23,14 @@ paths:
           required: false
           schema:
               type: string
+        - name: sdk_version
+          in: query
+          description: "The Edge wire-protocol version the SDK supports. Version 2 and later indicates the SDK understands that SSE event ids are etags and will send the last one it received as the Last-Event-ID header on reconnect. If not present, version 1 is assumed."
+          required: false
+          schema:
+            type: integer
+            format: int32
+            minimum: 1
       description: Requests all features for this sdkurl and disconnects
       operationId: getFeatureStates
       responses:
@@ -155,6 +163,9 @@ components:
       required:
         - key
         - id
+        - version
+        - l
+        - type
       properties:
         id:
           type: string

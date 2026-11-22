@@ -9,15 +9,30 @@ class ETagSplitter {
   companion object {
     val etagsEnabledForSse = FallbackPropertyConfig.getConfig("edge.sse.use-last-event-id", "false") == "true"
 
-    fun makeEtagHolderForSSE(etag: String?, keys: List<KeyParts>, etagFromClientContext: String): EtagStructureHolder {
-      // if we aren't presented with an etag or the number of keys we are looking at is > 1 (which seems impossible now because SSE doesn't support it)
-      // then we assume no etag
-      if (!etagsEnabledForSse) {
-        return EtagStructureHolder(emptyMap(), etagFromClientContext, false)
-      }
+    /**
+     * The first wire-protocol version at which an SDK declares (via the `sdk_version` parameter) that it understands
+     * SSE event ids are etags and that it will send the last one back as `Last-Event-ID` on reconnect.
+     */
+    const val SDK_VERSION_LAST_EVENT_ID = 2
 
-      return parseSseEtag(etag, keys, etagFromClientContext)
-    }
+    /**
+     * Should we honour a Last-Event-ID presented on an SSE connection? Either the server has been globally configured to
+     * (edge.sse.use-last-event-id) or the SDK has told us it speaks a wire-protocol version that understands it.
+     */
+    fun honourLastEventId(sdkVersion: Int?): Boolean =
+      etagsEnabledForSse || (sdkVersion != null && sdkVersion >= SDK_VERSION_LAST_EVENT_ID)
+
+    /**
+     * Returns the Last-Event-ID to use for this SSE connection, or null if it should be ignored.
+     */
+    fun sseLastEventId(lastEventId: String?, sdkVersion: Int?): String? =
+      if (honourLastEventId(sdkVersion)) lastEventId else null
+
+    /**
+     * Parses the sdk_version parameter leniently - an SDK sending something we can't understand is treated as having
+     * not sent one at all rather than failing the request.
+     */
+    fun parseSdkVersion(sdkVersion: String?): Int? = sdkVersion?.trim()?.toIntOrNull()
 
     fun parseSseEtag(etag: String?, keys: List<KeyParts>, etagFromClientContext: String): EtagStructureHolder {
       if (etag == null || keys.size != 1) {
