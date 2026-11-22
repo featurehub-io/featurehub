@@ -1,14 +1,11 @@
 package io.featurehub.edge.features
 
 import io.featurehub.edge.KeyParts
-import io.featurehub.utils.FallbackPropertyConfig
 
 class EtagStructureHolder(val environmentTags: Map<KeyParts, String>, val contextTag: String, val validEtag: Boolean)
 
 class ETagSplitter {
   companion object {
-    val etagsEnabledForSse = FallbackPropertyConfig.getConfig("edge.sse.use-last-event-id", "false") == "true"
-
     /**
      * The first wire-protocol version at which an SDK declares (via the `sdk_version` parameter) that it understands
      * SSE event ids are etags and that it will send the last one back as `Last-Event-ID` on reconnect.
@@ -16,11 +13,11 @@ class ETagSplitter {
     const val SDK_VERSION_LAST_EVENT_ID = 2
 
     /**
-     * Should we honour a Last-Event-ID presented on an SSE connection? Either the server has been globally configured to
-     * (edge.sse.use-last-event-id) or the SDK has told us it speaks a wire-protocol version that understands it.
+     * Should we honour a Last-Event-ID presented on an SSE connection? Only if the SDK has told us it speaks a
+     * wire-protocol version that understands it.
      */
     fun honourLastEventId(sdkVersion: Int?): Boolean =
-      etagsEnabledForSse || (sdkVersion != null && sdkVersion >= SDK_VERSION_LAST_EVENT_ID)
+      sdkVersion != null && sdkVersion >= SDK_VERSION_LAST_EVENT_ID
 
     /**
      * Returns the Last-Event-ID to use for this SSE connection, or null if it should be ignored.

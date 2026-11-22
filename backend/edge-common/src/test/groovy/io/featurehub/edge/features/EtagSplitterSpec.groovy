@@ -141,9 +141,9 @@ class EtagSplitterSpec extends Specification {
       ctx << ["0", "1a2b3c"]
   }
 
-  def "sse: when etags for sse are disabled (the default) and the sdk doesn't declare v2, the last-event-id is dropped"() {
+  def "sse: when the sdk doesn't declare wire-protocol version 2 or later, the last-event-id is dropped"() {
     expect:
-      ETagSplitter.@Companion.etagsEnabledForSse || ETagSplitter.@Companion.sseLastEventId("abc", sdkVersion) == null
+      ETagSplitter.@Companion.sseLastEventId("abc", sdkVersion) == null
     where:
       sdkVersion << [null, 0, 1]
   }
