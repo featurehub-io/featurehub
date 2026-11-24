@@ -2,7 +2,7 @@ openapi: 3.0.1
 info:
   title: FeatureServiceApi
   description: This describes the API clients use for accessing features
-  version: "1.1.9"
+  version: "1.1.10"
 paths:
   /features/:
     get:
@@ -23,6 +23,18 @@ paths:
           required: false
           schema:
               type: string
+        - name: sdk
+          in: query
+          description: "The name of the SDK making the request, identifying its language or platform in lowercase (e.g. dart, go, python, typescript-browser). Edge does not require it and does not use it to choose which features are returned."
+          required: false
+          schema:
+            type: string
+        - name: version
+          in: query
+          description: "The version of the SDK making the request (its released package version, e.g. 3.1.0), or unknown if the SDK cannot determine it. Edge does not require it and does not use it to choose which features are returned."
+          required: false
+          schema:
+            type: string
       description: Requests all features for this sdkurl and disconnects
       operationId: getFeatureStates
       responses:
@@ -155,6 +167,9 @@ components:
       required:
         - key
         - id
+        - l
+        - version
+        - type
       properties:
         id:
           type: string
