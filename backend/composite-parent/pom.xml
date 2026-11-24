@@ -58,6 +58,8 @@
     <ebean.tile.version>17.2.0</ebean.tile.version>
     <h2.version>2.3.230</h2.version>
     <handlebars-version>4.5.2</handlebars-version>
+    <!-- we do this to ensure the  maven-jar-plugin uses a fixed timestamp on files so the layers don't get recreated every time -->
+    <project.build.outputTimestamp>2026-01-01T00:00:00Z</project.build.outputTimestamp>
   </properties>
 
   <build>

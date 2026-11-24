@@ -8,6 +8,8 @@
     <java.release>25</java.release>
     <maven.compiler.source>25</maven.compiler.source>
     <maven.compiler.target>25</maven.compiler.target>
+    <!-- we do this to ensure the maven-jar-plugin uses a fixed timestamp on files so the layers don't get recreated every time -->
+    <project.build.outputTimestamp>2026-01-01T00:00:00Z</project.build.outputTimestamp>
   </properties>
 
   <build>
