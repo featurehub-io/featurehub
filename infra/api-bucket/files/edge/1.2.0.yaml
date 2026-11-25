@@ -552,7 +552,6 @@ components:
       required:
       - id
       - key
-      - l
       - type
       - version
       properties:
@@ -566,8 +565,9 @@ components:
         l:
           type: boolean
           description: "Is this feature locked. Usually this doesn't matter because\
-            \ the value is the value, but for FeatureInterceptors it can matter."
-          nullable: false
+            \ the value is the value, but for FeatureInterceptors it can matter. Optional:\
+            \ absent or null means false."
+          nullable: true
           default: false
         version:
           type: integer

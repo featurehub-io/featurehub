@@ -174,7 +174,6 @@ components:
         - key
         - id
         - version
-        - l
         - type
       properties:
         id:
@@ -185,9 +184,9 @@ components:
           type: string
           nullable: false
         l:
-          nullable: false
+          nullable: true
           default: false
-          description: "Is this feature locked. Usually this doesn't matter because the value is the value, but for FeatureInterceptors it can matter."
+          description: "Is this feature locked. Usually this doesn't matter because the value is the value, but for FeatureInterceptors it can matter. Optional: absent or null means false."
           type: boolean
         version:
           description: "The version of the feature, this allows features to change values and it means we don't trigger events"
