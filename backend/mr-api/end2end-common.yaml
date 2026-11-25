@@ -137,6 +137,7 @@ components:
         - userkey
         - session
         - version
+        - fhubWhenActive
     StrategyAttributeDeviceName:
       x-package: io.featurehub.mr.model
       x-publish-include: mr-api,edge

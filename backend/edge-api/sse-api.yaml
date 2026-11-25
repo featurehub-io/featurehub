@@ -159,6 +159,15 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/FeatureState"
+        pollInterval:
+          type: integer
+          nullable: true
+          description: >-
+            The polling interval, in seconds, the server would like clients to use for this environment, overriding the
+            interval the SDK was configured with. Absent (or null) if the environment has no override. Set per
+            environment via its environment info (`pollInterval`, or `mgmt.pollInterval` which takes precedence). Edge never
+            sends a value below 5: if the chosen setting is below 5 the field is absent. When a response holds several
+            environments, clients use the smallest value of at least 5 (and ignore any below 5).
     FeatureState:
       required:
         - key

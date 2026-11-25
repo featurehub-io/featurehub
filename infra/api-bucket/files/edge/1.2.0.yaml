@@ -266,6 +266,7 @@ components:
       - userkey
       - session
       - version
+      - fhubWhenActive
     StrategyAttributeDeviceName:
       type: string
       enum:
@@ -532,6 +533,16 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/FeatureState'
+        pollInterval:
+          type: integer
+          description: "The polling interval, in seconds, the server would like clients\
+            \ to use for this environment, overriding the interval the SDK was configured\
+            \ with. Absent (or null) if the environment has no override. Set per environment\
+            \ via its environment info (`pollInterval`, or `mgmt.pollInterval` which\
+            \ takes precedence). Edge never sends a value below 5: if the chosen setting\
+            \ is below 5 the field is absent. When a response holds several environments,\
+            \ clients use the smallest value of at least 5 (and ignore any below 5)."
+          nullable: true
       description: This represents a collection of features as per a request from
         a GET api. GET's can request multiple API Keys at the same time.
       x-renamed-from: Environment

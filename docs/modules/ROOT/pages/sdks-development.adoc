@@ -67,7 +67,8 @@ environment is _stale_ and will no longer receive updates.
 Ops person investigating it
 - MUST: 503 - the server cache isn't ready and
 can't give an answer as to whether the key does or does not exist - wait for a little while and try again.
-- MUST: Support polling interval changes from the server by interpreting the `max-age=X` field. If the cache-control header is set, and there is a `max-age=X` field, the polling interval must be updated to match. This is the number of seconds between polls. This allows per environment control over cache control and the server being able to indicate to the client how quickly (or slowly) to poll.
+- MUST: Support polling interval changes from the server by reading the `pollInterval` field of each environment in a 200 (or 236) response. It is the number of seconds between polls the server wants for that environment, and it replaces the interval the SDK was configured with, whether shorter or longer. Ignore values that are missing, null, or below 5 seconds (5 itself is used); if several environments carry one, use the smallest. If a full response carries none, go back to the configured interval. A 304 leaves the interval as it is.
+- MUST NOT: Change the polling interval from the `Cache-Control` header. Older SDKs read its `max-age` for this; that code should be removed. Edge still sends `Cache-Control`, but it is meant for HTTP caches and CDNs, not for the SDK.
 
 === Server Evaluated Feature Support
 

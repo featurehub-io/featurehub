@@ -302,10 +302,13 @@ you are getting memory issues or need to support more than 10000 active environm
 - `jersey.cors.headers` - a list of CORS headers that will be allowed, specifically for browser support
 - `update.pool-size` (10) - how many threads to allocate to processing incoming updates from NATs. These are responses to feature
 requests and feature updates coming from the server.
-- `edge.cache-control.header` - specifically for the GET (polling) API, this lets your infrastructure limit
-how often the clients can actually poll back. It would allow an infrastructure team to override individual
-development teams on how often they wish polling to take place. It is generally not recommended to do this, but
-there may be situations where it makes sense.
+- `edge.cache-control.header` - specifically for the GET (polling) API, this sets the `Cache-Control` header on every
+response, overriding any `cacheControl` set on an environment (an operations-set `mgmt.cacheControl` on an environment still
+takes precedence). It controls how HTTP caches and CDNs in front of Edge cache responses. It no longer changes how often SDKs
+poll: to change an environment's polling interval, set `pollInterval` (in whole seconds) in the environment's information, or
+`mgmt.pollInterval` to override it. Edge sends it to polling SDKs as the `pollInterval` of that environment in each response.
+The minimum is 5 seconds: if the setting Edge uses (`mgmt.pollInterval` when present) is below 5, Edge sends no `pollInterval`
+for that environment and SDKs keep their configured interval.
 
 === Edge (Streaming) Config
 

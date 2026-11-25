@@ -14,6 +14,7 @@ import io.featurehub.strategies.percentage.PercentageMumurCalculator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -23,11 +24,13 @@ public class FeatureTransformerUtils implements FeatureTransformer {
   private final ApplyFeature applyFeature =
       new ApplyFeature(new PercentageMumurCalculator(), new MatcherRegistry());
 
+  @Override
   public List<FeatureState> transform(
-      List<CacheEnvironmentFeature> features, ClientContext clientAttributes, boolean allowExtendedProperties) {
+      List<CacheEnvironmentFeature> features, ClientContext clientAttributes, boolean allowExtendedProperties,
+      Instant now) {
     try {
       return features.stream()
-          .map(f -> transform(f, clientAttributes, allowExtendedProperties))
+          .map(f -> transform(f, clientAttributes, allowExtendedProperties, now))
           .collect(Collectors.toList());
     } catch (Exception e) {
       log.error("Failed transform", e);
@@ -35,7 +38,9 @@ public class FeatureTransformerUtils implements FeatureTransformer {
     }
   }
 
-  public FeatureState transform(CacheEnvironmentFeature rf, ClientContext clientAttributes, boolean allowExtendedProperties) {
+  @Override
+  public FeatureState transform(CacheEnvironmentFeature rf, ClientContext clientAttributes, boolean allowExtendedProperties,
+                                Instant now) {
     FeatureState fs =
         new FeatureState()
             .key(rf.getFeature().getKey())
@@ -70,7 +75,8 @@ public class FeatureTransformerUtils implements FeatureTransformer {
                   fsStrategies,
                   rf.getFeature().getKey(),
                   rf.getValue().getId().toString(),
-                  clientAttributes);
+                  clientAttributes,
+                  now);
           fs.value(
               applied.isMatched()
                   ? applied.getValue()
