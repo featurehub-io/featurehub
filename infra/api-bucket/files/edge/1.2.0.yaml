@@ -51,8 +51,9 @@ paths:
         in: query
         description: "The Edge wire-protocol version the SDK supports. Version 2 and\
           \ later indicates the SDK understands that SSE event ids are etags and will\
-          \ send the last one it received as the Last-Event-ID header on reconnect.\
-          \ If not present, version 1 is assumed."
+          \ send the last one it received as the Last-Event-ID header on reconnect,\
+          \ and that it reads each environment's pollInterval, which is only sent\
+          \ to version 2 and later. If not present, version 1 is assumed."
         required: false
         style: form
         explode: true
@@ -539,9 +540,10 @@ components:
             \ to use for this environment, overriding the interval the SDK was configured\
             \ with. Absent (or null) if the environment has no override. Set per environment\
             \ via its environment info (`pollInterval`, or `mgmt.pollInterval` which\
-            \ takes precedence). Edge never sends a value below 5: if the chosen setting\
-            \ is below 5 the field is absent. When a response holds several environments,\
-            \ clients use the smallest value of at least 5 (and ignore any below 5)."
+            \ takes precedence). Only sent to SDKs that send `sdk_version` 2 or later.\
+            \ Edge never sends a value below 5: if the chosen setting is below 5 the\
+            \ field is absent. When a response holds several environments, clients\
+            \ use the smallest value of at least 5 (and ignore any below 5)."
           nullable: true
       description: This represents a collection of features as per a request from
         a GET api. GET's can request multiple API Keys at the same time.

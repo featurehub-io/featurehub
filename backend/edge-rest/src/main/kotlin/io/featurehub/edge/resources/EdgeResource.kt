@@ -1,6 +1,7 @@
 package io.featurehub.edge.resources
 
 import cd.connect.jersey.prometheus.Prometheus
+import io.featurehub.edge.features.ETagSplitter
 import io.featurehub.edge.rest.FeatureGet
 import io.featurehub.edge.rest.FeatureUpdate
 import io.featurehub.sse.model.FeatureStateUpdate
@@ -25,11 +26,12 @@ class EdgeResource @Inject constructor(private val featureGetProcessor: FeatureG
   fun getFeatureStates(
     @Suspended response: AsyncResponse, @QueryParam("sdkUrl") sdkUrls: List<String>?,
     @QueryParam("apiKey") apiKeys: List<String>?,
-    @QueryParam("sdk_version") sdkVersion: String?, // accepted, GET always honours etags
+    @QueryParam("sdk_version") sdkVersion: String?, // GET always honours etags; 2+ is also sent pollInterval
     @HeaderParam("x-featurehub") featureHubAttrs: List<String>?,
     @HeaderParam("if-none-match") etagHeader: String?
   ) {
-    featureGetProcessor.processGet(response, sdkUrls, apiKeys, featureHubAttrs, etagHeader, null)
+    featureGetProcessor.processGet(response, sdkUrls, apiKeys, featureHubAttrs, etagHeader, null,
+      ETagSplitter.parseSdkVersion(sdkVersion))
   }
 
   @GET

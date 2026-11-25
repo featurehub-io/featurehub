@@ -43,7 +43,7 @@ class EventStreamResource @Inject constructor(
     @QueryParam("sdkUrl") sdkUrls: List<String>?,
     @QueryParam("apiKey") apiKeys: List<String>?,
     @QueryParam("contextSha") contextSha: String?,
-    @QueryParam("sdk_version") sdkVersion: String?, // accepted, GET always honours etags
+    @QueryParam("sdk_version") sdkVersion: String?, // GET always honours etags; 2+ is also sent pollInterval
     @HeaderParam("x-featurehub") featureHubAttrs: List<String>?,
     @HeaderParam("if-none-match") etagHeader: String?
   ) {
@@ -56,7 +56,8 @@ class EventStreamResource @Inject constructor(
       )
     }
     featureGetProcessor.processGet(
-      response!!, sdkUrls, apiKeys, featureHubAttrs, etagHeader, statRecorder
+      response!!, sdkUrls, apiKeys, featureHubAttrs, etagHeader, statRecorder,
+      ETagSplitter.parseSdkVersion(sdkVersion)
     )
   }
 
