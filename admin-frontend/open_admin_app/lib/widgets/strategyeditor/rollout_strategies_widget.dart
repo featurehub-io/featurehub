@@ -46,6 +46,7 @@ class RolloutStrategiesWidget extends StatelessWidget {
                 Text(AppLocalizations.of(context)!.addRule, style: Theme.of(context).textTheme.bodySmall),
                 for (var e in StrategyAttributeWellKnownNames.values)
                   if (e != StrategyAttributeWellKnownNames.session &&
+                      e != StrategyAttributeWellKnownNames.fhubWhenActive &&
                       !snapshot.data!.any((rsa) =>
                           StrategyAttributeWellKnownNamesExtension.fromJson(
                               rsa.fieldName) ==

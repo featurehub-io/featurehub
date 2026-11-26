@@ -51,6 +51,10 @@ class StrategyEditorBloc extends Bloc {
         case StrategyAttributeWellKnownNames.version:
           rs.type = RolloutStrategyFieldType.SEMANTIC_VERSION;
           break;
+        case StrategyAttributeWellKnownNames
+              .fhubWhenActive: // not yet exposed in the UI
+          rs.type = RolloutStrategyFieldType.DATETIME;
+          break;
       }
     }
 

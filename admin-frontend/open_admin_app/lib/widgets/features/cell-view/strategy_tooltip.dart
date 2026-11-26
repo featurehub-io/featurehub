@@ -306,6 +306,7 @@ class _RuleRow extends StatelessWidget {
         icon = Icons.new_releases_outlined;
         label = l10n.tooltipVersion;
       case StrategyAttributeWellKnownNames.session:
+      case StrategyAttributeWellKnownNames.fhubWhenActive:
       case null:
         icon = wellKnown == null ? Icons.tune : Icons.timelapse;
         label = attribute.fieldName;
