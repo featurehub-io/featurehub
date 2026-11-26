@@ -2,7 +2,7 @@ openapi: 3.0.1
 info:
   title: FeatureServiceApi
   description: This describes the API clients use for accessing features
-  version: "1.1.9"
+  version: "1.2.0"
 paths:
   /features/:
     get:
@@ -23,6 +23,14 @@ paths:
           required: false
           schema:
               type: string
+        - name: sdk_version
+          in: query
+          description: "The Edge wire-protocol version the SDK supports. Version 2 and later indicates the SDK understands that SSE event ids are etags and will send the last one it received as the Last-Event-ID header on reconnect, and that it reads each environment's pollInterval, which is only sent to version 2 and later. If not present, version 1 is assumed."
+          required: false
+          schema:
+            type: integer
+            format: int32
+            minimum: 1
       description: Requests all features for this sdkurl and disconnects
       operationId: getFeatureStates
       responses:
@@ -151,10 +159,22 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/FeatureState"
+        pollInterval:
+          type: integer
+          nullable: true
+          description: >-
+            The polling interval, in seconds, the server would like clients to use for this environment, overriding the
+            interval the SDK was configured with. Absent (or null) if the environment has no override. Set per
+            environment via its environment info (`pollInterval`, or `mgmt.pollInterval` which takes precedence). Only sent
+            to SDKs that send `sdk_version` 2 or later. Edge never
+            sends a value below 5: if the chosen setting is below 5 the field is absent. When a response holds several
+            environments, clients use the smallest value of at least 5 (and ignore any below 5).
     FeatureState:
       required:
         - key
         - id
+        - version
+        - type
       properties:
         id:
           type: string
@@ -164,9 +184,9 @@ components:
           type: string
           nullable: false
         l:
-          nullable: false
+          nullable: true
           default: false
-          description: "Is this feature locked. Usually this doesn't matter because the value is the value, but for FeatureInterceptors it can matter."
+          description: "Is this feature locked. Usually this doesn't matter because the value is the value, but for FeatureInterceptors it can matter. Optional: absent or null means false."
           type: boolean
         version:
           description: "The version of the feature, this allows features to change values and it means we don't trigger events"

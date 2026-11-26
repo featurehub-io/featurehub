@@ -30,8 +30,20 @@ interface FeatureGet {
     apiKeys: List<String>?,
     featureHubAttrs: List<String>?,
     etagHeader: String?,
-    statRecorder: StatRecorder?
+    statRecorder: StatRecorder?,
+    // the wire-protocol version the SDK declared (sdk_version), null if it sent none
+    sdkVersion: Int? = null
   )
+
+  companion object {
+    /**
+     * The first wire-protocol version (sdk_version) whose SDKs read FeatureEnvironmentCollection.pollInterval. Older
+     * SDKs are never sent it.
+     */
+    const val SDK_VERSION_POLL_INTERVAL = 2
+
+    fun sendPollInterval(sdkVersion: Int?): Boolean = sdkVersion != null && sdkVersion >= SDK_VERSION_POLL_INTERVAL
+  }
 }
 
 interface EdgeGetResponseWrapper {
@@ -59,7 +71,8 @@ class FeatureGetProcessor @Inject constructor(
     apiKeys: List<String>?,
     featureHubAttrs: List<String>?,
     etagHeader: String?,
-    statRecorder: StatRecorder?
+    statRecorder: StatRecorder?,
+    sdkVersion: Int?
   ) {
     if ((sdkUrls == null || sdkUrls.isEmpty()) && (apiKeys == null || apiKeys.isEmpty())) {
       response.resume(BadRequestException())
@@ -114,6 +127,11 @@ class FeatureGetProcessor @Inject constructor(
       val newEtags = makeEtags(
         etags,
         environments.map(FeatureRequestResponse::etag))
+
+      // only SDKs that declare a wire-protocol version that understands it are told the polling interval
+      if (!FeatureGet.sendPollInterval(sdkVersion)) {
+        environments.forEach { it.environment.pollInterval = null }
+      }
 
       response.resume(
         wrapResponse(

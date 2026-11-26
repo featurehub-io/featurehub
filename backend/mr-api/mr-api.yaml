@@ -3256,7 +3256,7 @@ components:
           type: boolean
         environmentInfo:
           nullable: true
-          description: "Allows some settings that affect the behaviour of this environment. Currently `cacheControl` if set will be passed and set on the responses to GET requests."
+          description: "Allows some settings that affect the behaviour of this environment. Currently `cacheControl` if set will be passed and set on the responses to GET requests, and `pollInterval` (whole seconds) if set is sent to SDKs in GET responses as the polling interval they should use for this environment."
           additionalProperties:
             type: string
         webhookEnvironmentInfo:

@@ -105,6 +105,69 @@ class EtagSplitterSpec extends Specification {
       holder.contextTag == "other"
   }
 
+  def "sse: a last-event-id is evaluated against the client context"() {
+    given: "a single sse key"
+      def k1 = new KeyParts("1", UUID.randomUUID(), "s1")
+    when: "i make the sse etag holder"
+      def holder = ETagSplitter.@Companion.parseSseEtag(lastEventId, [k1], clientContext)
+    then:
+      holder.validEtag == valid
+      holder.contextTag == clientContext
+      holder.environmentTags[k1] == (valid ? "abc" : null)
+    where:
+      lastEventId       | clientContext || valid
+      "abc"             | "0"           || true    // no context then, no context now
+      "abc//ctx1"       | "ctx1"        || true    // same context
+      '"abc//ctx1"'     | "ctx1"        || true    // tolerate a quoted id
+      "abc"             | "ctx1"        || false   // context added since the id was issued
+      "abc//ctx1"       | "0"           || false   // context removed since the id was issued
+      "abc//ctx1"       | "ctx2"        || false   // context changed
+      ""                | "0"           || false
+      '""'              | "0"           || false
+      null              | "0"           || false
+  }
+
+  def "sse: the event id we issue is accepted back as a valid last-event-id for the same context"() {
+    given: "a single sse key"
+      def k1 = new KeyParts("1", UUID.randomUUID(), "s1")
+    and: "the id we would send on the features event"
+      def id = ETagSplitter.@Companion.makeEtags(new EtagStructureHolder([:], ctx, false), ["dacha-etag"])
+    when: "the client reconnects with it"
+      def holder = ETagSplitter.@Companion.parseSseEtag(id, [k1], ctx)
+    then:
+      holder.validEtag
+      holder.environmentTags[k1] == "dacha-etag"
+    where:
+      ctx << ["0", "1a2b3c"]
+  }
+
+  def "sse: when the sdk doesn't declare wire-protocol version 2 or later, the last-event-id is dropped"() {
+    expect:
+      ETagSplitter.@Companion.sseLastEventId("abc", sdkVersion) == null
+    where:
+      sdkVersion << [null, 0, 1]
+  }
+
+  def "sse: an sdk declaring wire-protocol version 2 or later always has its last-event-id honoured"() {
+    expect:
+      ETagSplitter.@Companion.sseLastEventId("abc//ling", sdkVersion) == "abc//ling"
+    where:
+      sdkVersion << [2, 3, 17]
+  }
+
+  def "sse: sdk_version is parsed leniently"() {
+    expect:
+      ETagSplitter.@Companion.parseSdkVersion(raw) == expected
+    where:
+      raw       | expected
+      null      | null
+      ""        | null
+      "orm"     | null
+      "2"       | 2
+      " 3 "     | 3
+      "1"       | 1
+  }
+
   def "when i pass in an etag holder and a bunch of feature requests, i get the expected etag header"() {
     given: "an existing etag holder"
       def tag = new EtagStructureHolder([:], "context-key", true)

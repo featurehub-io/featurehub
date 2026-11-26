@@ -49,4 +49,21 @@ class DateArrayMatcherSpec extends Specification {
       '2017-03-06'  | RolloutStrategyAttributeConditional.ENDS_WITH      | ['06']                        | true
       '2017-03-06'  | RolloutStrategyAttributeConditional.ENDS_WITH      | ['03', '2017']                | false
   }
+
+  @Unroll
+  def 'supplied date-times are reduced to their UTC date: #suppliedValue #conditional #val'() {
+    given:
+      def rsi = new FeatureRolloutStrategyAttribute().conditional(conditional).values(val)
+    expect:
+      matcher.match(suppliedValue, rsi) == result
+    where:
+      suppliedValue               | conditional                                    | val            || result
+      // spec matcher_vectors
+      '2020-06-15T23:30:00+10:00' | RolloutStrategyAttributeConditional.EQUALS     | ['2020-06-15'] || true
+      '2020-06-15T10:00:00Z'      | RolloutStrategyAttributeConditional.EQUALS     | ['2020-06-15'] || true
+      '2020-06-16T09:30:00+10:00' | RolloutStrategyAttributeConditional.EQUALS     | ['2020-06-15'] || true
+      '2020-06-15T23:30:00'       | RolloutStrategyAttributeConditional.EQUALS     | ['2020-06-15'] || true
+      '2020-06-15T23:30:00-02:00' | RolloutStrategyAttributeConditional.GREATER    | ['2020-06-15'] || true
+      'chago'                     | RolloutStrategyAttributeConditional.NOT_EQUALS | ['2020-06-15'] || false
+  }
 }

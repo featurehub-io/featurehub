@@ -6,6 +6,48 @@ class EtagStructureHolder(val environmentTags: Map<KeyParts, String>, val contex
 
 class ETagSplitter {
   companion object {
+    /**
+     * The first wire-protocol version at which an SDK declares (via the `sdk_version` parameter) that it understands
+     * SSE event ids are etags and that it will send the last one back as `Last-Event-ID` on reconnect.
+     */
+    const val SDK_VERSION_LAST_EVENT_ID = 2
+
+    /**
+     * Should we honour a Last-Event-ID presented on an SSE connection? Only if the SDK has told us it speaks a
+     * wire-protocol version that understands it.
+     */
+    fun honourLastEventId(sdkVersion: Int?): Boolean =
+      sdkVersion != null && sdkVersion >= SDK_VERSION_LAST_EVENT_ID
+
+    /**
+     * Returns the Last-Event-ID to use for this SSE connection, or null if it should be ignored.
+     */
+    fun sseLastEventId(lastEventId: String?, sdkVersion: Int?): String? =
+      if (honourLastEventId(sdkVersion)) lastEventId else null
+
+    /**
+     * Parses the sdk_version parameter leniently - an SDK sending something we can't understand is treated as having
+     * not sent one at all rather than failing the request.
+     */
+    fun parseSdkVersion(sdkVersion: String?): Int? = sdkVersion?.trim()?.toIntOrNull()
+
+    fun parseSseEtag(etag: String?, keys: List<KeyParts>, etagFromClientContext: String): EtagStructureHolder {
+      if (etag == null || keys.size != 1) {
+        return EtagStructureHolder(emptyMap(), etagFromClientContext, false)
+      }
+
+      // the SSE event id is the same structure as the REST etag (see makeEtags) - `<env-etag>[//<context-tag>]` - but
+      // without the quotes. We must honour the context part - if the client's context has changed since it was given
+      // this id (or it now has one and didn't before, or vice versa), the features it holds were evaluated against a
+      // different context and it must get a full set again. splitTag does exactly that check, so normalise and reuse it.
+      val bareTag = etag.trim().removePrefix("W/").removeSurrounding("\"")
+      if (bareTag.isEmpty()) {
+        return EtagStructureHolder(emptyMap(), etagFromClientContext, false)
+      }
+
+      return splitTag("\"$bareTag\"", keys, etagFromClientContext)
+    }
+
     fun splitTag(incomingEtag: String?, keys: List<KeyParts>, clientContextTag: String): EtagStructureHolder {
       // compressed responses are given weak etags (see SSEAwareEncodingFilter), the tag itself is the same
       val etag = incomingEtag?.trim()?.removePrefix("W/")

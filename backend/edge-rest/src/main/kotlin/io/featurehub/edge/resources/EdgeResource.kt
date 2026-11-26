@@ -1,6 +1,7 @@
 package io.featurehub.edge.resources
 
 import cd.connect.jersey.prometheus.Prometheus
+import io.featurehub.edge.features.ETagSplitter
 import io.featurehub.edge.rest.FeatureGet
 import io.featurehub.edge.rest.FeatureUpdate
 import io.featurehub.sse.model.FeatureStateUpdate
@@ -25,10 +26,12 @@ class EdgeResource @Inject constructor(private val featureGetProcessor: FeatureG
   fun getFeatureStates(
     @Suspended response: AsyncResponse, @QueryParam("sdkUrl") sdkUrls: List<String>?,
     @QueryParam("apiKey") apiKeys: List<String>?,
+    @QueryParam("sdk_version") sdkVersion: String?, // GET always honours etags; 2+ is also sent pollInterval
     @HeaderParam("x-featurehub") featureHubAttrs: List<String>?,
     @HeaderParam("if-none-match") etagHeader: String?
   ) {
-    featureGetProcessor.processGet(response, sdkUrls, apiKeys, featureHubAttrs, etagHeader, null)
+    featureGetProcessor.processGet(response, sdkUrls, apiKeys, featureHubAttrs, etagHeader, null,
+      ETagSplitter.parseSdkVersion(sdkVersion))
   }
 
   @GET
@@ -41,7 +44,8 @@ class EdgeResource @Inject constructor(private val featureGetProcessor: FeatureG
     @PathParam("apiKey") apiKey: String?,
     @HeaderParam("x-featurehub") featureHubAttrs: List<String?>?,  // non browsers can set headers
     @QueryParam("xfeaturehub") browserHubAttrs: String?,  // browsers can't set headers,
-    @HeaderParam("Last-Event-ID") etag: String?
+    @HeaderParam("Last-Event-ID") etag: String?,
+    @QueryParam("sdk_version") sdkVersion: String?
   ): EventOutput? {
     throw WebApplicationException("SSE not supported in GET-Edge", 501)
   }

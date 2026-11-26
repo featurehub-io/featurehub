@@ -92,6 +92,15 @@ class RolloutStrategyValidationUtils : RolloutStrategyValidator {
                 .id(attr.id), rs
             )
           }
+          // fhubWhenActive always holds date-times, whatever type it claims (SDKs and Edge ignore its type),
+          // DATETIME is checked below so only check the others here
+          if (WHEN_ACTIVE.equals(attr.fieldName, ignoreCase = true) && attr.type != RolloutStrategyFieldType.DATETIME
+            && attr.values?.any { n -> n == null || notDateTime(n) } == true) {
+            failures.add(
+              RolloutStrategyViolation().violation(RolloutStrategyViolationType.ATTR_VAL_NOT_DATE_TIME)
+                .id(attr.id), rs
+            )
+          }
           if (attr.type != null) {
             try {
               when (attr.type) {
@@ -206,6 +215,7 @@ class RolloutStrategyValidationUtils : RolloutStrategyValidator {
 
   companion object {
     private val log = LoggerFactory.getLogger(RolloutStrategyValidationUtils::class.java)
+    private const val WHEN_ACTIVE = "fhubWhenActive"
     private const val MAX_PERCENTAGE = 1000000 // four decimal points
     private val semanticVersion = Pattern.compile(
       "^(0|[1-9]\\d*)\\.(0|[1-9]\\d*)\\.(0|[1-9]\\d*)" +

@@ -209,4 +209,29 @@ class RolloutStrategyValidationUtilsSpec extends Specification {
       RolloutStrategyFieldType.DATETIME         | ['1984-12-12T14:32:26+03:00']
       RolloutStrategyFieldType.DATETIME         | ['1984-12-11T11:32:26Z']
   }
+
+  def "fhubWhenActive values must be date-times whatever type the attribute claims"() {
+    when:
+      def fv = [new RolloutStrategy().name("always wonder").attributes([
+        new RolloutStrategyAttribute()
+          .type(fieldType)
+          .conditional(RolloutStrategyAttributeConditional.GREATER_EQUALS)
+          .fieldName(fieldName)
+          .values(values)
+      ])]
+      def validations = validator.validateStrategies(FeatureValueType.STRING, fv, [])
+    then:
+      validations.isInvalid() == invalid
+      (validations.customStrategyViolations[fv[0]]*.violation ?: []).count { it == RolloutStrategyViolationType.ATTR_VAL_NOT_DATE_TIME } == (invalid ? 1 : 0)
+    where:
+      fieldName        | fieldType                         | values                        || invalid
+      'fhubWhenActive' | RolloutStrategyFieldType.DATETIME | ['2026-12-01T09:00:00Z']      || false
+      'fhubWhenActive' | RolloutStrategyFieldType.STRING   | ['2026-12-01T09:00:00.250Z']  || false
+      'FHUBWHENACTIVE' | RolloutStrategyFieldType.STRING   | ['2026-12-01T21:00:00+12:00'] || false
+      'fhubWhenActive' | RolloutStrategyFieldType.DATETIME | ['keep silent']               || true
+      'fhubWhenActive' | RolloutStrategyFieldType.STRING   | ['keep silent']               || true
+      'fhubwhenactive' | RolloutStrategyFieldType.STRING   | ['2026-12-01']                || true
+      'fhubWhenActive' | RolloutStrategyFieldType.NUMBER   | ['2026-12-01T09:00:00']       || true
+      'ormkorn'        | RolloutStrategyFieldType.STRING   | ['keep silent']               || false
+  }
 }

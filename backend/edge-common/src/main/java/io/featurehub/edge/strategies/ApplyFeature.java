@@ -5,14 +5,20 @@ import io.featurehub.mr.model.RolloutStrategyFieldType;
 import io.featurehub.sse.model.FeatureRolloutStrategy;
 import io.featurehub.sse.model.FeatureRolloutStrategyAttribute;
 import io.featurehub.strategies.matchers.MatcherRepository;
+import io.featurehub.strategies.matchers.WhenActiveMatcher;
 import io.featurehub.strategies.percentage.PercentageCalculator;
 import jakarta.inject.Inject;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.time.LocalDateTime;
+import java.time.Clock;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -23,15 +29,35 @@ public class ApplyFeature {
   private static final Logger log = LoggerFactory.getLogger(ApplyFeature.class);
   private final PercentageCalculator percentageCalculator;
   private final MatcherRepository matcherRepository;
+  private final WhenActiveMatcher whenActiveMatcher;
+  private final Clock clock;
 
   @Inject
   public ApplyFeature(PercentageCalculator percentageCalculator, MatcherRepository matcherRepository) {
+    this(percentageCalculator, matcherRepository, Clock.systemUTC());
+  }
+
+  /**
+   * @param clock the clock used for "now" and fhubWhenActive, so tests can fix the time
+   */
+  public ApplyFeature(PercentageCalculator percentageCalculator, MatcherRepository matcherRepository, Clock clock) {
     this.percentageCalculator = percentageCalculator;
     this.matcherRepository = matcherRepository;
+    this.clock = clock;
+    this.whenActiveMatcher = new WhenActiveMatcher(clock);
   }
 
   public Applied applyFeature(List<FeatureRolloutStrategy> strategies, String key, String featureValueId,
                               ClientContext cac) {
+    return applyFeature(strategies, key, featureValueId, cac, clock.instant());
+  }
+
+  /**
+   * @param now the time to evaluate at: anything clock based (fhubWhenActive, "now") uses this one instant, so a
+   *            request's etag and its evaluated values can be worked out from the same moment
+   */
+  public Applied applyFeature(List<FeatureRolloutStrategy> strategies, String key, String featureValueId,
+                              ClientContext cac, Instant now) {
     if (cac != null & strategies != null && !strategies.isEmpty()) {
       Integer percentage = null;
       String percentageKey = null;
@@ -60,7 +86,7 @@ public class ApplyFeature {
             // id of feature value then apply it
           if (percentage <= (useBasePercentage + rsi.getPercentage())) {
             if (!rsi.getAttributes().isEmpty()) {
-              if (matchAttributes(cac, rsi)) {
+              if (matchAttributes(cac, rsi, now)) {
                 return new Applied(true, rsi.getId(), rsi.getValue());
               }
             } else {
@@ -76,7 +102,7 @@ public class ApplyFeature {
 
         if ((rsi.getPercentage() == null || rsi.getPercentage() == 0) &&
           !rsi.getAttributes().isEmpty()) {
-          if (matchAttributes(cac, rsi)) {
+          if (matchAttributes(cac, rsi, now)) {
             return new Applied(true, rsi.getId(), rsi.getValue());
           }
         }
@@ -87,16 +113,26 @@ public class ApplyFeature {
   }
 
   // This applies the rules as an AND. If at any point it fails it jumps out.
-  private boolean matchAttributes(ClientContext cac, FeatureRolloutStrategy rsi) {
+  private boolean matchAttributes(ClientContext cac, FeatureRolloutStrategy rsi, Instant now) {
     for(FeatureRolloutStrategyAttribute attr : rsi.getAttributes()) {
+      // fhubWhenActive compares Edge's clock against the attribute's date-time, ignoring its type
+      // and never looking at the client context, so the client cannot supply or override it
+      if (WhenActiveMatcher.isWhenActive(attr.getFieldName())) {
+        if (!whenActiveMatcher.match(attr, now)) {
+          return false;
+        }
+
+        continue;
+      }
+
       List<String> suppliedValues = cac.get(attr.getFieldName());
 
-      // "now" for dates and date-times are not passed by the client, so we create them in-situ
-      if (suppliedValues == null && "now".equalsIgnoreCase(attr.getFieldName())) {
+      // "now" for dates and date-times are not passed by the client, so we create them in-situ, in UTC
+      if ((suppliedValues == null || suppliedValues.isEmpty()) && "now".equalsIgnoreCase(attr.getFieldName())) {
         if (attr.getType() == RolloutStrategyFieldType.DATE) {
-          suppliedValues = List.of(DateTimeFormatter.ISO_DATE.format(LocalDateTime.now()));
+          suppliedValues = List.of(DateTimeFormatter.ISO_LOCAL_DATE.format(LocalDate.ofInstant(now, ZoneOffset.UTC)));
         } else if (attr.getType() == RolloutStrategyFieldType.DATETIME) {
-          suppliedValues = List.of(DateTimeFormatter.ISO_DATE_TIME.format(LocalDateTime.now()));
+          suppliedValues = List.of(DateTimeFormatter.ISO_OFFSET_DATE_TIME.format(OffsetDateTime.ofInstant(now, ZoneOffset.UTC).truncatedTo(ChronoUnit.SECONDS)));
         }
       }
 
