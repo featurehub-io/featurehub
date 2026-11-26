@@ -204,6 +204,55 @@ directly from Eclipse Temurin, **pinned by OCI digest**:
 Delete `pipeline/build/base_jdk` and `pipeline/build/base_party`, and remove both from
 `.github/workflows/dockerhub-readme.yml`. Existing tags stay on DockerHub so older FeatureHub versions still pull.
 
+#### Alpine (musl) compatibility
+
+Alpine uses musl libc instead of glibc. Any dependency that bundles a native library built against glibc can fail to
+load there. The party-server runtime classpath (329 jars from `mvn dependency:tree`) has seven jars with Linux native
+libraries. Each was loaded inside `eclipse-temurin` Alpine on arm64 and amd64:
+
+| Library | Pulled in by | Used when | Result on Alpine |
+|---|---|---|---|
+| Bouncy Castle LTS (`bcprov-lts8on`) | `jnats` | NATS with NKey / credentials auth | **arm64: fails hard.** `CryptoServicesRegistrar` can't initialise (its probe library needs `ld-linux-aarch64.so.1`), so NKey signing throws `NoClassDefFoundError`. amd64 works. |
+| `snappy-java` 1.1.10.5 | `kafka-clients` 3.9.2 | Kafka messages compressed with snappy | **amd64: fails** (needs `ld-linux-x86-64.so.2`). arm64 works. |
+| gRPC's BoringSSL TLS library (`netty-tcnative`, inside `grpc-netty-shaded`) | Google Pub/Sub | Pub/Sub TLS | Works: native on arm64, falls back to JDK TLS (ALPN `h2`) on amd64 |
+| Netty epoll (inside `grpc-netty-shaded`) | Google Pub/Sub | Pub/Sub transport | Works on both |
+| Conscrypt | Google libraries | Optional TLS provider | Unavailable; optional, nothing depends on it |
+| `zstd-jni`, `lz4-java` | `kafka-clients` | Kafka compression | Work (lz4 uses pure Java on arm64) |
+| `jffi` (Linux build), Oracle TCP fast-open | Cloud SQL socket factory, `ojdbc11` | Unix-socket Cloud SQL, Oracle | The libraries load (`ldd` only, not exercised at runtime) |
+
+**Alpine is usable, with two required fixes** (both verified on arm64 and amd64):
+
+1. **Bouncy Castle: force pure Java.** Add `-Dorg.bouncycastle.native.cpu_variant=java` to the Jib `<jvmFlags>` in
+   `tile-app` and `tile-app-with-ui`. With it, Bouncy Castle reports `UNSUPPORTED` for native services, uses its Java
+   implementations, and Ed25519 / NATS NKey create, sign and verify pass on both architectures. Without it, NATS NKey
+   auth is broken on ARM hosts.
+2. **snappy: use a musl-aware version.** Pin `org.xerial.snappy:snappy-java` to `1.1.10.12` (or later) in dependency
+   management. That version ships `Linux/x86_64-musl`, and compress/uncompress round-trips pass on both architectures.
+   FeatureHub's Kafka module sets no compression, so its own producers use Kafka's default of none. A consumer still
+   needs snappy if any other producer on the topic compresses with it.
+
+Neither affects the default party-server (local events with H2 or a server database). Each needs an optional transport
+on a particular architecture, which makes it easy to miss without a test.
+
+**Keep it tested.** Add a small musl smoke test that runs in CI against the pinned image on both architectures:
+
+- Use the pinned `eclipse-temurin:25-jdk-alpine` digest, so a Java source file can run directly.
+- Put the runtime jars on the classpath.
+- Exercise each native-backed library through its public API:
+  - gRPC `OpenSsl.isAvailable()` and `GrpcSslContexts.forClient()`;
+  - gRPC `Epoll.isAvailable()`;
+  - Bouncy Castle native status plus an Ed25519 sign/verify;
+  - `jnats` `NKey.createUser` / `sign`;
+  - zstd and snappy round-trips;
+  - `LZ4Factory.fastestInstance()`.
+
+This catches a dependency bump that adds a glibc-only native library, which is the main risk of staying on Alpine. The
+amd64 results above were taken under emulation on Apple silicon, so the CI run on real amd64 confirms them.
+
+If a future dependency has no musl build and no Java fallback, the pinned base can move to the Ubuntu-based
+`eclipse-temurin:25-jre` (Temurin's non-Alpine images are Ubuntu Noble, not Debian) by changing the same tile
+property.
+
 ### 3.6 External streaming with the party-server
 
 No change in behaviour. Set `nats.urls` (or the Kafka, Pub/Sub or Kinesis properties) and that platform is used. The
@@ -315,6 +364,9 @@ entry, pointing at the compose NATS sidecar example. Record the patch/minor rule
 - The image config shows `User: 65534:65534`, and the base layer digest matches the pinned Temurin index for both
   amd64 and arm64.
 - `/target/nats-server` doesn't exist, and the image is smaller (record before and after).
+- The musl smoke test (3.5) passes on arm64 and amd64.
+- The container's JVM flags include `-Dorg.bouncycastle.native.cpu_variant=java`, and the resolved `snappy-java` is
+  `1.1.10.12` or later (`mvn dependency:tree`).
 
 **End to end (`adks/e2e-sdk`)**
 - Full suite against a local-mode party-server: SSE and REST, feature changes from MR reaching SDKs, Edge PUT updates
@@ -328,8 +380,9 @@ entry, pointing at the compose NATS sidecar example. Record the patch/minor rule
    logic and `publishingEnabled()` in `CloudEventsFeature`, and unit tests.
 2. **Base image:** pin `eclipse-temurin:25-jre-alpine@sha256:…` in both tiles. Run as `nobody` (`65534:65534`)
    and add ports, `/db` (owned by 65534) and `/etc/app-config` via Jib. Remove the `dacha2` and `party-server`
-   overrides. Delete
-   `pipeline/build/base_jdk` and `base_party`. Set up the automated digest bump.
+   overrides. Delete `pipeline/build/base_jdk` and `base_party`. Set up the automated digest bump. Add the musl
+   fixes, `-Dorg.bouncycastle.native.cpu_variant=java` in both tiles and the `snappy-java` 1.1.10.12 pin, plus the
+   musl smoke test in CI (3.5).
 3. **Party-server:** set the local flag and mode logging in `Application.main`; remove `nats.urls` from
    `common.properties`; delete `BatheInitializerNatsServer` and its service file; drop `app.baseimage`; add the
    localhost-NATS guidance on connection failure.
@@ -347,6 +400,7 @@ entry, pointing at the compose NATS sidecar example. Record the patch/minor rule
 |-------|----------|
 | `party-server-ish` | **Retire it, one minor release after this change.** It reads the database on every Edge request (2.3). A NATS-free party-server gives the same single-container deployment with Dacha2's cache and streaming Edge. This change's release notes announce the deprecation; the next minor release removes the module, its image and its docs. |
 | Base images | Pin `eclipse-temurin` by OCI digest in the tiles; delete `base_jdk` and `base_party` (3.5) |
+| Alpine vs Ubuntu | Alpine (`25-jre-alpine`), with the Bouncy Castle flag, the `snappy-java` pin and a CI musl smoke test (3.5). Ubuntu stays available as a one-property fallback. |
 | Container user | The image's built-in `nobody`, set numerically as `65534:65534`, replacing 999 (3.5). `featurehub-helm` must be updated to match (section 4) |
 | Second-instance detection | None. Running a single local-mode instance is the operator's responsibility; the startup log and docs say so (3.7) |
 | Transitional NATS image | None. Feature changes are minor releases; patch releases only update dependencies and base images (section 4) |
