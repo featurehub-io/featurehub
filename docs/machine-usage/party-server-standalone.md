@@ -194,8 +194,8 @@ directly from Eclipse Temurin, **pinned by OCI digest**:
 
 | `base_jdk` / `base_party` did | Replacement |
 |-------------------------------|-------------|
-| Create user `k8suser` 999:999 | Jib `<container><user>999:999</user>`. `tile-app` already sets this; add it to `tile-app-with-ui`, which currently relies on `docker run --user 999:999`. The Temurin image has no passwd entry for 999. That's fine for the JVM, but set `-Duser.home=/tmp` (or `HOME`) so nothing tries to use `?` as a home directory. |
-| `mkdir /db` owned by 999 (H2 data) | An empty `/db` added through Jib `extraDirectories`, with ownership set to `999:999` by the Jib Ownership extension (`jib-ownership-extension-maven` from GoogleContainerTools `jib-extensions`). Fallback if the extension doesn't suit Jib 3.5.1: mode `1777` on `/db` via `<permissions>`. Ownership is needed so that Docker *named* volumes, which copy the image directory's ownership on first use, are writable by 999. Bind mounts behave as today. |
+| Create user `k8suser` 999:999 | Use the image's built-in **`nobody`** user (`65534:65534`; home `/`, shell `/sbin/nologin`) with Jib `<container><user>65534:65534</user>` in **both** tiles. `tile-app` currently sets `999:999`; `tile-app-with-ui` sets nothing and relies on `docker run --user 999:999`. Set the user **numerically**, not as `nobody`: Kubernetes `runAsNonRoot` rejects an image whose user isn't numeric because it can't verify it. Because `nobody` has a passwd entry, the JVM gets a sensible `user.home`. |
+| `mkdir /db` owned by 999 (H2 data) | An empty `/db` added through Jib `extraDirectories`, with ownership set to `65534:65534` by the Jib Ownership extension (`jib-ownership-extension-maven` from GoogleContainerTools `jib-extensions`). Fallback if the extension doesn't suit Jib 3.5.1: mode `1777` on `/db` via `<permissions>`. Ownership is needed so that Docker *named* volumes, which copy the image directory's ownership on first use, are writable by `nobody`. |
 | `mkdir /etc/app-config` | An empty directory via `extraDirectories`. It's a read-only mount point, so root ownership is fine. |
 | `mkdir /etc/common-config` | Already created by Jib from `deploy-defaults`; root-owned and world-readable, which is fine. |
 | `mkdir /target`, NATS binary and config | Dropped. |
@@ -214,51 +214,17 @@ What users lose is the "free" NATS server inside the container. Anyone who point
 container's embedded NATS (`nats.urls=nats://party-1:4222`) must now run NATS themselves. Running the official
 `nats` image as a container or sidecar is a few lines in compose.
 
-### 3.7 Single-instance assumption and detecting a second instance
+### 3.7 Single-instance assumption
 
-In local mode, a second party-server on the same database would never hear about the first one's changes. Its Dacha2
-and Edge would serve stale features until restart. Two things already help:
+In local mode, a second party-server on the same database never hears about the first one's changes, so its Dacha2 and
+Edge serve stale features until restart. FeatureHub **does not try to detect this**. Running one instance, or
+configuring an external stream for several, is the operator's responsibility. The party-server:
 
-- **H2 (the evaluation default) can't be shared.** H2 in file mode holds a lock on the database file, so a second
-  process can't open `/db/party-h2.db`. Detection only matters for server databases (Postgres, MySQL, MariaDB, SQL
-  Server, Oracle).
-- **The startup WARN line** (3.4) states the rule, and the docs repeat it.
+- logs the WARN line at startup (3.4), saying which mode is active and that local mode means a single instance;
+- documents the rule in the party-server README, `installation.adoc` and `configuration.adoc`.
 
-**Detection: a database heartbeat.** The only thing two party-servers on one database share is the database, so detect
-through it:
-
-1. New table `fh_instance` (Ebean entity plus migrations for every supported database):
-
-   | Column | Notes |
-   |--------|-------|
-   | `id` | uuid PK, generated at process start |
-   | `kind` | `party-local` or `party-streaming` |
-   | `hostname` | from `HOSTNAME` / `InetAddress`, for the log message |
-   | `when_started` | |
-   | `last_seen` | always set from **database time** (`current_timestamp` in the update), so clock skew between hosts doesn't matter |
-
-2. Every party-server upserts its own row on startup and every 30s (`party.instance.heartbeat-seconds`). On graceful
-   shutdown it deletes the row. After a crash, the row simply ages out.
-3. On each heartbeat it queries other rows with `last_seen > now - 3 × heartbeat` and reports a **conflict** if:
-   - this instance is `party-local` and any other live instance exists, of either kind; or
-   - this instance is `party-streaming` and a live `party-local` instance exists. A local-mode instance can't hear
-     streamed updates, so a mixed fleet is broken too.
-
-   Several `party-streaming` instances together are normal and never conflict.
-4. **Rolling deploys** briefly overlap an old and a new instance. Report a conflict only after it has been seen on two
-   consecutive heartbeats (about 60s). A normal replacement finishes within that, and the old instance deletes its row
-   on shutdown.
-5. **On conflict:** log ERROR naming both hostnames and how to fix it (configure an external stream, or run one
-   instance). Also set a gauge metric, `party_instance_conflict`, so it can alert. Whether it should also fail readiness
-   is open question 3.
-
-The cost is one indexed UPDATE and one small SELECT every 30s per instance.
-
-Alternatives considered:
-- **Database advisory locks** (`pg_try_advisory_lock`, MySQL `GET_LOCK`, SQL Server `sp_getapplock`, Oracle `DBMS_LOCK`).
-  These give an exact answer, but each database needs different SQL, the lock lives on one pinned connection outside
-  the Ebean pool, and it can't see the mixed local/streaming case.
-- **Network discovery** (multicast, DNS). It doesn't work across typical container networks and adds configuration.
+H2 in file mode (the evaluation default) can't be shared anyway: it locks the database file, so a second process can't
+open it.
 
 ### 3.8 Things that stay unavailable without a stream
 
@@ -277,6 +243,8 @@ Alternatives considered:
 | Several party-servers using one container's embedded NATS | Breaks: no NATS in the container | Run NATS separately; set `nats.urls` on all instances |
 | Mounted config that copied `nats.urls=nats://localhost:4222` | Fails at startup (connection refused) | Remove the property. The startup error should say so (below) |
 | `dont-run-nats-server` set | No-op | Can be removed |
+| Existing `/db` data, volume or PVC owned by UID 999 (`--user 999:999`, the old `k8suser`) | The new default user `nobody` (65534) can't write it, so H2 fails to open | One-off `chown -R 65534:65534` of the data; or keep running as 999 with `--user 999:999` / `runAsUser: 999`; or in Kubernetes set `fsGroup: 65534` |
+| `docker run --user 999:999 …` from the docs | Still works on a fresh `/db` bind mount the user owns; the docs move to the default user | Drop `--user`, or use `65534:65534` |
 
 For the copied-localhost case, catch the connection failure in the party-server. If `nats.urls` resolves only to
 `localhost` / `127.0.0.1`, log one ERROR before exiting:
@@ -289,8 +257,13 @@ releases are reserved for dependency and base-image updates, such as bumping the
 **no transitional image** with embedded NATS. Release notes need a clear "breaking for multi-instance-on-embedded-NATS"
 entry, pointing at the compose NATS sidecar example. Record the patch/minor rule in `backend/HOW_TO_RELEASE_OS.adoc`.
 
-**External repos to check** (not in this repo; follow-up PRs): the `featurehub-install` docker-compose examples and the
-`featurehub-helm` chart, for any `nats.urls` set on party-server or reliance on the embedded NATS.
+**External repos to update** (not in this repo; tracked as follow-up PRs):
+
+- **`featurehub-helm`** (required): change `securityContext.runAsUser` / `runAsGroup` from 999 to 65534 and set
+  `fsGroup: 65534` for every FeatureHub workload. Document the PVC ownership migration for upgrades. Remove any
+  reliance on the embedded NATS in the party-server option, and drop any `nats.urls` pointing at it.
+- **`featurehub-install`**: in the docker-compose examples, remove `user: 999:999` (or switch to 65534), remove
+  `nats.urls` set on party-server, and add a NATS sidecar example for multi-instance setups.
 
 ## 5. Documentation updates
 
@@ -301,6 +274,14 @@ entry, pointing at the compose NATS sidecar example. Record the patch/minor rule
   `backend/party-server/pom.xml` comments.
 - `docs/modules/ROOT/pages/installation.adoc` (Option 1a), `configuration.adoc` (Party Server and NATS sections,
   `cloudevents.local.enabled`), `troubleshooting.adoc`.
+- **User 999 → `nobody` (65534):** update every `--user 999:999` / `k8suser` reference to use the default user or
+  `65534:65534`, and add the data-ownership migration note:
+  - `readme.adoc`, `CLAUDE.md` (the evaluation `docker run` line);
+  - `docs/modules/ROOT/pages/evaluation.adoc`, `maintenance.adoc`;
+  - the image READMEs in `backend/` (`party-server`, `mr`, `dacha2`, `dacha`, `edge-full`, `edge-rest`,
+    `maintenance-responder`);
+  - `pipeline/build/party-server-test-db/Dockerfile.part`, which bakes a test H2 database into `/db` and runs
+    `chown -R 999:999 /db`. Change it to `65534:65534`, or the e2e test-db image won't start under the new user.
 - `docs/machine-usage/cloudevents.md`: add the `local` platform to the list in "structure of projects", and explain that
   it is a loopback selected only when no external platform is enabled.
 - Mentions of embedded NATS in `backend/mr/README.md`, `backend/dacha2/README.md`, `backend/dacha/README.md` and
@@ -327,50 +308,45 @@ entry, pointing at the compose NATS sidecar example. Record the patch/minor rule
 - The party-server with `nats.urls=nats://localhost:4222` and no NATS exits with the guidance message.
 
 **Image**
-- `docker run -v $HOME/party:/db featurehub/party-server:<new>` (bind mount) and the same with a named volume
-  (`-v partydata:/db`) both write H2 to `/db` as UID 999, with and without `--user 999:999`.
-- The image config shows `User: 999:999`, and the base layer digest matches the pinned Temurin index for both amd64
-  and arm64.
+- A named volume (`-v partydata:/db`) writes H2 to `/db` as `nobody` (65534) with no `--user` flag.
+- A bind mount owned by 65534 works with no `--user` flag; a bind mount owned by 999 works with `--user 999:999`
+  (the compatibility path in section 4).
+- In Kubernetes, `runAsNonRoot: true` is accepted, which needs the numeric image user.
+- The image config shows `User: 65534:65534`, and the base layer digest matches the pinned Temurin index for both
+  amd64 and arm64.
 - `/target/nats-server` doesn't exist, and the image is smaller (record before and after).
 
 **End to end (`adks/e2e-sdk`)**
 - Full suite against a local-mode party-server: SSE and REST, feature changes from MR reaching SDKs, Edge PUT updates
   (`feature-update-v1`), environment/service account changes, and webhooks with `webhooks.features.enabled=true`.
 - Full suite against **two** party-servers plus an external `nats` container behind a load balancer. This shows
-  multi-instance still works through an external stream, with no conflict reported.
-- Instance detection on Postgres: two local-mode instances report a conflict within about 60s; a local-mode and a
-  streaming instance report one; two streaming instances don't; a rolling restart of one local-mode instance
-  doesn't.
+  multi-instance still works through an external stream.
 
 ## 7. Implementation plan
 
 1. **Eventing core:** `LocalEventingFeature`, `LocalConfiguredSource`, `local: {}` in `cloud-events.yaml`, the selection
    logic and `publishingEnabled()` in `CloudEventsFeature`, and unit tests.
-2. **Base image:** pin `eclipse-temurin:25-jre-alpine@sha256:…` in both tiles. Add the user, ports, `/db` (owned
-   by 999) and `/etc/app-config` via Jib, and remove the `dacha2` and `party-server` overrides. Delete
+2. **Base image:** pin `eclipse-temurin:25-jre-alpine@sha256:…` in both tiles. Run as `nobody` (`65534:65534`)
+   and add ports, `/db` (owned by 65534) and `/etc/app-config` via Jib. Remove the `dacha2` and `party-server`
+   overrides. Delete
    `pipeline/build/base_jdk` and `base_party`. Set up the automated digest bump.
 3. **Party-server:** set the local flag and mode logging in `Application.main`; remove `nats.urls` from
    `common.properties`; delete `BatheInitializerNatsServer` and its service file; drop `app.baseimage`; add the
    localhost-NATS guidance on connection failure.
 4. **Verification:** startup and image checks; e2e in local mode and with two instances on external NATS.
 5. **Docs and release notes** (sections 4 and 5); deprecate `base_party`.
-6. **Instance detection:** `fh_instance` table and migrations, heartbeat and conflict reporting (3.7).
-7. **Retire `party-server-ish`** (section 8).
-8. **Follow-ups (separate):** `featurehub-install` / `featurehub-helm` updates; optional serialisation bypass for local
-   delivery (3.2).
+6. **Retire `party-server-ish`**, in the minor release *after* this one (section 8).
+7. **Follow-ups (separate repos and PRs):**
+   - `featurehub-helm`: user 65534, `fsGroup`, PVC migration notes, no embedded NATS (section 4);
+   - `featurehub-install`: compose updates (section 4);
+   - optional serialisation bypass for local delivery (3.2).
 
-## 8. Decisions and open questions
+## 8. Decisions
 
 | Topic | Decision |
 |-------|----------|
-| `party-server-ish` | **Retire it.** It reads the database on every Edge request (2.3). A NATS-free party-server gives the same single-container deployment with Dacha2's cache and streaming Edge. Publish a final release noting that, and point users at `party-server`. Remove the module, its image and its docs in the following minor release. |
+| `party-server-ish` | **Retire it, one minor release after this change.** It reads the database on every Edge request (2.3). A NATS-free party-server gives the same single-container deployment with Dacha2's cache and streaming Edge. This change's release notes announce the deprecation; the next minor release removes the module, its image and its docs. |
 | Base images | Pin `eclipse-temurin` by OCI digest in the tiles; delete `base_jdk` and `base_party` (3.5) |
+| Container user | The image's built-in `nobody`, set numerically as `65534:65534`, replacing 999 (3.5). `featurehub-helm` must be updated to match (section 4) |
+| Second-instance detection | None. Running a single local-mode instance is the operator's responsibility; the startup log and docs say so (3.7) |
 | Transitional NATS image | None. Feature changes are minor releases; patch releases only update dependencies and base images (section 4) |
-
-Still open:
-
-1. **Conflict handling.** Should a detected second instance (3.7) also fail `/health/readiness`, which stops traffic to
-   the newer instance in Kubernetes, or only log and set the metric? The recommendation is log + metric by default,
-   with `party.instance.fail-readiness-on-conflict=true` available for operators who want it enforced.
-2. **Where the `party-server-ish` removal lands.** In the same minor release as this change, or one release later?
-   The recommendation is one later, to give users a release's notice.
