@@ -7,8 +7,10 @@ The **Party Server** is the all-in-one FeatureHub deployment. A single container
 - **Dacha2**: the feature cache
 - **Edge**: the SDK-facing API, supporting both **streaming (SSE)** and **REST (GET/PUT)** feature updates
 
-They talk to each other **in-process**, so the Party Server needs no NATS or other message bus. If you run more than one
-Party Server against the same database, configure an external event stream (see [Running several Party Servers](#running-several-party-servers)).
+The Party Server no longer contains an embedded NATS server. It supports an **external NATS server**,
+**Google Pub/Sub** or **Kafka** if you provide one; otherwise the services talk to each other **in-process** and no message bus is
+needed. If you run more than one Party Server against the same database, configure external NATS, Google Pub/Sub or Kafka
+(see [Running several Party Servers](#running-several-party-servers)).
 
 It is the image to use for [evaluation](https://docs.featurehub.io/featurehub/latest/evaluation.html) and for
 [low-volume production deployments with streaming](https://docs.featurehub.io/featurehub/latest/installation.html#_option_1a_low_volume_deployment_streaming_rest_feature_updates)
@@ -66,6 +68,8 @@ Commonly used properties:
 | `db.url`, `db.username`, `db.password` | JDBC connection to your database. Postgres, MySQL, MariaDB, Oracle and SQL Server are supported. Defaults to H2 at `/db`. See [Database configuration](https://docs.featurehub.io/featurehub/latest/configuration.html#_database_configuration). |
 | `db.minConnections`, `db.maxConnections` | Database connection pool sizing. |
 | `nats.urls` | Comma-separated NATS servers. Leave unset to use in-process events (a single Party Server). Set it when you run several Party Servers. The image contains no NATS server, so don't point it at `localhost`. See [NATS](https://docs.featurehub.io/featurehub/latest/configuration.html#_nats). |
+| `cloudevents.pubsub.enabled`, `cloudevents.pubsub.project`, ... | Use Google Pub/Sub instead of NATS or in-process events. See [Google Pub/Sub](https://docs.featurehub.io/featurehub/latest/configuration.html#_googles_pubsub). |
+| `cloudevents.kafka.bootstrap.servers`, ... | Use Kafka instead of NATS or in-process events (enabled when bootstrap servers are set). See [Kafka](https://docs.featurehub.io/featurehub/latest/configuration.html#_kafka). |
 | `cloudevents.local.enabled` | Default `true`: with no external event stream configured, events are routed in-process. Set `false` to make a missing event stream a startup error. |
 | `webhooks.encryption.password` | Key used to encrypt Slack tokens and webhook secrets at rest. Required for [Slack integration](https://docs.featurehub.io/featurehub/latest/slack-integration.html). See [Encryption](https://docs.featurehub.io/featurehub/latest/configuration.html#_encryption). |
 | `featurehub.url-path` | Serve FeatureHub under a context path other than `/`. See [Common to all servers](https://docs.featurehub.io/featurehub/latest/configuration.html#_common_to_all_servers). |
@@ -83,7 +87,7 @@ must be the **only** Party Server using its database. A second instance on the s
 the first one's changes, and would serve stale features until it restarted. FeatureHub does not detect this.
 
 To run several, give all of them the same external event stream: set `nats.urls` to a NATS server you run yourself
-(for example the official `nats` image), or use Kafka, Google Pub/Sub or Kinesis, see
+(for example the official `nats` image), or configure Google Pub/Sub or Kafka on all of them, see
 [Async options](https://docs.featurehub.io/featurehub/latest/configuration.html#_async_options_for_featurehub).
 
 ## Upgrading from an image that ran as UID 999

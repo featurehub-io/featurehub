@@ -64,8 +64,9 @@ image::fh_deployment_option_1a.svg[Architecture,600]
 
 With Option 1a (the Party Server) all the services are deployed in a single running container. Internally this is packaged as a single
 Java server running four different services (a static web server serving the Admin App, the Management Repository server,
-the cache and the Edge service). The services pass events to each other in-process, so no NATS or other message bus is
-needed. This allows you to run only one of these (for instance) and support a full streaming service talking to an
+the cache and the Edge service). The Party Server no longer contains an embedded NATS server. If you provide an
+external NATS server, Google Pub/Sub or Kafka it uses that, otherwise the services pass events to each other in-process and
+no message bus is needed. This allows you to run only one of these (for instance) and support a full streaming service talking to an
 external database.
 
 The image is the same
@@ -80,9 +81,9 @@ IMPORTANT: Without an external event stream, run only **one** Party Server again
 never hear about the first one's changes and would serve stale features. FeatureHub does not detect this. The Party
 Server logs a warning at startup when it is using in-process events.
 
-You can run up multiple Party Servers if you give them an external event stream: run NATS yourself (the Party Server
-image does not contain a NATS server) and set `nats.urls` on every instance, or use Kafka, Google Pub/Sub or Kinesis
-(see xref:configuration.adoc#_party_server[Party Server configuration]). If you start doing this, it is likely a better
+You can run multiple Party Servers if you give them an external event stream: run NATS yourself (the Party Server
+image does not contain a NATS server) and set `nats.urls` on every instance, or configure Google Pub/Sub or Kafka on every
+instance (see xref:configuration.adoc#_party_server[Party Server configuration]). If you start doing this, it is likely a better
 choice to split them into multiple parts - with Admin on one server and Edge/Dacha on others. If you think your usage will grow, we
 encourage you to use different DNS hosts pointing to the same server for features vs the Admin app.
 

@@ -10,9 +10,9 @@ containers for those images. In a normal environment you would not expose your M
 Dacha servers outside of your company. You would normally not expose your Dacha servers to anything other
 than the SSE Edge servers.
 
-The three servers talk to each other in-process, there is no NATS server in the image. If no external event
-stream (NATS, Kafka, Google Pub/Sub or Kinesis) is configured, cloud events are routed in-process and this must be the
-only Party Server using the database. Configure an external stream to run several against one database.
+The Party Server no longer contains an embedded NATS server. It supports an external NATS server, Google Pub/Sub or Kafka
+if one is provided. If none is configured, cloud events are routed in-process and this must be the only Party
+Server using the database. Configure external NATS, Google Pub/Sub or Kafka to run several against one database.
 
 The image is built by Jib straight from the pinned `eclipse-temurin` Alpine image set in `tile-app-with-ui`, there is
 no FeatureHub base image to build first. It runs as `nobody` (`65534:65534`).

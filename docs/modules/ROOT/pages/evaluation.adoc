@@ -19,8 +19,9 @@ NOTE: `featurehub-party` is a Docker named volume that stores the database (H2).
 If you would rather use a directory on your own disk, for example `-v $HOME/party:/db`, it must be writable by the
 container's user, `nobody` (UID/GID `65534`): `mkdir -p $HOME/party && sudo chown 65534:65534 $HOME/party`.
 
-The Party Server routes its internal events in-process, so it doesn't need NATS or any other message bus. Run only
-**one** Party Server against a database unless you configure an external event stream, see
+The Party Server no longer contains an embedded NATS server. Unless you provide an external NATS server, Google
+Pub/Sub or Kafka, it routes its internal events in-process, so it doesn't need any message bus. Run only
+**one** Party Server against a database unless you configure external NATS, Google Pub/Sub or Kafka, see
 link:configuration{outfilesuffix}#_party_server[Party Server configuration].
 
 If you wish to enable Slack integration or use encryption in your local database, add the
