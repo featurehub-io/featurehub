@@ -158,7 +158,10 @@ class CloudEventDynamicPublisherRegistryImpl @Inject constructor(
               .build(),
             destination, destination.substring(pos + 2), makeMetric(delivery, destination)
           )
-        }
+        } ?: log.warn("No publisher for destination type {} (supported: {}), dropping {}. A nats:// destination " +
+          "needs NATS configured (nats.urls).", type, dynamicDelivery.keys, cloudEventType)
+      } else {
+        log.warn("Destination {} has no type prefix (e.g. https://), dropping {}", destination, cloudEventType)
       }
 
     } else if (cloudEventPublisherRegistry.hasListeners(cloudEventType)) {

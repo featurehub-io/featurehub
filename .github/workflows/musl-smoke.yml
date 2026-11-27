@@ -1,0 +1,54 @@
+name: musl smoke test
+
+# The server images are built on eclipse-temurin Alpine (musl libc). This loads every native-backed library on the
+# party-server runtime classpath inside the pinned Alpine image on real amd64 and arm64 hardware, so a dependency
+# bump that brings a glibc-only native library fails here rather than in production.
+on:
+  pull_request:
+    paths:
+      - '**/pom.xml'
+      - 'backend/tile-*/tile.xml'
+      - 'pipeline/build/musl-smoke/**'
+      - '.github/workflows/musl-smoke.yml'
+  push:
+    branches:
+      - main
+    paths:
+      - '**/pom.xml'
+      - 'backend/tile-*/tile.xml'
+      - 'pipeline/build/musl-smoke/**'
+      - '.github/workflows/musl-smoke.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  musl-smoke:
+    strategy:
+      fail-fast: false
+      matrix:
+        runner:
+          - ubuntu-latest      # amd64
+          - ubuntu-24.04-arm   # arm64
+    runs-on: ${{ matrix.runner }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Set up Java 25
+        uses: actions/setup-java@v5
+        with:
+          java-version: '25'
+          distribution: 'temurin'
+          cache: maven
+
+      - name: Install Maven tiles
+        working-directory: backend
+        run: mvn -B -f pom-first.xml install
+
+      - name: Build the party-server and its dependencies
+        run: mvn -B -T4C install -DskipTests -Dgib.disable=true -pl backend/party-server -am
+
+      - name: Run musl smoke test
+        run: sh pipeline/build/musl-smoke/run.sh

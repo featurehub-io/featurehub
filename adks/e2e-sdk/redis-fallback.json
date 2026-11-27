@@ -1,0 +1,7 @@
+{
+  "environmentId": "e6e0ad12-05f2-4301-93b9-8a5a70675620",
+  "serverApiKey": "e6e0ad12-05f2-4301-93b9-8a5a70675620/9pJPczqfNCvHgBpCO8P80oIVQpyBNiIfKX1eKnm0",
+  "clientApiKey": "e6e0ad12-05f2-4301-93b9-8a5a70675620/J2TpMC0fkCEGU1McBx9F1cZwFTV2Vn*nGAdpoJs7qzEpLmxruBo",
+  "featureKey": "REDIS_FALLBACK_FLAG",
+  "expectedValue": true
+}

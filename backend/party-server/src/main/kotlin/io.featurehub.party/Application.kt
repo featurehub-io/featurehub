@@ -86,6 +86,13 @@ class Application {
 
       CloudEventConfigDiscoveryService.addTags("dacha2", "edge-dacha2", "mr", "mr-dacha2")
 
+      // no NATS server in the image any more, so with no external stream configured we route events in-process
+      PartyEventingMode.enableLocalEventingByDefault()
+
+      if (!PartyEventingMode.checkAndReport()) {
+        System.exit(-1)
+      }
+
       try {
         Application().run()
       } catch (e: Exception) {

@@ -72,7 +72,7 @@ Requires a running FeatureHub instance. Configure with env vars:
 
 ### Docker (Evaluation)
 ```sh
-docker run -p 8085:8085 --user 999:999 -v $HOME/party:/db featurehub/party-server:latest
+docker run -p 8085:8085 -v featurehub-party:/db featurehub/party-server:latest
 ```
 
 ### Release Build

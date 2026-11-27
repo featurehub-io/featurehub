@@ -23,7 +23,7 @@ Full documentation: **https://docs.featurehub.io**
 With Dacha2 (recommended):
 
 ```sh
-docker run -p 8553:8553 --user 999:999 \
+docker run -p 8553:8553 \
   -e dacha1.enabled=false -e dacha2.enabled=true \
   -e dacha.url.default=http://dacha2:8902 \
   -e nats.urls=nats://nats:4222 \

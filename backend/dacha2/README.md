@@ -20,7 +20,7 @@ Full documentation: **https://docs.featurehub.io**
 ## Running
 
 ```sh
-docker run --user 999:999 \
+docker run \
   -e management-repository.url=http://mr:8085 \
   -e nats.urls=nats://nats:4222 \
   featurehub/dacha2:latest

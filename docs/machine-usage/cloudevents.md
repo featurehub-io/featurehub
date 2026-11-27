@@ -18,6 +18,27 @@ The central project is `eventing-cloudevents` and then there are event platform 
 - Google PubSub - `eventing-google-pubsub` 
 - Amazon Kinesis - `eventing-kinesis`. 
 - Apache Kafka - `eventing-kafka`.
+- Local (in-process) - `eventing-cloudevents` itself (`io.featurehub.events.local`). A loopback, not a transport.
+
+### the local platform
+
+`LocalEventingFeature` / `LocalConfiguredSource` deliver each published event straight to the in-process subscribers
+of the same logical channel (`config.name`, e.g. `cache-channel`), calling `subscriber.handler` so
+`cloudEventsInclude` and the `ceRegistry` are applied exactly as for NATS. It is driven by the `local: {}` section of
+`cloud-events.yaml` (an empty map, so the `default:` channels are merged in, no channel names are needed) and the
+same application tags, so routing is identical to a NATS round trip from a single instance. Events are not compressed.
+Each subscriber has its own single-threaded executor so it receives events serially and in order, like a NATS
+dispatcher. It binds `DefaultEventingConnection` (always connected) as the `EventingConnection`.
+
+`CloudEventsFeature` selects it only when **no external platform is enabled** and `cloudevents.local.enabled=true`.
+An external platform always wins and the two are never combined (that would double deliver). The property defaults to
+`false`, only the party-server sets it to `true`, so separate `mr`, `dacha2` and `edge` servers can't fall into local
+mode and silently stop talking to each other. `CloudEventsFeature.publishingEnabled()` is true in local mode, so MR
+binds the real cache broadcaster.
+
+Like NATS, the local platform ignores channel-level `conditional`s (for example `webhooks.features.enabled` on the
+`enriched-environment-channel`): the publishers and subscribers are wired regardless, and the conditional is enforced
+by the code that publishes.
 
 Google PubSub is different from NATS and Kinesis because in NATs and Kinesis, the channel and its subscribers are a single stream and their naming is part of the subscription process to a stream. In Google Pubsub, subscribers are a distinct entity - so that subscribers need to be dynamically created when a process starts and destroyed when the process is complete. For example, in the `feature-only-channel`, Google PubSub has two different subscribers because it needs to receive the message in two different applications (edge and dacha2). Each instance of these applications will create their own new subscribers (and destroy them on completion). 
 

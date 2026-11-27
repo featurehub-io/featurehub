@@ -1,6 +1,8 @@
 package io.featurehub.events
 
+import io.featurehub.events.local.LocalEventingFeature
 import io.featurehub.lifecycle.LifecycleListeners
+import io.featurehub.utils.FallbackPropertyConfig
 import jakarta.inject.Singleton
 import jakarta.ws.rs.core.Feature
 import jakarta.ws.rs.core.FeatureContext
@@ -30,33 +32,55 @@ class CloudEventsFeature : Feature {
 
   /**
    * This determines if we have an eventing layer, finding each of the eventing feature source classes and asking it
-   * if it is configured.
+   * if it is configured. If none are, and local eventing is allowed, we use the in-process loopback.
    */
   private fun findEventingLayer(context: FeatureContext) {
-    val sources = ServiceLoader.load(EventingFeatureSource::class.java)
-
-    for(source in sources) {
-      if (source.enabled) {
-        val featureSource = source.featureSource
-
-        if (featureSource != null) {
-          context.register(featureSource)
-        }
+    when (val platform = eventingPlatform()) {
+      is EventingPlatform.External -> platform.sources.forEach { source ->
+        source.featureSource?.let { context.register(it) }
       }
+      EventingPlatform.Local -> context.register(LocalEventingFeature::class.java)
+      EventingPlatform.None -> {}
     }
   }
 
+  sealed class EventingPlatform {
+    class External(val sources: List<EventingFeatureSource>) : EventingPlatform()
+    object Local : EventingPlatform()
+    object None : EventingPlatform()
+  }
+
   companion object {
-    fun publishingEnabled(): Boolean {
-      val sources = ServiceLoader.load(EventingFeatureSource::class.java)
+    const val LOCAL_ENABLED_PROPERTY = "cloudevents.local.enabled"
 
-      for(source in sources) {
-        if (source.enabled) {
-          return true
-        }
+    private fun externalSources(): List<EventingFeatureSource> =
+      ServiceLoader.load(EventingFeatureSource::class.java).filter { it.enabled }
+
+    /**
+     * Local (in-process) eventing is only allowed if explicitly turned on, which only the party-server does. This
+     * stops standalone mr, dacha2 and edge from falling into local mode and silently not talking to each other.
+     */
+    fun localEventingAllowed(): Boolean =
+      FallbackPropertyConfig.getConfig(LOCAL_ENABLED_PROPERTY, "false").trim().lowercase() == "true"
+
+    /**
+     * An external platform always wins. Local is never combined with one, as that would double deliver.
+     */
+    fun eventingPlatform(): EventingPlatform {
+      val external = externalSources()
+
+      return if (external.isNotEmpty()) {
+        EventingPlatform.External(external)
+      } else if (localEventingAllowed()) {
+        EventingPlatform.Local
+      } else {
+        EventingPlatform.None
       }
-
-      return false
     }
+
+    /**
+     * true if cloud events will be published somewhere, either through an external platform or in-process.
+     */
+    fun publishingEnabled(): Boolean = eventingPlatform() != EventingPlatform.None
   }
 }

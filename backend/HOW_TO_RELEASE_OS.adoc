@@ -2,22 +2,26 @@
 
 There are a few stages:
 
-- ensure the base images are built (rare)
 - ensure the artifacts are build (all the backend, every time)
 - build all the front end images with the right tags (every time)
 
-== Base Images
+== Base Images and versioning
 
-As of time of writing, the open source version is only releasable locally. It relies on a couple of base images
-existing, so to release you should build these. To do so, 
+There are no FeatureHub base images any more. Every server image is built by Jib directly from Eclipse Temurin
+(`eclipse-temurin:25-jre-alpine`), pinned by its multi-arch OCI index digest in the `app.baseimage.name` property of
+`backend/tile-app/tile.xml` and `backend/tile-app-with-ui/tile.xml`. To update it, get the new digest with
 
 ----
-cd pipeline/build/base_mr
-sh make-image.sh
-cd ../base_party
-sh make-image.sh
+docker buildx imagetools inspect eclipse-temurin:25-jre-alpine
 ----
-This is only required when the base image is changed, which is fairly rare.
+
+and change the property in both tiles (and the matching `jdk-alpine` digest in `pipeline/build/musl-smoke/run.sh`).
+The musl smoke test workflow runs on the change.
+
+Versioning rule:
+
+- **patch** releases contain only dependency and base image updates (such as bumping the Temurin digest);
+- **minor** releases contain feature changes, including any change in behaviour.
 
 Then make sure you have the latest flutter_web image builder:
 

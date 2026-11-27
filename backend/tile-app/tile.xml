@@ -12,8 +12,13 @@
     <app.port>8903</app.port>
     <build.version>0.0.1</build.version>
     <app.baseimage.prefix></app.baseimage.prefix>
-    <!-- base image is a multi-arch fat manifest, we cannot pin against a sha for multi-arch builds -->
-    <app.baseimage>${app.baseimage.prefix}featurehub/base_jdk:2.2</app.baseimage>
+    <!-- pinned by the multi-arch OCI index digest, Jib resolves each <platform> from it. Patch releases bump
+         this digest (25.0.5.1_2-jre-alpine-3.24). Update with: docker buildx imagetools inspect eclipse-temurin:25-jre-alpine -->
+    <app.baseimage.name>eclipse-temurin:25-jre-alpine@sha256:69c2a26e9894016e274c880fa542956d005b3755f84db765145185e87405bd89</app.baseimage.name>
+    <app.baseimage>${app.baseimage.prefix}${app.baseimage.name}</app.baseimage>
+    <!-- the image's built-in nobody user, numeric so Kubernetes runAsNonRoot can verify it -->
+    <app.user>65534:65534</app.user>
+    <app.monitor.port>8701</app.monitor.port>
     <app.imagename>${project.artifactId}</app.imagename>
     <docker.goal>dockerBuild</docker.goal>
     <docker.project.prefix>featurehub</docker.project.prefix>
@@ -33,9 +38,37 @@
       <build>
         <plugins>
           <plugin>
+            <!-- Jib cannot RUN mkdir, so we create the empty directories the image needs and add them as an extra directory -->
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-antrun-plugin</artifactId>
+            <version>3.1.0</version>
+            <executions>
+              <execution>
+                <id>jib-root-directories</id>
+                <phase>prepare-package</phase>
+                <goals>
+                  <goal>run</goal>
+                </goals>
+                <configuration>
+                  <target>
+                    <mkdir dir="${project.build.directory}/jib-root/db"/>
+                    <mkdir dir="${project.build.directory}/jib-root/etc/app-config"/>
+                  </target>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+          <plugin>
             <groupId>com.google.cloud.tools</groupId>
             <artifactId>jib-maven-plugin</artifactId>
             <version>3.5.1</version>
+            <dependencies>
+              <dependency>
+                <groupId>com.google.cloud.tools</groupId>
+                <artifactId>jib-ownership-extension-maven</artifactId>
+                <version>0.1.0</version>
+              </dependency>
+            </dependencies>
             <executions>
               <execution>
                 <phase>package</phase>
@@ -45,6 +78,21 @@
               </execution>
             </executions>
             <configuration>
+              <pluginExtensions>
+                <!-- /db must be owned by the container user so Docker named volumes (which copy the image directory's
+                     ownership on first use) are writable for H2 -->
+                <pluginExtension>
+                  <implementation>com.google.cloud.tools.jib.maven.extension.ownership.JibOwnershipExtension</implementation>
+                  <configuration implementation="com.google.cloud.tools.jib.maven.extension.ownership.Configuration">
+                    <rules>
+                      <rule>
+                        <glob>/db</glob>
+                        <ownership>${app.user}</ownership>
+                      </rule>
+                    </rules>
+                  </configuration>
+                </pluginExtension>
+              </pluginExtensions>
               <allowInsecureRegistries>false</allowInsecureRegistries>
               <from>
                 <image>${app.baseimage}</image>
@@ -60,15 +108,32 @@
                     <from>${project.basedir}/src/main/resources/deploy-defaults</from>
                     <into>/etc/common-config</into>
                   </path>
+                  <path>
+                    <!-- empty /db (H2 data) and /etc/app-config, created by the antrun step -->
+                    <from>${project.build.directory}/jib-root</from>
+                    <into>/</into>
+                  </path>
                 </paths>
+                <permissions>
+                  <permission>
+                    <file>/db</file>
+                    <mode>755</mode>
+                  </permission>
+                  <permission>
+                    <file>/etc/app-config</file>
+                    <mode>755</mode>
+                  </permission>
+                </permissions>
               </extraDirectories>
               <container>
-                <user>999:999</user>
+                <user>${app.user}</user>
                 <mainClass>bathe.BatheBooter</mainClass>
                 <jvmFlags>
                   <jvmFlag>-Dlog4j2.asyncLoggerRingBufferSize=4096</jvmFlag>
                   <jvmFlag>-Dlog4j.configurationFile=/etc/common-config/log4j2.xml</jvmFlag>
                   <jvmFlag>--add-opens=java.base/java.nio=ALL-UNNAMED</jvmFlag>
+                  <!-- musl: Bouncy Castle native probe needs glibc on arm64, force its pure Java implementation -->
+                  <jvmFlag>-Dorg.bouncycastle.native.cpu_variant=java</jvmFlag>
                   <jvmFlag>-XX:+UseContainerSupport</jvmFlag>
                   <jvmFlag>-XX:MaxRAMPercentage=75.0</jvmFlag>
                   <jvmFlag>-XX:InitialRAMPercentage=75.0</jvmFlag>
@@ -81,6 +146,7 @@
                 </args>
                 <ports>
                   <port>${app.port}</port>
+                  <port>${app.monitor.port}</port>
                 </ports>
               </container>
             </configuration>
@@ -105,9 +171,37 @@
       <build>
         <plugins>
           <plugin>
+            <!-- Jib cannot RUN mkdir, so we create the empty directories the image needs and add them as an extra directory -->
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-antrun-plugin</artifactId>
+            <version>3.1.0</version>
+            <executions>
+              <execution>
+                <id>jib-root-directories</id>
+                <phase>prepare-package</phase>
+                <goals>
+                  <goal>run</goal>
+                </goals>
+                <configuration>
+                  <target>
+                    <mkdir dir="${project.build.directory}/jib-root/db"/>
+                    <mkdir dir="${project.build.directory}/jib-root/etc/app-config"/>
+                  </target>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+          <plugin>
             <groupId>com.google.cloud.tools</groupId>
             <artifactId>jib-maven-plugin</artifactId>
             <version>3.5.1</version>
+            <dependencies>
+              <dependency>
+                <groupId>com.google.cloud.tools</groupId>
+                <artifactId>jib-ownership-extension-maven</artifactId>
+                <version>0.1.0</version>
+              </dependency>
+            </dependencies>
             <executions>
               <execution>
                 <phase>package</phase>
@@ -117,6 +211,21 @@
               </execution>
             </executions>
             <configuration>
+              <pluginExtensions>
+                <!-- /db must be owned by the container user so Docker named volumes (which copy the image directory's
+                     ownership on first use) are writable for H2 -->
+                <pluginExtension>
+                  <implementation>com.google.cloud.tools.jib.maven.extension.ownership.JibOwnershipExtension</implementation>
+                  <configuration implementation="com.google.cloud.tools.jib.maven.extension.ownership.Configuration">
+                    <rules>
+                      <rule>
+                        <glob>/db</glob>
+                        <ownership>${app.user}</ownership>
+                      </rule>
+                    </rules>
+                  </configuration>
+                </pluginExtension>
+              </pluginExtensions>
               <allowInsecureRegistries>false</allowInsecureRegistries>
               <from>
                 <image>${app.baseimage}</image>
@@ -150,15 +259,32 @@
                     <from>${project.basedir}/src/main/resources/deploy-defaults</from>
                     <into>/etc/common-config</into>
                   </path>
+                  <path>
+                    <!-- empty /db (H2 data) and /etc/app-config, created by the antrun step -->
+                    <from>${project.build.directory}/jib-root</from>
+                    <into>/</into>
+                  </path>
                 </paths>
+                <permissions>
+                  <permission>
+                    <file>/db</file>
+                    <mode>755</mode>
+                  </permission>
+                  <permission>
+                    <file>/etc/app-config</file>
+                    <mode>755</mode>
+                  </permission>
+                </permissions>
               </extraDirectories>
               <container>
-                <user>999:999</user>
+                <user>${app.user}</user>
                 <mainClass>bathe.BatheBooter</mainClass>
                 <jvmFlags>
                   <jvmFlag>-Dlog4j2.asyncLoggerRingBufferSize=4096</jvmFlag>
                   <jvmFlag>-Dlog4j.configurationFile=/etc/common-config/log4j2.xml</jvmFlag>
                   <jvmFlag>--add-opens=java.base/java.nio=ALL-UNNAMED</jvmFlag>
+                  <!-- musl: Bouncy Castle native probe needs glibc on arm64, force its pure Java implementation -->
+                  <jvmFlag>-Dorg.bouncycastle.native.cpu_variant=java</jvmFlag>
                   <jvmFlag>-XX:+UseContainerSupport</jvmFlag>
                    <jvmFlag>-XX:MaxRAMPercentage=75.0</jvmFlag>
                   <jvmFlag>-XX:InitialRAMPercentage=75.0</jvmFlag>
@@ -171,6 +297,7 @@
                 </args>
                 <ports>
                   <port>${app.port}</port>
+                  <port>${app.monitor.port}</port>
                 </ports>
               </container>
             </configuration>

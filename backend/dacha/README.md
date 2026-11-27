@@ -16,7 +16,7 @@ Full documentation: **https://docs.featurehub.io**
 ## Running
 
 ```sh
-docker run --user 999:999 -e nats.urls=nats://nats:4222 featurehub/dacha:latest
+docker run -e nats.urls=nats://nats:4222 featurehub/dacha:latest
 ```
 
 ## Ports

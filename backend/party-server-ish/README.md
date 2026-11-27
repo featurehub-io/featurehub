@@ -1,5 +1,9 @@
 # FeatureHub Party Server-ish
 
+> **Deprecated.** `party-server-ish` will be removed in the next minor release. It queries the database on every Edge
+> request, with no cache. Use the [`party-server`](https://hub.docker.com/r/featurehub/party-server) instead: it no
+> longer needs NATS, so it is the same single container, with the Dacha2 cache and streaming Edge as well as REST.
+
 **Party Server-ish** is the all-in-one, **REST-only** FeatureHub deployment. A single container runs:
 
 - the **Admin web app** (the Flutter admin console)
@@ -20,7 +24,7 @@ Full documentation: **https://docs.featurehub.io**
 ## Quick start (evaluation)
 
 ```sh
-docker run -p 8085:8085 --user 999:999 -v $HOME/party:/db featurehub/party-server-ish:latest
+docker run -p 8085:8085 -v featurehub-party:/db featurehub/party-server-ish:latest
 ```
 
 Open http://localhost:8085. This uses an embedded H2 database written to `/db`, which is for evaluation only.

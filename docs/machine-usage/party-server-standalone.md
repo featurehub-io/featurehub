@@ -1,6 +1,6 @@
 # Party Server without embedded NATS
 
-Status: plan
+Status: implemented (except section 7, steps 6 and 7)
 Scope: open-source FeatureHub only
 
 ## 1. Goal
@@ -130,6 +130,11 @@ override fun processSubscriber(subscriber: CloudEventSubscriberConfig, config: C
   feature could reach Dacha2 out of order. A NATS subscription delivers in order on one dispatcher thread. To match
   that, `LocalSubscriber.deliver` enqueues onto a **single-threaded executor per subscriber**, from `ExecutorSupplier`,
   so it is shut down on lifecycle shutdown. Dacha2's own `dacha2.thread-processors` fan-out downstream is unchanged.
+- **Channel conditionals are ignored, as NATS ignores them.** `CloudEventConfig.enabled` (the channel-level
+  `conditional`) isn't checked by any platform. This matters for `enriched-environment-channel`: its conditional
+  `webhooks.features.enabled` defaults to `false` in `cloud-events.yaml`, but `WebhookFeature.enabled` defaults to
+  `true`. If local mode honoured the conditional, webhooks would stop working by default. The local platform wires the
+  channel unconditionally, the same as NATS.
 - **Publishers with no subscribers.** For example `edge-stats-emitter` in a build that includes the usage emitter. These
   log once at startup at INFO ("local: channel X has publishers but no in-process subscribers; events will be
   dropped") and at DEBUG per event.
@@ -147,7 +152,7 @@ else                              -> nothing (today's behaviour for e.g. a misco
 
 - `publishingEnabled()` returns true in the local case too, so `EventingFeature` binds the real
   `CloudEventCacheBroadcaster` / `DbCacheSource`, and `RedisCacheFeature` can still be used if `redis.url` is set.
-  Consider renaming it `eventingEnabled()`; it has two callers.
+  It keeps its name: it has one caller in this repo, and the name is public API.
 - An external platform always wins. Local is never combined with one, because that would double-deliver: once
   in-process, once through the stream.
 - `cloudevents.local.enabled` defaults to **false** everywhere. Only the party-server turns it on (3.4), so standalone
@@ -349,7 +354,7 @@ entry, pointing at the compose NATS sidecar example. Record the patch/minor rule
   - `publish-feature-v1` reaches the Dacha2 and Edge listeners once each (no double delivery);
   - `enricher-ping-v1` reaches the `enricher` registry;
   - `feature-update-v1` reaches MR;
-  - the `enriched-environment-channel` is wired only when `webhooks.features.enabled=true`.
+  - `enriched-feature-v1` reaches Edge, whatever the channel conditional says (see 3.2).
 
 **Startup**
 - The party-server starts with no `nats.urls`. Dacha2 with `on-reconnect` resolves `EventingConnection`, and there is
@@ -404,3 +409,24 @@ entry, pointing at the compose NATS sidecar example. Record the patch/minor rule
 | Container user | The image's built-in `nobody`, set numerically as `65534:65534`, replacing 999 (3.5). `featurehub-helm` must be updated to match (section 4) |
 | Second-instance detection | None. Running a single local-mode instance is the operator's responsibility; the startup log and docs say so (3.7) |
 | Transitional NATS image | None. Feature changes are minor releases; patch releases only update dependencies and base images (section 4) |
+
+## 9. Verification (implementation)
+
+- Unit: `CloudEventsFeatureSpec` (platform selection) and `LocalConfiguredSourceSpec` (routing with the party-server
+  tags, registries, no compression, ordering, failures, shutdown) in `eventing-cloudevents`; `PartyEventingModeSpec`
+  in `party-server`.
+- Image (`featurehub/party-server` built locally with Jib): `User` is `65534:65534`, ports `8085` and `8701` are exposed,
+  `/db` is owned by `65534:65534` (Jib Ownership extension 0.1.0 works with Jib 3.5.1), `/target` and `nats.urls` are
+  gone, and the `-Dorg.bouncycastle.native.cpu_variant=java` flag is set. A named volume on `/db` with no `--user`
+  writes H2.
+- Startup: local mode logs the WARN line. `nats.urls=nats://localhost:4222` with nothing listening exits with the
+  guidance message. `cloudevents.local.enabled=false` with no stream exits with an error.
+- e2e (`adks/e2e-sdk`, `not @saasflags`) against one local-mode party-server: 40/41 scenarios pass. The remaining
+  failure calls `/mr-api/testing/slack-testing`, a test-only endpoint the production image doesn't have.
+- e2e against two party-servers on Postgres plus an external `nats` container, with the MR API on instance A and Edge
+  on instance B (so every change has to cross NATS): 39/41 pass. One failure is the same Slack test-only endpoint. The
+  other: `webhooks.feature` receives each enriched webhook **twice**, from two separate enrichment runs (the event
+  ids differ). Each instance's Dacha2 enriches the broadcast cache update. This is on the NATS path, which this change
+  doesn't touch, so it is most likely existing multi-instance behaviour. It hasn't been checked against `main`.
+- musl smoke test (`pipeline/build/musl-smoke`): passes on arm64 natively and on amd64 under emulation. CI runs it on
+  native runners of both architectures (`.github/workflows/musl-smoke.yml`).

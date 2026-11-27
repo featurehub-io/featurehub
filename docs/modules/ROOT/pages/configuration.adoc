@@ -63,8 +63,9 @@ NATS communicates using a protocol whereby the clients essentially tell the serv
 do have to be able to communicate. Please read the https://docs.nats.io/[NATS documentation] for more information.
 
 If you have only one instance of a
-party-server you do not need to set anything. If you have deployed NATS yourself or are running multiple Party Servers,
-you will need to set the environment variable:
+party-server you do not need to set anything: it routes events in-process and doesn't use NATS at all (see
+<<_party_server,Party Server>>). The Party Server image doesn't contain a NATS server. If you have deployed NATS yourself or
+are running multiple Party Servers, you will need to set the environment variable:
 
 - `nats.urls` - a comma separated list of NATs servers.
 - 'nats.healthcheck.disabled` - set to true if you don't want MR, Edge or Dacha to fail its health check if it cannot communicate with NATS.
@@ -330,9 +331,31 @@ Edge REST uses the database, so it also needs the database config. Edge-REST
 is bundled as a separate container, so it can be run and exposed directly
 instead of being exposed along with the Admin site.
 
+[#_party_server]
 === Party Server
 
 The party server honours all values set by the Management Repository, Dacha and the SSE-Edge.
+
+The Party Server runs the Management Repository, Dacha2 and Edge in one process, so it doesn't need a message bus to
+talk to itself:
+
+- **No external event streaming configured** (the default): events are routed *in-process*. The server logs a
+  warning at startup saying so. In this mode the Party Server must be the **only** Party Server using its database.
+  A second instance would never hear about the first one's changes, so its cache and Edge would serve stale features
+  until it restarts. FeatureHub does not detect this, it is up to you to run only one.
+- **External event streaming configured** (`nats.urls`, or the Kafka, Google Pub/Sub or Kinesis options above): that
+  platform is used exactly as with the separate MR, Dacha2 and Edge servers, and you can run several Party Servers
+  against the same database.
+
+The Party Server image no longer includes a NATS server. If you used to point several Party Servers at the NATS
+server inside one of them, run NATS yourself (for example the official `nats` image) and set `nats.urls` on all of them.
+If `nats.urls` points at `localhost` and nothing is listening there, the Party Server stops with an error telling you
+to remove it.
+
+- `cloudevents.local.enabled` - default `true` in the Party Server and `false` in every other server. Set it to
+  `false` in the Party Server to make a missing event stream configuration a startup error instead of using in-process
+  events.
+- `dont-run-nats-server` - no longer used, it can be removed.
 
 === Party-Server-ish
 

@@ -64,8 +64,9 @@ image::fh_deployment_option_1a.svg[Architecture,600]
 
 With Option 1a (the Party Server) all the services are deployed in a single running container. Internally this is packaged as a single
 Java server running four different services (a static web server serving the Admin App, the Management Repository server,
-the cache and the Edge service), and also the NATs service bus to provide cache and streaming services. This allows you to
-run only one of these (for instance) and support a full streaming service talking to an external database.
+the cache and the Edge service). The services pass events to each other in-process, so no NATS or other message bus is
+needed. This allows you to run only one of these (for instance) and support a full streaming service talking to an
+external database.
 
 The image is the same
 as the basic evaluation image with the difference being the database (we recommend Postgres).
@@ -75,8 +76,13 @@ container is responsible for handling all incoming requests (including requests 
 handle around 150-200 concurrent requests per CPU, but streaming requests will further limit that capacity. As such, it causes
 Edge traffic to compete with Admin traffic.
 
-You can run up multiple Party Servers, in this case the `nats.urls` configuration (see below) must
-be set correctly for discovery (along with allowing network traffic between  them). If you start doing this, it is likely a better
+IMPORTANT: Without an external event stream, run only **one** Party Server against a database. A second one would
+never hear about the first one's changes and would serve stale features. FeatureHub does not detect this. The Party
+Server logs a warning at startup when it is using in-process events.
+
+You can run up multiple Party Servers if you give them an external event stream: run NATS yourself (the Party Server
+image does not contain a NATS server) and set `nats.urls` on every instance, or use Kafka, Google Pub/Sub or Kinesis
+(see xref:configuration.adoc#_party_server[Party Server configuration]). If you start doing this, it is likely a better
 choice to split them into multiple parts - with Admin on one server and Edge/Dacha on others. If you think your usage will grow, we
 encourage you to use different DNS hosts pointing to the same server for features vs the Admin app.
 
@@ -125,6 +131,10 @@ provider will have a managed Postgres service, and NATs have their own Kubernete
 
 
 === Option 1b - Low Volume Deployment (REST feature updates only)
+
+WARNING: `party-server-ish` is deprecated and will be removed in the next minor release. The Party Server
+(<<_option_1a_low_volume_deployment_streaming_rest_feature_updates,Option 1a>>) no longer needs NATS, so it gives
+the same single-container deployment with a feature cache, streaming and REST.
 
 The non-streaming option `party-server-ish` is designed to scale to less - tens of thousands, possibly
 more if you have a limited number of environments, or a larger number of read replicas.
