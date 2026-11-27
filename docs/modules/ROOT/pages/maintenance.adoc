@@ -83,7 +83,7 @@ The general options listed under xref:configuration.adoc#_common_to_all_servers[
 
 [source,sh]
 ----
-docker run -p 8085:8085 --user 999:999 \
+docker run -p 8085:8085 \
   -e server.port=8085 \
   -e maintenance.start=2026-11-08T01:00:00Z \
   -e maintenance.end=2026-11-08T03:00:00Z \

@@ -18,7 +18,7 @@ Full documentation: **https://docs.featurehub.io**
 ## Running
 
 ```sh
-docker run -p 8553:8553 --user 999:999 \
+docker run -p 8553:8553 \
   -e db.url=jdbc:postgresql://db:5432/featurehub -e db.username=featurehub -e db.password=secret \
   -e db-replica.url=jdbc:postgresql://db-replica:5432/featurehub -e db-replica.username=featurehub -e db-replica.password=secret \
   featurehub/edge-rest:latest

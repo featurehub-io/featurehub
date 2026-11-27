@@ -43,12 +43,6 @@ jobs:
           - readme: backend/maintenance-responder/README.md
             repository: featurehub/maintenance-responder
             short: "FeatureHub Maintenance Responder: holds the Admin app in maintenance mode"
-          - readme: pipeline/build/base_jdk/README.md
-            repository: featurehub/base_jdk
-            short: "Base JRE 25 image for FeatureHub server containers (build use only)"
-          - readme: pipeline/build/base_party/README.md
-            repository: featurehub/base_party
-            short: "Base JRE 25 + NATS image for the FeatureHub Party Server (build use only)"
           - readme: pipeline/build/flutter_web/README.md
             repository: featurehub/flutter_web
             short: "Flutter SDK build image for the FeatureHub Admin web app (build use only)"

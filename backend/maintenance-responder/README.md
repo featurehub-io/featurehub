@@ -30,7 +30,7 @@ The same pattern works on ECS and other platforms. See [Running a maintenance wi
 The maintenance window **must** be configured, or the container fails to start.
 
 ```sh
-docker run -p 8085:8085 --user 999:999 \
+docker run -p 8085:8085 \
   -e server.port=8085 \
   -e maintenance.start=2026-11-08T01:00:00Z \
   -e maintenance.end=2026-11-08T03:00:00Z \

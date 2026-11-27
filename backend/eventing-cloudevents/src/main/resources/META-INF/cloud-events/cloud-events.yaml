@@ -137,6 +137,11 @@ default:
         tags:
           - fhos-usage-emitter
 
+# the in-process loopback used by the party-server when no external platform is configured. It must be an
+# empty map (not a bare "local:") so the default channels above are merged in. Channel names are not needed,
+# events are routed by the logical channel name.
+local: {}
+
 kinesis:
   "cache-channel":
     channelName:

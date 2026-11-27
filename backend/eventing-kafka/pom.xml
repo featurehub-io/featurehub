@@ -54,6 +54,13 @@
       <artifactId>kafka-clients</artifactId>
       <version>3.9.2</version>
     </dependency>
+    <!-- kafka-clients brings 1.1.10.5 which has no musl (Alpine) build for x86_64, this one ships Linux/x86_64-musl.
+         Declared directly so it wins over the transitive version everywhere eventing-kafka is used. -->
+    <dependency>
+      <groupId>org.xerial.snappy</groupId>
+      <artifactId>snappy-java</artifactId>
+      <version>1.1.10.12</version>
+    </dependency>
     <dependency>
       <groupId>io.cloudevents</groupId>
       <artifactId>cloudevents-kafka</artifactId>

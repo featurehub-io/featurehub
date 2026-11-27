@@ -1,0 +1,39 @@
+name: bump pinned Temurin base image
+
+# All FeatureHub server images build from eclipse-temurin:25-jre-alpine pinned by digest (backend/tile-app*/tile.xml).
+# This checks weekly for a new digest and opens a pull request, which goes out in a patch release.
+on:
+  schedule:
+    - cron: '0 3 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  bump:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Update pinned digests
+        id: bump
+        run: echo "digest=$(sh pipeline/build/bump-temurin-digest.sh)" >> "$GITHUB_OUTPUT"
+
+      - name: Open pull request
+        uses: peter-evans/create-pull-request@v7
+        with:
+          branch: chore/temurin-digest
+          delete-branch: true
+          commit-message: "chore: bump pinned eclipse-temurin 25 alpine digest"
+          title: "chore: bump pinned eclipse-temurin 25 alpine digest"
+          body: |
+            Updates the pinned `eclipse-temurin:25-jre-alpine` index digest used by every server image to
+            `${{ steps.bump.outputs.digest }}`, and the matching `25-jdk-alpine` digest used by the musl smoke test.
+
+            Base image updates ship in a **patch** release (see `backend/HOW_TO_RELEASE_OS.adoc`).

@@ -26,7 +26,7 @@ Docker Compose examples live in [featurehub-install](https://github.com/featureh
 [Helm chart](https://github.com/featurehub-io/featurehub-helm).
 
 ```sh
-docker run -p 8085:8085 --user 999:999 \
+docker run -p 8085:8085 \
   -e db.url=jdbc:postgresql://db:5432/featurehub -e db.username=featurehub -e db.password=secret \
   -e nats.urls=nats://nats:4222 \
   featurehub/mr:latest

@@ -2,6 +2,34 @@
 
 While FeatureHub is intended to be as robust as possible, it can encounter issues and this section is intended to document a few of these. We will continue to add documentation here as we help users resolve issues.
 
+== Party Server fails to start: "nats.urls points at localhost"
+
+Party Server images before this change contained a NATS server and many configurations copied
+`nats.urls=nats://localhost:4222`. The image no longer contains one, so if `nats.urls` only points at `localhost`
+and nothing is listening there, the Party Server stops with this error.
+
+=== Solution
+
+- with a single Party Server, remove `nats.urls`. It will route events in-process.
+- with several Party Servers, run NATS separately and point `nats.urls` at it on every instance, or configure
+  Google Pub/Sub or Kafka on every instance instead.
+
+== Party Server cannot write to /db after upgrading
+
+The images now run as `nobody` (UID/GID `65534`) instead of `999`. Data written by an older image is owned by `999`.
+
+=== Solution
+
+- `chown -R 65534:65534` the data directory, volume or PVC once; or
+- keep running as the old user with `--user 999:999` (Kubernetes `runAsUser: 999`); or
+- in Kubernetes, set `fsGroup: 65534` in the pod security context.
+
+== Two Party Servers show different feature values
+
+Without an external event stream each Party Server routes events in-process, so it never hears about changes made
+through another instance. Run one Party Server, or configure an external NATS server, Google Pub/Sub or Kafka on all of them
+(see xref:configuration.adoc#_party_server[Party Server configuration]).
+
 == NATS goes down completely
 
 You should be running at least 3 NATS nodes, and generally NATS communicates those connections back to the client.

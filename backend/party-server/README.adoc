@@ -10,8 +10,10 @@ containers for those images. In a normal environment you would not expose your M
 Dacha servers outside of your company. You would normally not expose your Dacha servers to anything other
 than the SSE Edge servers.
 
-To build this server, you need first to have built the base image that contains the NATs server. This
-is documented in link:../../pipeline/build/base_party{outfilesuffix}[the base party image]. If you are
-simply modifying and working on this image and you don't need to build that image, you will need to override
-the base image so it comes directly from DockerHub. 
+The Party Server no longer contains an embedded NATS server. It supports an external NATS server, Google Pub/Sub or Kafka
+if one is provided. If none is configured, cloud events are routed in-process and this must be the only Party
+Server using the database. Configure external NATS, Google Pub/Sub or Kafka to run several against one database.
+
+The image is built by Jib straight from the pinned `eclipse-temurin` Alpine image set in `tile-app-with-ui`, there is
+no FeatureHub base image to build first. It runs as `nobody` (`65534:65534`).
 
