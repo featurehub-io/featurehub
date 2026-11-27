@@ -1,5 +1,4 @@
-// ignore: avoid_web_libraries_in_flutter
-import 'package:universal_html/html.dart';
+import 'package:web/web.dart';
 
 import 'package:open_admin_app/api/web_interface/url_handler.dart';
 
@@ -10,7 +9,7 @@ class WebInterface extends AbstractWebInterface {
   String homeUrl(bool overrideOrigin) {
     // try using the <base>  tag from the html doc first if there is one
     // as it will tell us the actual base url of the backend apis
-    final origin = document.baseUri ?? window.location.origin;
+    final origin = document.baseURI;
     originUri = Uri.parse(window.location.origin);
     if (overrideOrigin) {
       final url = Uri.parse(origin);
@@ -45,7 +44,7 @@ class WebInterface extends AbstractWebInterface {
 
   @override
   String? getStoredAuthToken() {
-    final cookies = document.cookie!.split(';')
+    final cookies = document.cookie.split(';')
       ..retainWhere(
           (s) => s.trim().startsWith('${AbstractWebInterface.bearerToken}='));
 

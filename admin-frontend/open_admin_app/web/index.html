@@ -13,7 +13,6 @@
 
   <title>FeatureHub</title>
   <link rel="shortcut icon" href="favicon.ico" />
-  <script defer src="main.dart.js" type="application/javascript"></script>
 
   <style>
     html, body {
@@ -44,6 +43,7 @@
   //         }
   // );
 </script>
-
+<!-- picks the WebAssembly build where the browser supports it, else the JavaScript one -->
+<script src="flutter_bootstrap.js" async></script>
 </body>
 </html>

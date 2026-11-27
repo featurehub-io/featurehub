@@ -1,6 +1,6 @@
 //
 
-import 'package:universal_html/html.dart';
+import 'package:open_admin_app/utils/browser/browser.dart' as browser;
 
 abstract class AnalyticsEvent {
   const AnalyticsEvent({
@@ -26,9 +26,9 @@ class AnalyticsPageView extends AnalyticsEvent {
   Map<String, dynamic> toJson() {
     final map = {
       'page_title': title,
-      if (window.location.pathname != null)
-        'page_path': window.location.pathname,
-      'page_location': window.location.origin,
+      if (browser.locationPathname != null)
+        'page_path': browser.locationPathname,
+      'page_location': browser.locationOrigin,
       ...super.toJson(),
       ...additionalParams,
     };

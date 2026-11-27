@@ -1,5 +1,5 @@
 // ignore: avoid_web_libraries_in_flutter
-import 'package:universal_html/html.dart';
+import 'package:open_admin_app/utils/browser/browser.dart' as browser;
 
 import 'package:mrapi/api.dart';
 import 'package:open_admin_app/api/client_api.dart';
@@ -34,7 +34,8 @@ class ServerCapabilities {
     _authServiceApi ??= AuthServiceApi(apiClient);
 
     _authServiceApi!.getLoginUrlForProvider(provider).then((value) {
-      return window.location.href = value.redirectUrl;
+      browser.navigateTo(value.redirectUrl);
+      return value.redirectUrl;
     }).catchError((e, s) {
       bloc.dialogError(e, s);
       return '';

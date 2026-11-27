@@ -11,7 +11,7 @@ import 'package:open_admin_app/widgets/dynamic-locale/fh_dynamic_locale.dart';
 import 'package:open_admin_app/widgets/dynamic-theme/fh_dynamic_theme.dart';
 
 import 'api/client_api.dart';
-import 'configure_nonweb.dart' if (dart.library.html) 'configure_web.dart';
+import 'configure_nonweb.dart' if (dart.library.js_interop) 'configure_web.dart';
 
 final _log = Logger('mr_app');
 

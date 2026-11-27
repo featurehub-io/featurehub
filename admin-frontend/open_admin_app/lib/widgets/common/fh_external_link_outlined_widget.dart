@@ -1,4 +1,4 @@
-import 'package:universal_html/html.dart';
+import 'package:open_admin_app/utils/browser/browser.dart' as browser;
 
 import 'package:flutter/material.dart';
 
@@ -25,7 +25,7 @@ class FHExternalLinkOutlinedWidget extends StatelessWidget {
             label,
           ),
           onPressed: () {
-            window.open(link, 'new tab');
+            browser.openWindow(link, 'new tab');
           },
           label: icon,
         ),
