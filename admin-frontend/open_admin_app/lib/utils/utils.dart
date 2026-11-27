@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'package:universal_html/html.dart';
 import 'dart:math';
 
 import 'package:mrapi/api.dart';
@@ -154,7 +153,7 @@ class Debouncer {
   Debouncer({required this.milliseconds});
   final int milliseconds;
   Timer? _timer;
-  void run(VoidCallback action) {
+  void run(void Function() action) {
     if (_timer?.isActive ?? false) {
       _timer?.cancel();
     }

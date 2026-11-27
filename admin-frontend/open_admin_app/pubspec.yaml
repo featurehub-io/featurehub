@@ -18,7 +18,7 @@ dependencies:
     sdk: flutter
   flutter_localizations:
     sdk: flutter
-  dio: '^5.0.1'
+  dio: ^5.5.0 # the first that reaches the browser through package:web, which a WebAssembly build needs
   rxdart: ^0.28.0
   bloc_provider: ^0.8.0
   logging: ^1.0.1
@@ -28,7 +28,7 @@ dependencies:
     path: ../releases_api
   openapi_dart_common: ^5.1.2
   zxcvbn: ^1.0.0
-  universal_html: ^2.2.4
+  web: ^1.1.1
   url_launcher: ^6.3.2
   timeago: ^3.0.2
   shared_preferences: ^2.1.1

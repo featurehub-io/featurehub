@@ -2,7 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:js_interop' as js;
 import 'dart:js_interop_unsafe';
-import 'package:universal_html/html.dart';
+import 'package:web/web.dart';
 
 import 'package:logging/logging.dart';
 
@@ -41,10 +41,11 @@ class GoogleAnalytics4ServiceWeb extends G4AnalyticsService {
     _logConfig();
 
     final url = _urlTemplate.replace(queryParameters: {'id': measurementId});
-    final element = document.createElement('script') as ScriptElement;
-    element.async = true;
-    element.src = url.toString(); // ignore: unsafe_html
-    element.onLoad.listen(_readyCompleter.complete);
+    final element = HTMLScriptElement()
+      ..async = true
+      ..src = url.toString();
+    element.addEventListener(
+        'load', ((Event _) => _readyCompleter.complete()).toJS);
     document.head!.append(element);
   }
 

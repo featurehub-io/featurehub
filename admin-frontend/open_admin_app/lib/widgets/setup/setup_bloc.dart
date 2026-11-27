@@ -1,5 +1,5 @@
 // ignore: avoid_web_libraries_in_flutter
-import 'package:universal_html/html.dart';
+import 'package:open_admin_app/utils/browser/browser.dart' as browser;
 
 import 'package:bloc_provider/bloc_provider.dart';
 import 'package:mrapi/api.dart';
@@ -70,7 +70,7 @@ class SetupBloc implements Bloc {
       _setupSource.add(true);
 
       if (data.redirectUrl != null) {
-        window.location.href = data.redirectUrl!;
+        browser.navigateTo(data.redirectUrl!);
       } else {
         mrClient.setBearerToken(data.accessToken);
         mrClient.setPerson(data.person!);

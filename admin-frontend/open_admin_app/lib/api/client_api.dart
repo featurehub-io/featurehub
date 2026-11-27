@@ -2,7 +2,6 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 import 'package:open_admin_app/maintenance/maintenance_info.dart';
-import 'package:universal_html/html.dart';
 import 'package:dio/dio.dart';
 import 'package:bloc_provider/bloc_provider.dart';
 import 'package:flutter/material.dart';
@@ -13,8 +12,9 @@ import 'package:open_admin_app/api/router.dart';
 import 'package:open_admin_app/api/web_interface/url_handler.dart';
 import 'package:open_admin_app/api/web_interface/url_handler_stub.dart'
     if (dart.library.io) 'package:open_admin_app/api/web_interface/io_url_handler.dart'
-    if (dart.library.html) 'package:open_admin_app/api/web_interface/web_url_handler.dart';
+    if (dart.library.js_interop) 'package:open_admin_app/api/web_interface/web_url_handler.dart';
 import 'package:open_admin_app/common/fh_shared_prefs.dart';
+import 'package:open_admin_app/utils/browser/browser.dart' as browser;
 import 'package:open_admin_app/common/ga_id.dart';
 import 'package:open_admin_app/common/person_state.dart';
 import 'package:open_admin_app/common/stream_valley.dart';
@@ -787,8 +787,8 @@ class ManagementRepositoryClientBloc implements Bloc {
 
   String registrationUrl(String token) {
     var tokenizedPart = 'register-url?token=$token';
-    final url =
-        document.baseUri != null ? Uri.parse(document.baseUri!) : Uri.base;
+    final baseUri = browser.documentBaseUri;
+    final url = baseUri != null ? Uri.parse(baseUri) : Uri.base;
     final path = url.toString() + tokenizedPart;
     return path;
   }

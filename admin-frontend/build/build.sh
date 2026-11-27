@@ -17,20 +17,35 @@ cd app_mr_layer && flutter pub get
 echo "Flutter App will be version: ${BUILD_VERSION}"
 cd ../open_admin_app && echo "final appVersion = '${BUILD_VERSION}';" > lib/version.dart && flutter clean && flutter pub get
 
+sed_in_place() {
+  if [[ "$OSTYPE" == 'darwin'* ]]; then
+    gsed -i "$@"
+  else
+    sed -i "$@"
+  fi
+}
+
+# index.html is never cached, everything else is cached for days: so each file index.html leads to is given a name from
+# its content. index.html loads flutter_bootstrap.js, which loads main.dart.js, or for a WebAssembly build main.dart.mjs
+# and main.dart.wasm where the browser supports it.
 rename_main_dart() {
   cd build/web
-  MAIN_SHA=`sha256sum main.dart.js | awk '{print $1}'`
-  echo Generated SHA is $MAIN_SHA
-  MAIN="main-$MAIN_SHA.js"
-  if [[ "$OSTYPE" == 'darwin'* ]]; then
-    gsed -i s/main.dart.js/$MAIN/ index.html
-  else
-    sed -i s/main.dart.js/$MAIN/ index.html
-  fi
-  mv main.dart.js $MAIN
-  if test -f "main.dart.js.map"; then
-    mv main.dart.js.map $MAIN.map
-  fi
+  for FILE in main.dart.js main.dart.mjs main.dart.wasm; do
+    if test -f "$FILE"; then
+      SHA=`sha256sum $FILE | awk '{print $1}'`
+      RENAMED="main-$SHA.${FILE#main.dart.}"
+      echo Renaming $FILE to $RENAMED
+      sed_in_place "s/\"$FILE\"/\"$RENAMED\"/g" flutter_bootstrap.js
+      mv $FILE $RENAMED
+      if test -f "$FILE.map"; then
+        mv $FILE.map $RENAMED.map
+      fi
+    fi
+  done
+  BOOTSTRAP_SHA=`sha256sum flutter_bootstrap.js | awk '{print $1}'`
+  BOOTSTRAP="flutter_bootstrap-$BOOTSTRAP_SHA.js"
+  sed_in_place s/flutter_bootstrap.js/$BOOTSTRAP/ index.html
+  mv flutter_bootstrap.js $BOOTSTRAP
   cd ../..
 }
 
@@ -48,8 +63,9 @@ mv build build_original
 mkdir -p build/web/assets
 
 echo "building canvaskit embedded version"
-# Flutter already downloads Canvaskit, this just lets us use what it has already downloaded
-flutter build web --dart-define=FLUTTER_WEB_CANVASKIT_URL=canvaskit/ --target=lib/deploy_main.dart  --release --no-tree-shake-icons
+# Flutter already downloads Canvaskit, this just lets us use what it has already downloaded (the bootstrap loader
+# takes it from --no-web-resources-cdn, the engine from FLUTTER_WEB_CANVASKIT_URL)
+flutter build web --no-web-resources-cdn --dart-define=FLUTTER_WEB_CANVASKIT_URL=canvaskit/ --target=lib/deploy_main.dart  --release --no-tree-shake-icons
 
 rename_main_dart
 

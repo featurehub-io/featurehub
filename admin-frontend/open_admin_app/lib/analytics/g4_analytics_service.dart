@@ -2,7 +2,7 @@
 
 import 'analytics_service.dart';
 import 'g4_analytics_service_io.dart'
-  if (dart.library.html) 'g4_analytics_service_web.dart';
+  if (dart.library.js_interop) 'g4_analytics_service_web.dart';
 
 /// An umbrella class over platform implementations of Google Analytics 4.
 abstract class G4AnalyticsService extends AnalyticsService {

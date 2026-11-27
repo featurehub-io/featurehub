@@ -10,7 +10,7 @@ import 'package:open_admin_app/widgets/systemconfig/system_config_encryptable_ma
 import 'package:open_admin_app/widgets/systemconfig/system_config_encrypted_text_field.dart';
 import 'package:open_admin_app/widgets/systemconfig/system_config_mixin.dart';
 import 'package:open_admin_app/widgets/systemconfig/system_config_text_field.dart';
-import 'package:universal_html/html.dart';
+import 'package:open_admin_app/utils/browser/browser.dart' as browser;
 
 class SlackSystemConfigWidget extends StatefulWidget {
   final List<SystemConfig> knownConfigs;
@@ -122,7 +122,7 @@ class SlackSystemConfigState extends State<SlackSystemConfigWidget>
                                     await configBloc.knownSiteRedirectUrl(
                                         '/mr-api/slack/oauth2/connect');
                                 if (url != null) {
-                                  window.location.href = url;
+                                  browser.navigateTo(url);
                                 }
                               },
                               label: Text(l10n.connectToSlack),

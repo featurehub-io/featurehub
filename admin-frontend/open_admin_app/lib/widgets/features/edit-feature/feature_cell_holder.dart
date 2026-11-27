@@ -1,4 +1,4 @@
-import 'package:universal_html/html.dart';
+import 'package:open_admin_app/utils/browser/browser.dart' as browser;
 
 import 'package:bloc_provider/bloc_provider.dart';
 import 'package:flutter/material.dart';
@@ -73,7 +73,7 @@ class FeatureCellHolder extends StatelessWidget {
                                     icon: const Icon(
                                         Icons.arrow_outward_outlined),
                                     onPressed: () {
-                                      window.open(feature.link!, 'new tab');
+                                      browser.openWindow(feature.link!, 'new tab');
                                     },
                                   ),
                                 FHCopyToClipboard(

@@ -31,6 +31,8 @@ class AdminAppStaticHttpHandler constructor(private val offsetBaseUrl: String) :
 
   init {
     MimeType.add("wasm", "application/wasm")
+    // the WebAssembly build's JavaScript support module: browsers refuse a module served as anything but JavaScript
+    MimeType.add("mjs", "text/javascript")
 
     DeclaredConfigResolver.resolve(this)
 
