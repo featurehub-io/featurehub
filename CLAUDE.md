@@ -168,6 +168,24 @@ Generated artifacts are committed to `infra/api-bucket/files/` for external cons
 - Uses `rxdart`, `bloc_provider` for state management
 - Depends on `mrapi` (the app_mr_layer package) for all backend communication
 
+#### Code the SaaS front end must not contain
+
+The SaaS admin app (`../saas/front_end/admin_app`) is built from this package, so everything here ends up in the SaaS
+build unless it is left out. Code the SaaS front end must not contain (today: anything that sets or changes a
+password: invitation registration, first-run setup, the local sign-in and its password reset, and the edit-user
+password reset) is always left out at compile time with the constant `saasBuild` from `lib/config/build_flavour.dart`,
+which the SaaS build sets with `--dart-define=featurehub.saas=true`:
+
+- Guard the place that makes the code reachable (the route definition, the button, the widget factory method) with
+  `if (!saasBuild)`, `!saasBuild && ...` or `saasBuild ? throw UnsupportedError(...) : ...`. Because the condition is
+  a constant, dart2js drops the guarded code and everything only it reaches; a runtime check (such as
+  `identityProviders.hasLocal`) or a SaaS override of a `WidgetCreator`/`RouteCreator` method does not, since the
+  open-source implementation stays reachable.
+- Use this one flag for everything the SaaS build leaves out, never a second one, and extend the comment on
+  `saasBuild` with what else it now excludes.
+- Check it worked: build the SaaS app with `--dump-info` and confirm the excluded classes (and any packages only they
+  use) no longer appear in `build/web/main.dart.js.info.json`.
+
 ### E2E Tests (adks/e2e-sdk)
 
 - **TypeScript + Cucumber** (cucumber-js)

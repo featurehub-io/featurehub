@@ -9,12 +9,16 @@ import 'package:open_admin_app/widgets/user/signin/signin_widget.dart';
 import 'package:open_admin_app/widgets/version-check/version_check_widget.dart';
 
 import 'api/client_api.dart';
+import 'config/build_flavour.dart';
 
 class WidgetCreator {
   bool canSeeOrganisationMenuDrawer(ManagementRepositoryClientBloc client) =>
       client.userIsSuperAdmin;
-  Widget createSigninWidget(ManagementRepositoryClientBloc client) =>
-      SigninWidget(client);
+  // the SaaS build replaces the sign-in widget with its own; leaving this one out drops the local sign-in, and the
+  // password reset it can lead to, from that build
+  Widget createSigninWidget(ManagementRepositoryClientBloc client) => saasBuild
+      ? throw UnsupportedError('the SaaS build provides its own sign-in widget')
+      : SigninWidget(client);
   Widget orgNameContainer(ManagementRepositoryClientBloc client) =>
       const SizedBox.shrink();
   Widget setBillingAdminCheckbox() => const SizedBox.shrink();

@@ -6,7 +6,7 @@ import 'package:open_admin_app/widgets/common/fh_card.dart';
 import 'package:open_admin_app/widgets/common/fh_flat_button.dart';
 import 'package:open_admin_app/widgets/user/register/register_url_bloc.dart';
 import 'package:openapi_dart_common/openapi.dart';
-import 'package:zxcvbn/zxcvbn.dart';
+import 'package:open_admin_app/utils/password_strength.dart';
 
 class RegisterURLRoute extends StatefulWidget {
   final String token;
@@ -167,22 +167,28 @@ class RegisterURLState extends State<RegisterURLRoute> {
     );
   }
 
-  void setPasswordStrength(AppLocalizations l10n) {
-    final result = Zxcvbn().evaluate(_pw1.text);
+  Future<void> setPasswordStrength(AppLocalizations l10n) async {
+    final password = _pw1.text;
+    final score = await passwordStrength(password);
+    // the password may have changed, or the page gone, while zxcvbn loaded
+    if (!mounted || password != _pw1.text) {
+      return;
+    }
     var state = l10n.passwordStrengthWeak;
-    if (result.score == 1) {
+    if (score == 1) {
       state = l10n.passwordStrengthBelowAverage;
-    } else if (result.score == 2) {
+    } else if (score == 2) {
       state = l10n.passwordStrengthGood;
-    } else if (result.score == 3) {
+    } else if (score != null && score >= 3) {
+      // zxcvbn scores 0 to 4: 4 is as strong as it gets
       state = l10n.passwordStrengthStrong;
     }
     Color stateColor =
-        (result.score == null || result.score! < _passwordScoreThreshold)
+        (score == null || score < _passwordScoreThreshold)
             ? Colors.red
             : Colors.green;
 
-    if (result.score == 1) {
+    if (score == 1) {
       stateColor = Colors.orange;
     }
 

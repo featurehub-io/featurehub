@@ -6,7 +6,7 @@ import 'package:open_admin_app/widgets/common/fh_card.dart';
 import 'package:open_admin_app/widgets/common/fh_flat_button.dart';
 import 'package:open_admin_app/widgets/setup/setup_bloc.dart';
 import 'package:open_admin_app/widgets/user/signin/signin_provider_button.dart';
-import 'package:zxcvbn/zxcvbn.dart';
+import 'package:open_admin_app/utils/password_strength.dart';
 
 class SetupPage1Widget extends StatefulWidget {
   final SetupBloc bloc;
@@ -43,20 +43,23 @@ class _SetupPage1State extends State<SetupPage1Widget> {
     _pw1.addListener(setPasswordStrength);
   }
 
-  void setPasswordStrength() {
+  Future<void> setPasswordStrength() async {
+    final password = _pw1.text;
     double? score;
     Color stateColor;
 
-    if (_pw1.text.isEmpty) {
+    if (password.isEmpty) {
       stateColor = Colors.white;
     } else {
-      final result = Zxcvbn().evaluate(_pw1.text);
-      score = result.score;
-      stateColor =
-          (result.score == null || result.score! < _passwordScoreThreshold)
-              ? Colors.red
-              : Colors.green;
-      if (result.score != null && result.score! < 2) {
+      score = await passwordStrength(password);
+      // the password may have changed, or the page gone, while zxcvbn loaded
+      if (!mounted || password != _pw1.text) {
+        return;
+      }
+      stateColor = (score == null || score < _passwordScoreThreshold)
+          ? Colors.red
+          : Colors.green;
+      if (score != null && score < 2) {
         stateColor = Colors.orange;
       }
     }
