@@ -82,9 +82,6 @@ flutter:
           weight: 400
         - asset: assets/fonts/Roboto-Bold.ttf
           weight: 700
-    - family: MaterialIcons
-      fonts:
-        - asset: assets/fonts/MaterialIcons-Regular.ttf
     - family: NotoSansSymbols
       fonts:
         - asset: assets/fonts/NotoSansSymbols-Regular.ttf
