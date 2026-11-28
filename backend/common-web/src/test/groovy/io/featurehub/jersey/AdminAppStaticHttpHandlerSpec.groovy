@@ -23,6 +23,9 @@ class AdminAppStaticHttpHandlerSpec extends Specification {
       new GZIPOutputStream(os).withCloseable { it.write(js.getBytes("UTF-8")) }
     }
     new File(webDir, "kwong-pastry.css").text = "body { color: pink; }"
+    // the WebAssembly build's JavaScript support module and the module itself
+    gzipped("main-chago.mjs", js.getBytes("UTF-8"))
+    gzipped("main-chago.wasm", ([0, 97, 115, 109, 1, 0, 0, 0] * 200) as byte[])
 
     System.setProperty("web.asset.location", webDir.absolutePath)
 
@@ -32,6 +35,13 @@ class AdminAppStaticHttpHandlerSpec extends Specification {
     server.serverConfiguration.addHttpHandler(new DelegatingHandler(new AdminAppStaticHttpHandler("/")), "/")
     server.start()
     port = listener.port
+  }
+
+  void gzipped(String name, byte[] content) {
+    new File(webDir, name).bytes = content
+    new File(webDir, "${name}.gz").withOutputStream { os ->
+      new GZIPOutputStream(os).withCloseable { it.write(content) }
+    }
   }
 
   def cleanup() {
@@ -78,5 +88,21 @@ class AdminAppStaticHttpHandlerSpec extends Specification {
       conn.getHeaderField("Content-Encoding") == null
       conn.getHeaderField("Vary") == null
       conn.inputStream.text == "body { color: pink; }"
+  }
+
+  def "precompressed WebAssembly files keep the content types browsers require"() {
+    when:
+      def conn = get("/${name}", "gzip")
+      def body = new GZIPInputStream(conn.inputStream).bytes
+    then:
+      conn.responseCode == 200
+      conn.getHeaderField("Content-Encoding") == "gzip"
+      // a module served as anything but JavaScript is refused, and instantiateStreaming needs application/wasm
+      conn.contentType.startsWith(contentType)
+      body == new File(webDir, name).bytes
+    where:
+      name              | contentType
+      "main-chago.mjs"  | "text/javascript"
+      "main-chago.wasm" | "application/wasm"
   }
 }
