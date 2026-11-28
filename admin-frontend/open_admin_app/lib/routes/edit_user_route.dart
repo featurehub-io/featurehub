@@ -1,3 +1,4 @@
+import 'package:open_admin_app/config/build_flavour.dart';
 import 'package:bloc_provider/bloc_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:mrapi/api.dart';
@@ -79,7 +80,7 @@ class EditUserFormState extends State<EditUserFormWidget> {
               FHHeader(
                 title: l10n.editUser,
                 children: <Widget>[
-                  if (bloc.mrClient.identityProviders.hasLocal)
+                  if (!saasBuild && bloc.mrClient.identityProviders.hasLocal)
                     FHFlatButtonTransparent(
                       onPressed: () => bloc.mrClient.addOverlay(
                           (BuildContext context) =>

@@ -26,10 +26,23 @@ sed_in_place() {
 }
 
 # index.html is never cached, everything else is cached for days: so each file index.html leads to is given a name from
-# its content. index.html loads flutter_bootstrap.js, which loads main.dart.js, or for a WebAssembly build main.dart.mjs
-# and main.dart.wasm where the browser supports it.
+# its content. index.html loads flutter_bootstrap.js, which loads main.dart.js (and its deferred parts when needed), or
+# for a WebAssembly build main.dart.mjs and main.dart.wasm where the browser supports it.
 rename_main_dart() {
   cd build/web
+  # main.dart.js names its deferred parts (main.dart.js_1.part.js, ...), so they are renamed first
+  for PART in main.dart.js_*.part.js; do
+    if test -f "$PART"; then
+      SHA=`sha256sum $PART | awk '{print $1}'`
+      RENAMED="main-part-$SHA.js"
+      echo Renaming $PART to $RENAMED
+      sed_in_place "s/\"$PART\"/\"$RENAMED\"/g" main.dart.js
+      mv $PART $RENAMED
+      if test -f "$PART.map"; then
+        mv $PART.map $RENAMED.map
+      fi
+    fi
+  done
   for FILE in main.dart.js main.dart.mjs main.dart.wasm; do
     if test -f "$FILE"; then
       SHA=`sha256sum $FILE | awk '{print $1}'`

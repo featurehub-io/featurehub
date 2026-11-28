@@ -1,3 +1,4 @@
+import 'package:open_admin_app/config/build_flavour.dart';
 import 'package:bloc_provider/bloc_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:logging/logging.dart';
@@ -77,16 +78,19 @@ class Routes {
         routeSlots: [RouteSlot.login],
         permissionType: PermissionType.login,
         wrapInScaffold: false);
-    router.define('/register-url',
-        handler: handleRouteChangeRequest(routeCreator.registerUrl),
-        routeSlots: [RouteSlot.login],
-        permissionType: PermissionType.login,
-        wrapInScaffold: false);
-    router.define('/setup',
-        handler: handleRouteChangeRequest(routeCreator.setup),
-        routeSlots: [RouteSlot.setup],
-        permissionType: PermissionType.setup,
-        wrapInScaffold: false);
+    // registering from an invitation and the first-run setup both set a password, which the SaaS build never does
+    if (!saasBuild) {
+      router.define('/register-url',
+          handler: handleRouteChangeRequest(routeCreator.registerUrl),
+          routeSlots: [RouteSlot.login],
+          permissionType: PermissionType.login,
+          wrapInScaffold: false);
+      router.define('/setup',
+          handler: handleRouteChangeRequest(routeCreator.setup),
+          routeSlots: [RouteSlot.setup],
+          permissionType: PermissionType.setup,
+          wrapInScaffold: false);
+    }
     router.define("/oauth2-failure",
         handler: handleRouteChangeRequest(routeCreator.oauth2Fail),
         routeSlots: [RouteSlot.login],
