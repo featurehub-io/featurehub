@@ -45,6 +45,9 @@ dependencies:
   meta: ^1.8.0
   syncfusion_localizations: ^32.2.9
   font_awesome_flutter: ^11.0.0
+  # Material's TextField reaches CupertinoTextField, whose clear button is a CupertinoIcons icon: without the font,
+  # icon tree-shaking warns that it is missing
+  cupertino_icons: ^1.0.8
   syncfusion_flutter_core: any
 dev_dependencies:
   flutter_lints: ^6.0.0
